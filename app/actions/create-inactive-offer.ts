@@ -1,14 +1,13 @@
 'use server'
 
-import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/supabase/admin'
 import { normalizeAndHashPhone } from './hash_phone'
 import { adSchema } from '@/app/lib/ad-validation'
 
-export async function createAd(prevState: any, formData: FormData) {
+export async function createInactiveOffer(prevState: any, formData: FormData) {
     const educationLevels = formData.getAll('education_level')
-    console.log('[createAd] Raw Education Levels:', educationLevels)
 
+    // Server-side validation
     const validatedFields = adSchema.safeParse({
         title: formData.get('title'),
         description: formData.get('description'),
@@ -42,6 +41,27 @@ export async function createAd(prevState: any, formData: FormData) {
 
     const supabase = createAdminClient()
 
+    // Check if phone exists for pricing logic
+    const { count: phoneCount } = await supabase
+        .from('ads')
+        .select('*', { count: 'exact', head: true })
+        .eq('phone_hash', hash)
+
+    const phoneExists = phoneCount !== null && phoneCount > 0
+
+    // Pricing logic
+    const priceInfo = phoneExists
+        ? {
+            amount: 19.00,
+            label: "Płatność (Użytkownik powracający)",
+            description: "Cena za wystawienie kolejnego ogłoszenia."
+        }
+        : {
+            amount: 9.00,
+            label: "Płatność (Nowy użytkownik)",
+            description: "Promocyjna cena dla nowego ogłoszeniodawcy."
+        }
+
     const { data, error } = await supabase.from('ads').insert({
         title: validatedFields.data.title,
         description: validatedFields.data.description,
@@ -55,7 +75,7 @@ export async function createAd(prevState: any, formData: FormData) {
         phone_hash: hash,
         tutor_gender: validatedFields.data.tutor_gender || null,
         type: 'offer',
-        status: 'active',
+        status: 'disabled', // Created as disabled (inactive/draft)
     }).select().single()
 
     if (error) {
@@ -65,6 +85,11 @@ export async function createAd(prevState: any, formData: FormData) {
         }
     }
 
-
-    redirect(`/offers/${data.id}`)
+    return {
+        success: true,
+        offerId: data.id,
+        priceInfo,
+        phoneExists,
+        message: 'Ogłoszenie utworzone (nieaktywne).',
+    }
 }

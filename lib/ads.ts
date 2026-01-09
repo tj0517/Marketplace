@@ -6,7 +6,8 @@ import { Database } from '@/types/supabase';
 type Ad = Database['public']['Tables']['ads']['Row'];
 
 
-export const getAds = unstable_cache(
+// Helper to fetch all ads (Cached)
+const fetchAllAds = unstable_cache(
     async (): Promise<Ad[]> => {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -25,35 +26,34 @@ export const getAds = unstable_cache(
 
         return data || [];
     },
-    ['ads-cache'], // Key parts
-    {
-        revalidate: 60, // Cache for 60 seconds
-        tags: ['ads'], // Tags for on-demand revalidation
-    }
-);
-
-export const getAd = unstable_cache(
-    async (id: string): Promise<Ad | null> => {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-        if (!supabaseUrl || !supabaseKey) {
-            return null;
-        }
-
-        const supabase = createClient<Database>(supabaseUrl, supabaseKey);
-        const { data, error } = await supabase.from('ads').select('*').eq('id', id).single();
-
-        if (error) {
-            console.error(`Error fetching ad ${id}:`, error);
-            return null;
-        }
-
-        return data;
-    },
-    ['ad-details'],
+    ['all-ads-cache'],
     {
         revalidate: 60,
-        tags: ['ads']
+        tags: ['ads'],
     }
 );
+
+export const getAds = async (params?: { query?: string }): Promise<Ad[]> => {
+    const allAds = await fetchAllAds();
+
+    if (!params?.query) {
+        return allAds;
+    }
+
+    const searchTerm = params.query.toLowerCase();
+
+    return allAds.filter(ad => {
+        const titleMatch = ad.title?.toLowerCase().includes(searchTerm) ?? false;
+        const descriptionMatch = ad.description?.toLowerCase().includes(searchTerm) ?? false;
+        const subjectMatch = ad.subject?.toLowerCase().includes(searchTerm) ?? false;
+        const locationMatch = ad.location?.toLowerCase().includes(searchTerm) ?? false;
+
+        return titleMatch || descriptionMatch || subjectMatch || locationMatch;
+    });
+};
+
+export const getAd = async (id: string): Promise<Ad | null> => {
+    const allAds = await fetchAllAds();
+    const ad = allAds.find(a => a.id === id);
+    return ad || null;
+};

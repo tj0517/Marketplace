@@ -15,23 +15,10 @@ interface TutorListingProps {
 }
 
 export function TutorListing({ initialAds = [] }: TutorListingProps) {
-  const [ads] = useState<Ad[]>(initialAds);
 
   function getInitials(email: string): string {
     return email.charAt(0).toUpperCase()
   }
-
-  function getAvatarUrl(gender: string | null, email: string): string {
-    const hash = email.split("@")[0]
-    if (gender === "female") {
-      return `/female-teacher.png`
-    } else if (gender === "male") {
-      return `/male-teacher.png`
-    }
-    // Default to a neutral avatar
-    return `/teacher-woman.png`
-  }
-
 
   function formatPrice(priceAmount: number | null, priceUnit: string | null): string {
     if (!priceAmount) return "Negocjowalna"
@@ -41,120 +28,87 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
 
 
   return (
-    <section className="w-full bg-gradient-to-b from-white to-gray-50 px-4 py-16 dark:from-gray-900 dark:to-gray-950 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <section className="relative w-full overflow-hidden bg-white px-4 py-20 sm:px-6 lg:px-8">
+      {/* Subtle Background Blobs */}
+      <div className="absolute top-0 right-0 -mr-40 -mt-40 h-[500px] w-[500px] rounded-full bg-violet-100/50 blur-[100px]" />
+      <div className="absolute bottom-0 left-0 -ml-40 -mb-40 h-[500px] w-[500px] rounded-full bg-fuchsia-100/50 blur-[100px]" />
+
+      <div className="relative mx-auto max-w-7xl">
         {/* Section Header */}
-        <div className="mb-10 text-center">
-          <h2 className="mb-3 text-balance text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-            Polecani korepetytorzy
+        <div className="mb-12 text-center">
+          <h2 className="mb-4 text-balance text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+            Polecani <span className="text-violet-600">korepetytorzy</span>
           </h2>
-          <p className="mx-auto max-w-2xl text-pretty text-lg text-gray-600 dark:text-gray-300">
+          <p className="mx-auto max-w-2xl text-pretty text-lg text-slate-600">
             Poznaj najlepiej ocenianych nauczycieli gotowych pomóc Ci osiągnąć cele
           </p>
         </div>
 
-        {/* Filters Bar */}
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-white p-4 shadow-md dark:bg-gray-900">
-          <div className="flex flex-wrap gap-2">
-            <Badge
-              variant="secondary"
-              className="cursor-pointer rounded-full px-4 py-2 transition-all hover:bg-indigo-100 hover:text-indigo-700 dark:hover:bg-indigo-900"
-            >
-              Wszystkie ({ads.length})
-            </Badge>
-            <Badge
-              variant="outline"
-              className="cursor-pointer rounded-full px-4 py-2 transition-all hover:bg-indigo-50 dark:hover:bg-indigo-950"
-            >
-              Online
-            </Badge>
-            <Badge
-              variant="outline"
-              className="cursor-pointer rounded-full px-4 py-2 transition-all hover:bg-indigo-50 dark:hover:bg-indigo-950"
-            >
-              Zweryfikowani
-            </Badge>
-            <Badge
-              variant="outline"
-              className="cursor-pointer rounded-full px-4 py-2 transition-all hover:bg-indigo-50 dark:hover:bg-indigo-950"
-            >
-              Najwyżej ocenieni
-            </Badge>
-          </div>
-          <select className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all hover:border-indigo-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
-            <option>Sortuj: Rekomendowane</option>
-            <option>Sortuj: Cena rosnąco</option>
-            <option>Sortuj: Cena malejąco</option>
-            <option>Sortuj: Najwyżej ocenieni</option>
-          </select>
-        </div>
-
         {/* Tutors Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {ads.map((ad) => {
-            const avatarUrl = getAvatarUrl(ad.tutor_gender, ad.email)
+          {initialAds.map((ad) => {
             const initials = getInitials(ad.email)
             const priceDisplay = formatPrice(ad.price_amount, ad.price_unit)
 
             return (
               <Card
                 key={ad.id}
-                className="group overflow-hidden border-2 border-gray-100 transition-all hover:border-indigo-200 hover:shadow-xl dark:border-gray-800 dark:hover:border-indigo-800"
+                className="group relative overflow-hidden rounded-2xl border-0 bg-white shadow-xl shadow-slate-200/50 transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-violet-500/10"
               >
-                <CardContent className="p-6">
+                {/* Gradient Border on Hover */}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-500 p-[1px] opacity-0 transition-opacity group-hover:opacity-100" />
+
+                <CardContent className="relative h-full rounded-2xl bg-white p-6">
                   {/* Header with Avatar */}
                   <div className="mb-4 flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="size-14 ring-2 ring-indigo-100 dark:ring-indigo-900">
-                        <AvatarImage src={avatarUrl || "/placeholder.svg"} alt={ad.title} />
-                        <AvatarFallback>{initials}</AvatarFallback>
-                      </Avatar>
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-violet-400 to-fuchsia-400 blur-sm opacity-50" />
+                        <Avatar className="relative size-14 border-2 border-white">
+                          <AvatarFallback className="bg-slate-50 text-violet-600 font-bold">{initials}</AvatarFallback>
+                        </Avatar>
+                      </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-gray-900 dark:text-white">{ad.title}</h3>
-                          {/* Placeholder for verified badge - can be added later */}
+                          <h3 className="font-bold text-slate-900 group-hover:text-violet-700 transition-colors">{ad.title}</h3>
                         </div>
-
                       </div>
                     </div>
                   </div>
 
                   {/* Bio */}
-                  <p className="mb-4 line-clamp-2 text-sm text-gray-600 dark:text-gray-400">{ad.description}</p>
+                  <p className="mb-4 min-h-[2.5rem] line-clamp-2 text-sm text-slate-600">{ad.description}</p>
 
                   {/* Subjects */}
                   <div className="mb-4 flex flex-wrap gap-2">
                     <Badge
                       variant="secondary"
-                      className="rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                      className="rounded-md bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700"
                     >
                       {ad.subject}
                     </Badge>
                   </div>
 
                   {/* Info Grid */}
-                  <div className="mb-4 grid grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                      <MapPin className="size-4 text-indigo-600 dark:text-indigo-400" />
+                  <div className="mb-6 grid grid-cols-2 gap-3 text-sm">
+                    <div className="flex items-center gap-2 text-slate-500">
+                      <MapPin className="size-4 text-violet-400" />
                       <span>{ad.location}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                      <GraduationCap className="size-4 text-indigo-600 dark:text-indigo-400" />
-                      <span>{ad.education_level?.[0] || "Wszystkie"}</span>
+                    <div className="flex items-center gap-2 text-slate-500">
+                      <GraduationCap className="size-4 text-fuchsia-400" />
+                      <span>{ad.education_level?.[0] || "Wszystkie"} {(ad.education_level?.length ?? 0) > 1 ? "..." : ""}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                      <Clock className="size-4 text-indigo-600 dark:text-indigo-400" />
-                      <span>Szybka odp.</span>
-                    </div>
-                    <div className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
-                      <span className="text-lg text-indigo-600 dark:text-indigo-400">{priceDisplay}</span>
+
+                    <div className="col-span-2 mt-2 flex items-center gap-2 font-bold text-slate-900">
+                      <span className="text-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">{priceDisplay}</span>
                     </div>
                   </div>
 
 
                   <Button
                     asChild
-                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 font-semibold transition-all hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg"
+                    className="w-full rounded-xl bg-slate-900 text-white font-semibold transition-all hover:bg-violet-600 hover:shadow-lg hover:shadow-violet-500/25"
                   >
                     <Link href={`/offers/${ad.id}`}>
                       Zobacz profil
