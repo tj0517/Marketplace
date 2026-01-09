@@ -1,5 +1,5 @@
-import { HeroSearchSection } from "./components/hero"
-import { TutorListing } from "./components/offers_listing"
+import { HeroSearchSection } from "./components/heroSearchSection"
+import { TutorListing } from "./components/tutorListing"
 
 import { getAds } from "@/lib/ads"
 import { Navbar } from "./components/navbar"

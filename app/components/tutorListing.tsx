@@ -53,10 +53,9 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
             return (
               <Card
                 key={ad.id}
-                className="group relative overflow-hidden rounded-2xl border-0 bg-white shadow-xl shadow-slate-200/50 transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-violet-500/10"
+                className="group relative overflow-hidden rounded-2xl border-1 bg-white shadow-xl shadow-slate-200/50 transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-violet-500/10"
               >
-                {/* Gradient Border on Hover */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-500 p-[1px] opacity-0 transition-opacity group-hover:opacity-100" />
+
 
                 <CardContent className="relative h-full rounded-2xl bg-white p-6">
                   {/* Header with Avatar */}
