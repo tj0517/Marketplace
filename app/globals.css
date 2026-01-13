@@ -183,3 +183,7 @@
 .animate-pulse-slow {
   animation: pulse-slow 4s ease-in-out infinite;
 }
+
+button {
+  @apply hover:cursor-pointer
+}

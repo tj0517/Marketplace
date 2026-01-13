@@ -99,7 +99,7 @@ export function HeroSearchSection() {
                 />
                 <Button
                   onClick={handleSearch}
-                  className="h-12 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-8 text-base font-bold text-white shadow-lg shadow-violet-500/25 transition-all hover:opacity-90 hover:scale-105"
+                  className="h-12 rounded-xl bg-violet-600 px-8 text-base font-bold text-white shadow-lg shadow-violet-500/25 transition-all hover:scale-105 hover:bg-violet-700"
                 >
                   Szukaj
                 </Button>
@@ -107,7 +107,7 @@ export function HeroSearchSection() {
             </div>
 
             {/* Quick Filters */}
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="flex flex-wrap justify-center  items-center gap-3">
               <span className="text-sm font-semibold text-slate-400 py-1.5 uppercase tracking-wide text-[10px]">Popularne</span>
               {quickFilters.map((filter) => (
                 <button

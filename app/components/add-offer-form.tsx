@@ -344,7 +344,7 @@ export function AddOfferForm() {
                                 className="mt-4 w-full text-sm text-slate-500 hover:text-slate-800 hover:underline"
                                 disabled={isActivating}
                             >
-                                Wróć do edycji (utworzy nową wersję)
+                                Wróć do edycji
                             </button>
                         </div>
                     </div>
@@ -370,7 +370,7 @@ export function AddOfferForm() {
                             Tworzenie...
                         </>
                     ) : (
-                        'Dalej (Utwórz wersję roboczą)'
+                        'Dalej'
                     )}
                 </Button>
             )}

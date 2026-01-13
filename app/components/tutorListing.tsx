@@ -107,7 +107,7 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
 
                   <Button
                     asChild
-                    className="w-full rounded-xl bg-slate-900 text-white font-semibold transition-all hover:bg-violet-600 hover:shadow-lg hover:shadow-violet-500/25"
+                    className="w-full rounded-xl bg-violet-600 text-white font-semibold transition-all hover:bg-violet-600 hover:shadow-lg hover:shadow-violet-500/25"
                   >
                     <Link href={`/offers/${ad.id}`}>
                       Zobacz profil
