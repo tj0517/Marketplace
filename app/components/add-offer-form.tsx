@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from 'react'
 import { createInactiveOffer } from '@/app/actions/create-inactive-offer'
 import { activateOffer } from '@/app/actions/activate-offer'
+import { createInformalOffer } from '../actions/create-informational-offer'
 import { Button } from '@/app/components/ui/button'
 import { Input } from '@/app/components/ui/input'
 import { Textarea } from '@/app/components/ui/textarea'
@@ -31,7 +32,7 @@ const units = [
     { value: '30 min', label: '30 min' },
 ]
 
-export function AddOfferForm() {
+export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
     const [step, setStep] = useState<1 | 2>(1)
 
     // State for temporary data between steps
@@ -41,10 +42,14 @@ export function AddOfferForm() {
         phoneExists: boolean;
     } | null>(null)
 
+    const [searchState, searchAction, isSearching] = useActionState(createInformalOffer, null)
     const [createState, createAction, isCreating] = useActionState(createInactiveOffer, null)
     const [activateState, activateAction, isActivating] = useActionState(activateOffer, null)
 
+    const [isRemote, setIsRemote] = useState(false)
+
     const [formData, setFormData] = useState({
+        type,
         title: '',
         subject: '',
         description: '',
@@ -52,6 +57,7 @@ export function AddOfferForm() {
         price_amount: '',
         price_unit: '60 min',
         location: '',
+        city_text: '',
         tutor_gender: '',
         email: '',
         phone_contact: ''
@@ -97,12 +103,12 @@ export function AddOfferForm() {
         }
     }, [createState])
 
-    const errors = step === 1 ? createState?.errors : null
-    const message = step === 1 ? createState?.message : activateState?.message
+    const errors = step === 1 ? (type === 'offer' ? createState?.errors : searchState?.errors) : null
+    const message = step === 1 ? (type === 'offer' ? createState?.message : searchState?.message) : activateState?.message
 
     return (
         <form className="space-y-8" onReset={(e) => e.preventDefault()}>
-            {/* Hidden inputs for array fields to ensure they are submitted even if UI controls are hidden/custom */}
+            <input type="hidden" name="type" value={type} />
             {formData.education_level.map((level) => (
                 <input key={level} type="hidden" name="education_level" value={level} />
             ))}
@@ -160,6 +166,7 @@ export function AddOfferForm() {
                     </div>
 
                     <div className="space-y-2">
+
                         <Label>Poziom nauczania</Label>
                         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                             {levels.map((level) => (
@@ -182,59 +189,85 @@ export function AddOfferForm() {
                 <div className="space-y-4 rounded-xl border bg-white p-6 shadow-sm dark:bg-gray-900">
                     <h2 className="text-xl font-semibold">Szczegóły</h2>
                     <div className="grid gap-4 md:grid-cols-2">
-                        <div className="space-y-2">
-                            <Label htmlFor="price_amount">Cena (zł)</Label>
-                            <Input
-                                id="price_amount"
-                                name="price_amount"
-                                type="number"
-                                value={formData.price_amount}
-                                onChange={handleChange}
-                                placeholder="50"
-                                required
-                                min={1}
-                            />
-                            {errors?.price_amount && <p className="text-sm text-red-500">{errors.price_amount}</p>}
-                        </div>
+                        {type !== 'search' && (
+                            <>
+                                <div className="space-y-2">
+                                    <Label htmlFor="price_amount">Cena (zł)</Label>
+                                    <Input
+                                        id="price_amount"
+                                        name="price_amount"
+                                        type="number"
+                                        value={formData.price_amount}
+                                        onChange={handleChange}
+                                        placeholder="50"
+                                        required
+                                        min={1}
+                                    />
+                                    {errors?.price_amount && <p className="text-sm text-red-500">{errors.price_amount}</p>}
+                                </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="price_unit">Jednostka czasu</Label>
-                            <Select name="price_unit" value={formData.price_unit} onValueChange={(val) => handleSelectChange('price_unit', val)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Wybierz jednostkę" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {units.map(u => (
-                                        <SelectItem key={u.value} value={u.value}>{u.value}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {errors?.price_unit && <p className="text-sm text-red-500">{errors.price_unit}</p>}
-                        </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="price_unit">Jednostka czasu</Label>
+                                    <Select name="price_unit" value={formData.price_unit} onValueChange={(val) => handleSelectChange('price_unit', val)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Wybierz jednostkę" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {units.map(u => (
+                                                <SelectItem key={u.value} value={u.value}>{u.value}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors?.price_unit && <p className="text-sm text-red-500">{errors.price_unit}</p>}
+                                </div>
+                            </>
+                        )}
+                        {type === 'search' && (
+                            <>
+                                {/* Price is optional and null for search type */}
+                            </>
+                        )}
 
                         <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="location">Lokalizacja</Label>
-                            <Input
-                                id="location"
-                                name="location"
-                                value={formData.location}
-                                onChange={handleChange}
-                                placeholder="np. Warszawa Praga / Online"
-                                required
-                            />
+                            <div className="flex gap-4 items-center">
+                                <div className="flex-1">
+                                    <Input
+                                        id="location"
+                                        name="city_text"
+                                        value={formData.city_text || ''}
+                                        onChange={handleChange}
+                                        placeholder="np. Warszawa Praga"
+                                        className={isRemote ? '' : ''}
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2 min-w-fit bg-slate-50 p-2.5 rounded-md border border-slate-200">
+                                    <Checkbox
+                                        id="remote_mode"
+                                        checked={isRemote}
+                                        onCheckedChange={(checked) => setIsRemote(checked as boolean)}
+                                    />
+                                    <Label htmlFor="remote_mode" className="cursor-pointer font-medium text-slate-700">Zdalnie</Label>
+                                </div>
+                            </div>
+                            <input type="hidden" name="location" value={(formData.city_text || '') + (isRemote ? (formData.city_text ? ', Zdalnie' : 'Zdalnie') : '')} />
                             {errors?.location && <p className="text-sm text-red-500">{errors.location}</p>}
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="tutor_gender">Płeć (opcjonalne)</Label>
-                            <Select name="tutor_gender" value={formData.tutor_gender} onValueChange={(val) => handleSelectChange('tutor_gender', val)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Wybierz" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="male">Mężczyzna</SelectItem>
-                                    <SelectItem value="female">Kobieta</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            {type !== 'search' && (
+                                <>
+                                    <Label htmlFor="tutor_gender">Płeć (opcjonalne)</Label>
+                                    <Select name="tutor_gender" value={formData.tutor_gender} onValueChange={(val) => handleSelectChange('tutor_gender', val)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Wybierz" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="male">Mężczyzna</SelectItem>
+                                            <SelectItem value="female">Kobieta</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -359,7 +392,7 @@ export function AddOfferForm() {
             )}
 
             {step === 1 && (
-                <Button
+                type === 'offer' ? (<Button
                     formAction={createAction}
                     className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 py-6 text-lg font-semibold hover:from-indigo-700 hover:to-purple-700"
                     disabled={isCreating}
@@ -373,6 +406,22 @@ export function AddOfferForm() {
                         'Dalej'
                     )}
                 </Button>
+                ) : (
+                    <Button
+                        formAction={searchAction}
+                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 py-6 text-lg font-semibold hover:from-indigo-700 hover:to-purple-700"
+                        disabled={isSearching}
+                    >
+                        {isSearching ? (
+                            <>
+                                <Loader2 className="mr-2 size-5 animate-spin" />
+                                Tworzenie...
+                            </>
+                        ) : (
+                            'Dodaj ogłoszenie'
+                        )}
+                    </Button>
+                )
             )}
         </form>
     )

@@ -13,11 +13,24 @@ const quickFilters = ["Matura", "Szkoła Podstawowa", "Angielski", "Online"]
 export function HeroSearchSection() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState<"offer" | "search">("offer")
   const [searchQuery, setSearchQuery] = useState(searchParams.get("query") || "")
 
   useEffect(() => {
     setSearchQuery(searchParams.get("query") || "")
+    const type = searchParams.get("type") as "offer" | "search" | null
+    if (type) {
+      setActiveTab(type)
+    }
   }, [searchParams])
+
+  const handleTabChange = (tab: "offer" | "search") => {
+    setActiveTab(tab)
+    const params = new URLSearchParams(searchParams)
+    params.set("type", tab)
+    params.delete("page")
+    router.push(`/?${params.toString()}`)
+  }
 
   const handleSearch = () => {
     const params = new URLSearchParams(searchParams)
@@ -26,11 +39,14 @@ export function HeroSearchSection() {
     } else {
       params.delete("query")
     }
+    // Ensure type is preserved or set
+    params.set("type", activeTab)
+    params.delete("page") // Reset to first page on search
     router.push(`/?${params.toString()}`)
   }
 
   return (
-    <div className="relative isolate w-full overflow-hidden bg-slate-50 pb-20 pt-32 sm:pb-32 lg:pb-40">
+    <div className="relative isolate w-full overflow-hidden  bg-slate-50 pb-20 pt-32 sm:pb-32 lg:pb-40">
       {/* Aurora Background */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -left-[10%] -top-[20%] h-[500px] w-[500px] rounded-full bg-violet-400 opacity-20 blur-[100px] animate-pulse-slow" />
@@ -56,18 +72,43 @@ export function HeroSearchSection() {
           </div>
 
           <h1 className="text-balance text-4xl font-extrabold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
-            Znajdź idealnego <br />
+            {activeTab === "offer" ? "Znajdź idealnego" : "Znajdź pilnego"} <br />
             <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-indigo-600 bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
-              korepetytora
+              {activeTab === "offer" ? "korepetytora" : "ucznia"}
             </span>
           </h1>
 
           <p className="mt-6 text-lg font-medium leading-8 text-slate-600">
-            Połącz się z najlepszymi nauczycielami w Polsce. <br className="hidden sm:inline" />
+            {activeTab === "offer"
+              ? "Połącz się z najlepszymi nauczycielami w Polsce."
+              : "Dotrzyj do uczniów poszukujących Twojej wiedzy."} <br className="hidden sm:inline" />
             <span className="text-violet-600">Prosty proces</span>, sprawdzone opinie i <span className="text-fuchsia-600">gwarancja satysfakcji</span>.
           </p>
 
           <div className="mt-12 flex flex-col items-center gap-6">
+
+            {/* Type Toggle */}
+            <div className="flex bg-white/50 backdrop-blur-sm p-1.5 rounded-full border border-violet-100 shadow-sm">
+              <button
+                onClick={() => handleTabChange("offer")}
+                className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${activeTab === "offer"
+                  ? "bg-violet-600 text-white shadow-md shadow-violet-500/25"
+                  : "text-slate-600 hover:text-violet-700 hover:bg-white/60"
+                  }`}
+              >
+                Szukam korepetytora
+              </button>
+              <button
+                onClick={() => handleTabChange("search")}
+                className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${activeTab === "search"
+                  ? "bg-violet-600 text-white shadow-md shadow-violet-500/25"
+                  : "text-slate-600 hover:text-violet-700 hover:bg-white/60"
+                  }`}
+              >
+                Szukam ucznia
+              </button>
+            </div>
+
             {/* Search Capsule */}
             <div className="relative w-full max-w-2xl animate-float">
               <div className="group relative flex w-full items-center overflow-hidden rounded-2xl bg-white/80 p-2 shadow-2xl shadow-violet-500/10 ring-1 ring-white/50 backdrop-blur-xl transition-all hover:shadow-violet-500/20 hover:scale-[1.01] focus-within:ring-violet-400 focus-within:scale-[1.01]">
@@ -77,7 +118,7 @@ export function HeroSearchSection() {
                 <Search className="ml-4 size-6 text-violet-400" />
                 <Input
                   type="text"
-                  placeholder="Czego chcesz się nauczyć? (np. Matematyka)"
+                  placeholder={activeTab === "offer" ? "Czego chcesz się nauczyć? (np. Matematyka)" : "Kogo chcesz uczyć? (np. Fizyka)"}
                   className="h-14 border-none bg-transparent px-4 text-lg text-slate-900 placeholder:text-slate-400 focus-visible:ring-0 shadow-none"
                   value={searchQuery}
                   onChange={(e) => {
@@ -89,6 +130,9 @@ export function HeroSearchSection() {
                     } else {
                       params.delete("query")
                     }
+                    // Persist type in search
+                    params.set("type", activeTab)
+                    params.delete("page") // Reset to first page on input change
                     router.push(`/?${params.toString()}`)
                   }}
                   onKeyDown={(e) => {
@@ -115,7 +159,10 @@ export function HeroSearchSection() {
                   className="group relative rounded-full border border-slate-200 bg-white/60 px-4 py-1.5 text-sm font-medium text-slate-600 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:text-violet-700 hover:shadow-lg hover:shadow-violet-500/10"
                   onClick={() => {
                     setSearchQuery(filter);
-                    router.push(`?query=${filter}`);
+                    const params = new URLSearchParams(searchParams)
+                    params.set("query", filter)
+                    params.set("type", activeTab)
+                    router.push(`/?${params.toString()}`);
                   }}
                 >
                   <span className="relative z-10">{filter}</span>

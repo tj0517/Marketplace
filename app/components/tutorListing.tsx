@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link"
-import { Star, MapPin, GraduationCap, Clock, Heart } from "lucide-react"
+import { Star, MapPin, GraduationCap, Clock, Heart, SearchX } from "lucide-react"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { Card, CardContent } from "./ui/card"
@@ -31,7 +31,7 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
     <section className="relative w-full overflow-hidden bg-white px-4 py-20 sm:px-6 lg:px-8">
       {/* Subtle Background Blobs */}
       <div className="absolute top-0 right-0 -mr-40 -mt-40 h-[500px] w-[500px] rounded-full bg-violet-100/50 blur-[100px]" />
-      <div className="absolute bottom-0 left-0 -ml-40 -mb-40 h-[500px] w-[500px] rounded-full bg-fuchsia-100/50 blur-[100px]" />
+      <div className="absolute bottom-[500px] left-0 -ml-40 -mb-40 h-[500px] w-[500px] rounded-full bg-fuchsia-100/50 blur-[100px]" />
 
       <div className="relative mx-auto max-w-7xl">
         {/* Section Header */}
@@ -46,6 +46,17 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
 
         {/* Tutors Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {initialAds.length === 0 && (
+            <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
+              <div className="mb-4 rounded-full bg-slate-50 p-6 ring-1 ring-slate-100">
+                <SearchX className="size-10 text-slate-400" />
+              </div>
+              <h3 className="mb-2 text-lg font-bold text-slate-900">Nie znaleźliśmy ogłoszeń</h3>
+              <p className="max-w-xs text-sm text-slate-500">
+                Spróbuj zmienić parametry wyszukiwania lub wróć później.
+              </p>
+            </div>
+          )}
           {initialAds.map((ad) => {
             const initials = getInitials(ad.email)
             const priceDisplay = formatPrice(ad.price_amount, ad.price_unit)

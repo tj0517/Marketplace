@@ -1,7 +1,7 @@
 "use client"
 
 import { ArrowLeft } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { redirect, useRouter } from "next/navigation"
 import { Button } from "./ui/button"
 
 export function BackButton() {
@@ -12,7 +12,7 @@ export function BackButton() {
             variant="ghost"
             size="sm"
             className="gap-2 text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition-colors"
-            onClick={() => router.back()}
+            onClick={() => redirect("/")}
         >
             <ArrowLeft className="size-4" />
             Wróć

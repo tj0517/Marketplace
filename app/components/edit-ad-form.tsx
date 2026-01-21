@@ -92,21 +92,25 @@ export function EditAdForm({ ad }: EditAdFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label>Poziom nauczania</Label>
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                        {levels.map((level) => (
-                            <div key={level} className="flex items-center space-x-2">
-                                <Checkbox
-                                    id={`level-${level}`}
-                                    name="education_level"
-                                    value={level}
-                                    defaultChecked={ad.education_level?.includes(level)}
-                                />
-                                <Label htmlFor={`level-${level}`} className="text-sm font-normal">{level}</Label>
+                    {ad.type !== 'search' && (
+                        <>
+                            <Label>Poziom nauczania</Label>
+                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                                {levels.map((level) => (
+                                    <div key={level} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`level-${level}`}
+                                            name="education_level"
+                                            value={level}
+                                            defaultChecked={ad.education_level?.includes(level)}
+                                        />
+                                        <Label htmlFor={`level-${level}`} className="text-sm font-normal">{level}</Label>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                    {state?.errors?.education_level && <p className="text-sm text-red-500">{state.errors.education_level}</p>}
+                            {state?.errors?.education_level && <p className="text-sm text-red-500">{state.errors.education_level}</p>}
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -114,34 +118,38 @@ export function EditAdForm({ ad }: EditAdFormProps) {
             <div className="space-y-4 rounded-xl border bg-white p-6 shadow-sm dark:bg-gray-900">
                 <h2 className="text-xl font-semibold">Szczegóły</h2>
                 <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                        <Label htmlFor="price_amount">Cena (zł)</Label>
-                        <Input
-                            id="price_amount"
-                            name="price_amount"
-                            type="number"
-                            defaultValue={ad.price_amount ?? ''}
-                            placeholder="50"
-                            required
-                            min={1}
-                        />
-                        {state?.errors?.price_amount && <p className="text-sm text-red-500">{state.errors.price_amount}</p>}
-                    </div>
+                    {ad.type !== 'search' && (
+                        <>
+                            <div className="space-y-2">
+                                <Label htmlFor="price_amount">Cena (zł)</Label>
+                                <Input
+                                    id="price_amount"
+                                    name="price_amount"
+                                    type="number"
+                                    defaultValue={ad.price_amount ?? ''}
+                                    placeholder="50"
+                                    required
+                                    min={1}
+                                />
+                                {state?.errors?.price_amount && <p className="text-sm text-red-500">{state.errors.price_amount}</p>}
+                            </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="price_unit">Jednostka czasu</Label>
-                        <Select name="price_unit" defaultValue={ad.price_unit || "60 min"}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Wybierz jednostkę" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {units.map(u => (
-                                    <SelectItem key={u.value} value={u.value}>{u.value}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {state?.errors?.price_unit && <p className="text-sm text-red-500">{state.errors.price_unit}</p>}
-                    </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="price_unit">Jednostka czasu</Label>
+                                <Select name="price_unit" defaultValue={ad.price_unit || "60 min"}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Wybierz jednostkę" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {units.map(u => (
+                                            <SelectItem key={u.value} value={u.value}>{u.value}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {state?.errors?.price_unit && <p className="text-sm text-red-500">{state.errors.price_unit}</p>}
+                            </div>
+                        </>
+                    )}
 
                     <div className="space-y-2 md:col-span-2">
                         <Label htmlFor="location">Lokalizacja</Label>
@@ -155,16 +163,20 @@ export function EditAdForm({ ad }: EditAdFormProps) {
                         {state?.errors?.location && <p className="text-sm text-red-500">{state.errors.location}</p>}
                     </div>
                     <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="tutor_gender">Płeć (opcjonalne)</Label>
-                        <Select name="tutor_gender" defaultValue={ad.tutor_gender || undefined}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Wybierz" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="male">Mężczyzna</SelectItem>
-                                <SelectItem value="female">Kobieta</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        {ad.type !== 'search' && (
+                            <>
+                                <Label htmlFor="tutor_gender">Płeć (opcjonalne)</Label>
+                                <Select name="tutor_gender" defaultValue={ad.tutor_gender || undefined}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Wybierz" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="male">Mężczyzna</SelectItem>
+                                        <SelectItem value="female">Kobieta</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -193,7 +205,10 @@ export function EditAdForm({ ad }: EditAdFormProps) {
                             defaultValue={ad.phone_contact}
                             placeholder="123 456 789"
                             required
+                            readOnly
+                            className="bg-slate-100 text-slate-500 cursor-not-allowed"
                         />
+                        <p className="text-xs text-muted-foreground">Zmiana numeru telefonu możliwa tylko przez kontakt z administratorem.</p>
                         {state?.errors?.phone_contact && <p className="text-sm text-red-500">{state.errors.phone_contact}</p>}
                     </div>
                 </div>

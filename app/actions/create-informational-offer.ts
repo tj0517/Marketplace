@@ -1,13 +1,15 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/supabase/admin'
 import { normalizeAndHashPhone } from './hash_phone'
 import { adSchema } from '@/app/lib/ad-validation'
 
-export async function createInactiveOffer(prevState: any, formData: FormData) {
+export async function createInformalOffer(prevState: any, formData: FormData) {
+
     const educationLevels = formData.getAll('education_level')
 
-    // Server-side validation
     const validatedFields = adSchema.safeParse({
         type: formData.get('type'),
         title: formData.get('title'),
@@ -42,28 +44,6 @@ export async function createInactiveOffer(prevState: any, formData: FormData) {
 
     const supabase = createAdminClient()
 
-    // Check if phone exists for pricing logic
-    const { count: phoneCount } = await supabase
-        .from('ads')
-        .select('*', { count: 'exact', head: true })
-        .eq('type', 'offer')
-        .eq('phone_hash', hash)
-
-
-    const phoneExists = phoneCount !== null && phoneCount > 0
-
-    // Pricing logic
-    const priceInfo = phoneExists
-        ? {
-            amount: 30.00,
-            label: "Płatność (Użytkownik powracający)",
-            description: "Cena za wystawienie kolejnego ogłoszenia."
-        }
-        : {
-            amount: 0.00,
-            label: "Płatność (Nowy użytkownik)",
-            description: "Darmowe ogłoszenie."
-        }
 
     const { data, error } = await supabase.from('ads').insert({
         type: validatedFields.data.type,
@@ -72,13 +52,13 @@ export async function createInactiveOffer(prevState: any, formData: FormData) {
         subject: validatedFields.data.subject,
         location: validatedFields.data.location,
         education_level: validatedFields.data.education_level,
-        price_amount: validatedFields.data.price_amount,
-        price_unit: validatedFields.data.price_unit,
+        price_amount: null,
+        price_unit: null,
         email: validatedFields.data.email,
         phone_contact: formatted,
         phone_hash: hash,
         tutor_gender: validatedFields.data.tutor_gender || null,
-        status: 'disabled',
+        status: 'active',
     }).select().single()
 
     if (error) {
@@ -88,12 +68,7 @@ export async function createInactiveOffer(prevState: any, formData: FormData) {
         }
     }
 
-
-    return {
-        success: true,
-        offerId: data.id,
-        priceInfo,
-        phoneExists,
-        message: 'Ogłoszenie utworzone (nieaktywne).',
-    }
+    revalidatePath('/offers')
+    revalidatePath(`/offers/${data!.id}`)
+    redirect(`/offers/${data!.id}`)
 }

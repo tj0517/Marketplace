@@ -23,6 +23,7 @@ export type VerifyAdResult = {
 
 export async function verifyAd(prevState: any, formData: FormData): Promise<VerifyAdResult> {
     const validatedFields = adSchema.safeParse({
+        type: formData.get('type'),
         title: formData.get('title'),
         description: formData.get('description'),
         subject: formData.get('subject'),

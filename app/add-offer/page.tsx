@@ -1,7 +1,12 @@
 import { Navbar } from "@/app/components/navbar"
 import { AddOfferForm } from "@/app/components/add-offer-form"
 
-export default function AddOfferPage() {
+export default async function AddOfferPage({ searchParams }: {
+    searchParams: Promise<{ query: string }>
+}) {
+    const { query: rawQuery } = await searchParams
+    const type = rawQuery === 'search' ? 'search' : 'offer';
+
     return (
         <main className="min-h-screen bg-gray-50 dark:bg-gray-950">
             <Navbar />
@@ -16,7 +21,7 @@ export default function AddOfferPage() {
                     </p>
                 </div>
 
-                <AddOfferForm />
+                <AddOfferForm type={type} key={type} />
             </div>
         </main>
     )
