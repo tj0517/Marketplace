@@ -1,11 +1,10 @@
 "use client"
 import Link from "next/link"
-import { Star, MapPin, GraduationCap, Clock, Heart, SearchX } from "lucide-react"
+import { MapPin, GraduationCap, SearchX, ArrowRight } from "lucide-react"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { Card, CardContent } from "./ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
-import { useState } from "react"
+import { Avatar, AvatarFallback } from "./ui/avatar"
 import { Database } from '@/types/supabase';
 
 type Ad = Database['public']['Tables']['ads']['Row'];
@@ -26,21 +25,31 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
     return `${priceAmount} zł/${unit}`
   }
 
+  // Get avatar background color based on email
+  function getAvatarColor(email: string): { bg: string; text: string } {
+    const colors = [
+      { bg: "bg-indigo-100", text: "text-indigo-600" },
+      { bg: "bg-emerald-100", text: "text-emerald-600" },
+      { bg: "bg-amber-100", text: "text-amber-600" },
+      { bg: "bg-rose-100", text: "text-rose-600" },
+      { bg: "bg-cyan-100", text: "text-cyan-600" },
+      { bg: "bg-violet-100", text: "text-violet-600" },
+    ]
+    const index = email.charCodeAt(0) % colors.length
+    return colors[index]
+  }
+
 
   return (
-    <section className="relative w-full overflow-hidden bg-white px-4 py-20 sm:px-6 lg:px-8">
-      {/* Subtle Background Blobs */}
-      <div className="absolute top-0 right-0 -mr-40 -mt-40 h-[500px] w-[500px] rounded-full bg-violet-100/50 blur-[100px]" />
-      <div className="absolute bottom-[500px] left-0 -ml-40 -mb-40 h-[500px] w-[500px] rounded-full bg-fuchsia-100/50 blur-[100px]" />
-
-      <div className="relative mx-auto max-w-7xl">
+    <section className="w-full bg-white px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
         {/* Section Header */}
-        <div className="mb-12 text-center">
-          <h2 className="mb-4 text-balance text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Polecani <span className="text-violet-600">korepetytorzy</span>
+        <div className="mb-10 text-center">
+          <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+            Najnowsze ogłoszenia
           </h2>
-          <p className="mx-auto max-w-2xl text-pretty text-lg text-slate-600">
-            Poznaj najlepiej ocenianych nauczycieli gotowych pomóc Ci osiągnąć cele
+          <p className="mt-2 text-slate-600">
+            Przeglądaj oferty korepetytorów i znajdź idealnego nauczyciela
           </p>
         </div>
 
@@ -48,11 +57,11 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {initialAds.length === 0 && (
             <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
-              <div className="mb-4 rounded-full bg-slate-50 p-6 ring-1 ring-slate-100">
+              <div className="mb-4 rounded-2xl bg-slate-100 p-6">
                 <SearchX className="size-10 text-slate-400" />
               </div>
-              <h3 className="mb-2 text-lg font-bold text-slate-900">Nie znaleźliśmy ogłoszeń</h3>
-              <p className="max-w-xs text-sm text-slate-500">
+              <h3 className="mb-2 text-lg font-semibold text-slate-900">Nie znaleźliśmy ogłoszeń</h3>
+              <p className="max-w-sm text-slate-500 text-sm">
                 Spróbuj zmienić parametry wyszukiwania lub wróć później.
               </p>
             </div>
@@ -60,78 +69,75 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
           {initialAds.map((ad) => {
             const initials = getInitials(ad.email)
             const priceDisplay = formatPrice(ad.price_amount, ad.price_unit)
+            const avatarColor = getAvatarColor(ad.email)
 
             return (
               <Card
                 key={ad.id}
-                className="group relative overflow-hidden rounded-2xl border-1 bg-white shadow-xl shadow-slate-200/50 transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-violet-500/10"
+                className="px-4 group border border-slate-200 bg-white rounded-2xl shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300"
               >
-
-
-                <CardContent className="relative h-full rounded-2xl bg-white p-6">
+                <CardContent className="p-5">
                   {/* Header with Avatar */}
-                  <div className="mb-4 flex items-start justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-violet-400 to-fuchsia-400 blur-sm opacity-50" />
-                        <Avatar className="relative size-14 border-2 border-white">
-                          <AvatarFallback className="bg-slate-50 text-violet-600 font-bold">{initials}</AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-slate-900 group-hover:text-violet-700 transition-colors">{ad.title}</h3>
-                        </div>
-                      </div>
+                  <div className="mb-4 flex items-start gap-4">
+                    <Avatar className="size-14 border-2 border-white shadow-md">
+                      <AvatarFallback className={`${avatarColor.bg} ${avatarColor.text} font-bold text-lg`}>
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
+                        {ad.title}
+                      </h3>
+                      <Badge
+                        variant="secondary"
+                        className="mt-1.5 bg-indigo-50 text-indigo-700 border-0 text-xs font-medium"
+                      >
+                        {ad.subject}
+                      </Badge>
                     </div>
                   </div>
 
                   {/* Bio */}
-                  <p className="mb-4 min-h-[2.5rem] line-clamp-2 text-sm text-slate-600">{ad.description}</p>
+                  <p className="mb-4 line-clamp-2 text-sm text-slate-600 leading-relaxed">
+                    {ad.description}
+                  </p>
 
-                  {/* Subjects */}
-                  <div className="mb-4 flex flex-wrap gap-2">
-                    <Badge
-                      variant="secondary"
-                      className="rounded-md bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700"
-                    >
-                      {ad.subject}
-                    </Badge>
-                  </div>
-
-                  {/* Info Grid */}
-                  <div className="mb-6 grid grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <MapPin className="size-4 text-violet-400" />
+                  {/* Info */}
+                  <div className="mb-4 space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                      <MapPin className="size-4 text-slate-400" />
                       <span>{ad.location}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <GraduationCap className="size-4 text-fuchsia-400" />
-                      <span>{ad.education_level?.[0] || "Wszystkie"} {(ad.education_level?.length ?? 0) > 1 ? "..." : ""}</span>
-                    </div>
-
-                    <div className="col-span-2 mt-2 flex items-center gap-2 font-bold text-slate-900">
-                      <span className="text-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">{priceDisplay}</span>
+                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                      <GraduationCap className="size-4 text-slate-400" />
+                      <span>
+                        {ad.education_level?.[0] || "Wszystkie poziomy"}
+                        {(ad.education_level?.length ?? 0) > 1 && ` +${(ad.education_level?.length ?? 0) - 1}`}
+                      </span>
                     </div>
                   </div>
 
-
-                  <Button
-                    asChild
-                    className="w-full rounded-xl bg-violet-600 text-white font-semibold transition-all hover:bg-violet-600 hover:shadow-lg hover:shadow-violet-500/25"
-                  >
-                    <Link href={`/offers/${ad.id}`}>
-                      Zobacz profil
-                    </Link>
-                  </Button>
+                  {/* Price and CTA */}
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <div>
+                      <p className="text-xs text-slate-400 uppercase tracking-wide font-medium">Cena</p>
+                      <p className="text-xl font-bold text-slate-900">{priceDisplay}</p>
+                    </div>
+                    <Button
+                      asChild
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm"
+                    >
+                      <Link href={`/offers/${ad.id}`} className="flex items-center gap-1.5">
+                        Zobacz
+                        <ArrowRight className="size-4" />
+                      </Link>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )
           })}
         </div>
-
-        {/* Load More Button */}
-
       </div>
     </section>
   )

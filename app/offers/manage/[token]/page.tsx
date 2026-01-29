@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/supabase/admin";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { EditAdForm } from "@/app/components/edit-ad-form";
@@ -20,9 +20,9 @@ function formatDate(dateString: string | null): string {
 
 function getStatusColor(status: string) {
     switch (status) {
-        case 'active': return 'bg-green-500 hover:bg-green-600';
-        case 'expired': return 'bg-red-500 hover:bg-red-600';
-        case 'disabled': return 'bg-gray-500 hover:bg-gray-600';
+        case 'active': return 'bg-emerald-500';
+        case 'expired': return 'bg-red-500';
+        case 'disabled': return 'bg-slate-500';
         default: return 'bg-slate-500';
     }
 }
@@ -51,24 +51,25 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
     }
 
     return (
-        <main className="min-h-screen bg-slate-50 dark:bg-gray-950 pb-20">
+        <main className="min-h-screen bg-slate-50 pb-20">
             <Navbar />
 
-            <div className="bg-white border-b border-slate-200 sticky top-16 z-40 bg-white/80 backdrop-blur-md">
-                <div className="container mx-auto max-w-5xl py-6 px-4">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            {/* Header */}
+            <div className="bg-white border-b border-slate-200 sticky top-16 z-40">
+                <div className="mx-auto max-w-5xl py-5 px-4 sm:px-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-900">Panel zarządzania</h1>
+                            <h1 className="text-xl font-bold text-slate-900">Panel zarządzania</h1>
                             <p className="text-slate-500 text-sm truncate max-w-md">{ad.title}</p>
                         </div>
                         <div className="flex items-center gap-3">
                             <Badge className={`${getStatusColor(ad.status)} text-white border-0 px-3 py-1`}>
                                 {getStatusLabel(ad.status)}
                             </Badge>
-                            <Button asChild variant="outline" size="sm">
+                            <Button asChild variant="outline" size="sm" className="border-slate-200">
                                 <Link href={`/offers/${ad.id}`} target="_blank">
                                     <ExternalLink className="size-4 mr-2" />
-                                    Podgląd publiczny
+                                    Podgląd
                                 </Link>
                             </Button>
                         </div>
@@ -76,66 +77,58 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
                 </div>
             </div>
 
-            <div className="container mx-auto max-w-5xl py-8 px-4 space-y-8">
+            <div className="mx-auto max-w-5xl py-6 px-4 sm:px-6 space-y-6">
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <Card className="border-slate-200">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Liczba wyświetleń</CardTitle>
-                            <Eye className="h-4 w-4 text-muted-foreground" />
+                            <CardTitle className="text-sm font-medium text-slate-600">Wyświetlenia</CardTitle>
+                            <Eye className="h-4 w-4 text-slate-400" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{ad.views_count || 0}</div>
-                            <p className="text-xs text-muted-foreground">Obejrzenia oferty</p>
+                            <div className="text-2xl font-bold text-slate-900">{ad.views_count || 0}</div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="border-slate-200">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Data utworzenia</CardTitle>
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <CardTitle className="text-sm font-medium text-slate-600">Data utworzenia</CardTitle>
+                            <Calendar className="h-4 w-4 text-slate-400" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{formatDate(ad.created_at)}</div>
-                            <p className="text-xs text-muted-foreground">Start kampanii</p>
+                            <div className="text-2xl font-bold text-slate-900">{formatDate(ad.created_at)}</div>
                         </CardContent>
                     </Card>
 
-                    {ad.type !== 'search' ? (<Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Data wygaśnięcia</CardTitle>
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{formatDate(ad.expires_at)}</div>
-                            <p className="text-xs text-muted-foreground">Do tego dnia oferta jest promowana</p>
-                        </CardContent>
-                    </Card>)
-                        :
-                        (<Card className="border-red-200 bg-red-50">
-                            <CardHeader>
-                                <CardTitle className="text-red-700 flex items-center gap-2">
-                                    Zakończ poszukiwania
-                                </CardTitle>
-                                <CardDescription className="text-red-600/80">
-                                    Jeśli zakończyłeś poszukiwania, możesz usunąć ogłoszenie.
-                                </CardDescription>
+                    {ad.type !== 'search' ? (
+                        <Card className="border-slate-200">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium text-slate-600">Wygasa</CardTitle>
+                                <Clock className="h-4 w-4 text-slate-400" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-slate-900">{formatDate(ad.expires_at)}</div>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <Card className="border-red-200 bg-red-50">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-red-700">Zakończ poszukiwania</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <DeleteAdButton token={token} />
                             </CardContent>
-                        </Card>)
-                    }
+                        </Card>
+                    )}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    {/* Left Column: Actions & Edit Form */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {/* Edit Form */}
-                        <Card className="border-indigo-100 shadow-md pt-0">
-                            <CardHeader className="bg-indigo-50/50 border-b border-indigo-100 pt-6">
-                                <CardTitle className="text-indigo-900">Edycja treści ogłoszenia</CardTitle>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Edit Form */}
+                    <div className="lg:col-span-2">
+                        <Card className="border-slate-200">
+                            <CardHeader className="border-b border-slate-100">
+                                <CardTitle className="text-slate-900">Edycja treści</CardTitle>
                                 <CardDescription>Możesz edytować treść, ale typ i numer telefonu są stałe.</CardDescription>
                             </CardHeader>
                             <CardContent className="pt-6">
@@ -144,83 +137,82 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
                         </Card>
                     </div>
 
-                    {/* Right Column: Key Actions & Info */}
+                    {/* Sidebar */}
                     <div className="space-y-6">
                         {ad.type !== 'search' && (
                             <>
-                                <Card className="bg-gradient-to-br from-violet-600 to-indigo-700 text-white border-0 shadow-xl">
+                                <Card className="bg-indigo-600 text-white border-0">
                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
+                                        <CardTitle className="flex items-center gap-2 text-white">
                                             <ArrowUpCircle className="size-5" />
-                                            Promocja oferty
+                                            Promocja
                                         </CardTitle>
                                         <CardDescription className="text-indigo-100">
-                                            Zwiększ widoczność swojego ogłoszenia.
+                                            Zwiększ widoczność ogłoszenia.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
-                                        <Button className="w-full bg-white text-indigo-700 hover:bg-indigo-50 font-semibold" variant="secondary">
-                                            Podbij ogłoszenie (19 zł)
+                                        <Button className="w-full bg-white text-indigo-600 hover:bg-indigo-50 font-semibold">
+                                            Podbij ogłoszenie (10 zł)
                                         </Button>
                                         <p className="text-xs text-indigo-200 text-center">
-                                            Ogłoszenie trafi na górę listy wyszukiwania.
+                                            Ogłoszenie trafi na górę listy.
                                         </p>
                                     </CardContent>
                                 </Card>
 
-                                <Card>
+                                <Card className="border-slate-200">
                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
+                                        <CardTitle className="flex items-center gap-2 text-slate-900">
                                             <RefreshCcw className="size-5" />
                                             Przedłużenie
                                         </CardTitle>
                                         <CardDescription>
-                                            Twoje ogłoszenie wygasa {formatDate(ad.expires_at)}.
+                                            Wygasa {formatDate(ad.expires_at)}.
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-3">
+                                    <CardContent>
                                         <Button className="w-full" variant="outline">
-                                            Przedłuż o 30 dni (29 zł)
+                                            Przedłuż o 30 dni (10 zł)
                                         </Button>
                                     </CardContent>
                                 </Card>
                             </>
                         )}
 
-                        <Card>
+                        <Card className="border-slate-200">
                             <CardHeader>
-                                <CardTitle>Podgląd treści</CardTitle>
+                                <CardTitle className="text-slate-900">Podgląd</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
-                                    <p className="text-xs font-bold uppercase text-slate-500">Tytuł</p>
-                                    <p className="font-medium">{ad.title}</p>
-                                </div>
-                                <div className="line-clamp-6">
-                                    <p className="text-xs font-bold uppercase text-slate-500">Opis</p>
-                                    <p className="text-sm text-slate-600 whitespace-pre-wrap">{ad.description}</p>
+                                    <p className="text-xs font-medium uppercase text-slate-500 mb-1">Tytuł</p>
+                                    <p className="font-medium text-slate-900">{ad.title}</p>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-bold uppercase text-slate-500">Lokalizacja</p>
-                                    <p className="text-sm">{ad.location}</p>
+                                    <p className="text-xs font-medium uppercase text-slate-500 mb-1">Opis</p>
+                                    <p className="text-sm text-slate-600 line-clamp-4">{ad.description}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-medium uppercase text-slate-500 mb-1">Lokalizacja</p>
+                                    <p className="text-sm text-slate-600">{ad.location}</p>
                                 </div>
                             </CardContent>
                         </Card>
+
                         {ad.type === 'offer' && (
                             <Card className="border-red-200 bg-red-50">
                                 <CardHeader>
-                                    <CardTitle className="text-red-700 flex items-center gap-2">
-                                        Zamknij ogłoszenie
-                                    </CardTitle>
+                                    <CardTitle className="text-red-700">Zamknij ogłoszenie</CardTitle>
                                     <CardDescription className="text-red-600/80">
-                                        Nie potrzebujesz już więcej zgłoszeń?
+                                        Nie potrzebujesz więcej zgłoszeń?
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <DeleteAdButton token={token} />
                                 </CardContent>
-                            </Card>)}
-
+                            </Card>
+                        )}
                     </div>
                 </div>
             </div>

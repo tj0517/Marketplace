@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import { updateAd } from '@/app/actions/update-ad'
+import { updateAd } from '@/actions/user/update-ad'
 import { Button } from '@/app/components/ui/button'
 import { Input } from '@/app/components/ui/input'
 import { Textarea } from '@/app/components/ui/textarea'
@@ -37,16 +37,28 @@ interface EditAdFormProps {
 }
 
 export function EditAdForm({ ad }: EditAdFormProps) {
-    const updateAdWithToken = updateAd.bind(null, ad.management_token!) // Bind token
+    const updateAdWithToken = updateAd.bind(null, ad.management_token!)
     const [state, action, isPending] = useActionState(updateAdWithToken, null)
 
+    const placeholders = {
+        offer: {
+            title: "np. Korepetycje z matematyki - Tanio!",
+            description: "Opisz swoje doświadczenie, metody nauczania..."
+        },
+        search: {
+            title: "np. Szukam korepetytora z matematyki",
+            description: "Opisz czego szukasz, na jakim poziomie..."
+        }
+    }
+
+    const currentPlaceholders = ad.type === 'search' ? placeholders.search : placeholders.offer
+
     return (
-        <form action={action} className="space-y-8">
+        <form action={action} className="space-y-6">
+            <input type="hidden" name="type" value={ad.type} />
 
             {/* Basic Info */}
-            <div className="space-y-4 rounded-xl border bg-white p-6 shadow-sm dark:bg-gray-900">
-                <h2 className="text-xl font-semibold">Podstawowe informacje</h2>
-
+            <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                         <Label htmlFor="title">Tytuł ogłoszenia</Label>
@@ -54,7 +66,7 @@ export function EditAdForm({ ad }: EditAdFormProps) {
                             id="title"
                             name="title"
                             defaultValue={ad.title}
-                            placeholder="np. Korepetycje z matematyki - Tanio!"
+                            placeholder={currentPlaceholders.title}
                             required
                             minLength={5}
                         />
@@ -83,7 +95,7 @@ export function EditAdForm({ ad }: EditAdFormProps) {
                         id="description"
                         name="description"
                         defaultValue={ad.description}
-                        placeholder="Opisz swoje doświadczenie, metody nauczania..."
+                        placeholder={currentPlaceholders.description}
                         className="min-h-[120px]"
                         required
                         minLength={20}
@@ -91,32 +103,30 @@ export function EditAdForm({ ad }: EditAdFormProps) {
                     {state?.errors?.description && <p className="text-sm text-red-500">{state.errors.description}</p>}
                 </div>
 
-                <div className="space-y-2">
-                    {ad.type !== 'search' && (
-                        <>
-                            <Label>Poziom nauczania</Label>
-                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                                {levels.map((level) => (
-                                    <div key={level} className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id={`level-${level}`}
-                                            name="education_level"
-                                            value={level}
-                                            defaultChecked={ad.education_level?.includes(level)}
-                                        />
-                                        <Label htmlFor={`level-${level}`} className="text-sm font-normal">{level}</Label>
-                                    </div>
-                                ))}
-                            </div>
-                            {state?.errors?.education_level && <p className="text-sm text-red-500">{state.errors.education_level}</p>}
-                        </>
-                    )}
-                </div>
+                {ad.type !== 'search' && (
+                    <div className="space-y-2">
+                        <Label>Poziom nauczania</Label>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                            {levels.map((level) => (
+                                <div key={level} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={`level-${level}`}
+                                        name="education_level"
+                                        value={level}
+                                        defaultChecked={ad.education_level?.includes(level)}
+                                    />
+                                    <Label htmlFor={`level-${level}`} className="text-sm font-normal">{level}</Label>
+                                </div>
+                            ))}
+                        </div>
+                        {state?.errors?.education_level && <p className="text-sm text-red-500">{state.errors.education_level}</p>}
+                    </div>
+                )}
             </div>
 
             {/* Details: Price & Location */}
-            <div className="space-y-4 rounded-xl border bg-white p-6 shadow-sm dark:bg-gray-900">
-                <h2 className="text-xl font-semibold">Szczegóły</h2>
+            <div className="space-y-4 pt-4 border-t border-slate-200">
+                <h3 className="text-sm font-semibold text-slate-900">Szczegóły</h3>
                 <div className="grid gap-4 md:grid-cols-2">
                     {ad.type !== 'search' && (
                         <>
@@ -162,28 +172,27 @@ export function EditAdForm({ ad }: EditAdFormProps) {
                         />
                         {state?.errors?.location && <p className="text-sm text-red-500">{state.errors.location}</p>}
                     </div>
-                    <div className="space-y-2 md:col-span-2">
-                        {ad.type !== 'search' && (
-                            <>
-                                <Label htmlFor="tutor_gender">Płeć (opcjonalne)</Label>
-                                <Select name="tutor_gender" defaultValue={ad.tutor_gender || undefined}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Wybierz" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="male">Mężczyzna</SelectItem>
-                                        <SelectItem value="female">Kobieta</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </>
-                        )}
-                    </div>
+
+                    {ad.type !== 'search' && (
+                        <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="tutor_gender">Płeć (opcjonalne)</Label>
+                            <Select name="tutor_gender" defaultValue={ad.tutor_gender || undefined}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Wybierz" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="male">Mężczyzna</SelectItem>
+                                    <SelectItem value="female">Kobieta</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Contact */}
-            <div className="space-y-4 rounded-xl border bg-white p-6 shadow-sm dark:bg-gray-900">
-                <h2 className="text-xl font-semibold">Kontakt</h2>
+            <div className="space-y-4 pt-4 border-t border-slate-200">
+                <h3 className="text-sm font-semibold text-slate-900">Kontakt</h3>
                 <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
@@ -206,9 +215,9 @@ export function EditAdForm({ ad }: EditAdFormProps) {
                             placeholder="123 456 789"
                             required
                             readOnly
-                            className="bg-slate-100 text-slate-500 cursor-not-allowed"
+                            className="bg-slate-50 text-slate-500 cursor-not-allowed"
                         />
-                        <p className="text-xs text-muted-foreground">Zmiana numeru telefonu możliwa tylko przez kontakt z administratorem.</p>
+                        <p className="text-xs text-slate-500">Zmiana numeru możliwa przez kontakt z administratorem.</p>
                         {state?.errors?.phone_contact && <p className="text-sm text-red-500">{state.errors.phone_contact}</p>}
                     </div>
                 </div>
@@ -216,14 +225,14 @@ export function EditAdForm({ ad }: EditAdFormProps) {
 
             {/* Messages */}
             {state?.message && (
-                <div className={`rounded-lg p-4 ${state.success ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'}`}>
+                <div className={`rounded-lg p-4 ${state.success ? 'bg-emerald-50 border border-emerald-200 text-emerald-600' : 'bg-red-50 border border-red-200 text-red-600'}`}>
                     {state.message}
                 </div>
             )}
 
             <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 py-6 text-lg font-semibold hover:from-indigo-700 hover:to-purple-700"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 h-11 font-semibold"
                 disabled={isPending}
             >
                 {isPending ? (

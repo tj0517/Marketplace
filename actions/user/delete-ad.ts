@@ -1,5 +1,5 @@
 'use server'
-import { createAdminClient } from '@/supabase/admin'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 

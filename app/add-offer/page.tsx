@@ -8,16 +8,19 @@ export default async function AddOfferPage({ searchParams }: {
     const type = rawQuery === 'search' ? 'search' : 'offer';
 
     return (
-        <main className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <main className="min-h-screen bg-slate-50">
             <Navbar />
 
-            <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-                <div className="mb-10 text-center">
-                    <h1 className="mb-3 text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-                        Dodaj nowe ogłoszenie
+            <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+                <div className="mb-8 text-center">
+                    <h1 className="mb-2 text-2xl font-bold text-slate-900 sm:text-3xl">
+                        {type === 'search' ? 'Znajdź korepetytora' : 'Dodaj nowe ogłoszenie'}
                     </h1>
-                    <p className="text-lg text-gray-600 dark:text-gray-400">
-                        Wypełnij formularz, aby dotrzeć do tysięcy uczniów
+                    <p className="text-slate-600">
+                        {type === 'search'
+                            ? 'Opisz czego szukasz, a korepetytorzy się z Tobą skontaktują'
+                            : 'Wypełnij formularz, aby dotrzeć do tysięcy uczniów'
+                        }
                     </p>
                 </div>
 

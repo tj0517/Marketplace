@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { deleteAd } from '@/app/actions/delete-ad'
+import { deleteAd } from '@/actions/user/delete-ad'
 import { Button } from '@/app/components/ui/button'
 import { Trash2, Loader2, AlertTriangle } from 'lucide-react'
 import {

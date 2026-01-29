@@ -17,7 +17,6 @@ const fetchAllAds = unstable_cache(
             return [];
         }
 
-        console.log(`[GLOBAL CACHE REFRESH] Fetching ALL ads from Database at ${new Date().toISOString()}`);
 
         // Select only necessary columns for the listing to reduce memory usage
         const { data, error } = await supabase

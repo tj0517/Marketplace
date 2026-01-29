@@ -1,9 +1,9 @@
 'use client'
 
 import { useActionState, useEffect, useState } from 'react'
-import { createInactiveOffer } from '@/app/actions/create-inactive-offer'
-import { activateOffer } from '@/app/actions/activate-offer'
-import { createInformalOffer } from '../actions/create-informational-offer'
+import { createInactiveOffer } from '@/actions/user/create-inactive-offer'
+import { activateOffer } from '@/actions/user/activate-offer'
+import { createInformalOffer } from '@/actions/user/create-informational-offer'
 import { Button } from '@/app/components/ui/button'
 import { Input } from '@/app/components/ui/input'
 import { Textarea } from '@/app/components/ui/textarea'
@@ -35,7 +35,6 @@ const units = [
 export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
     const [step, setStep] = useState<1 | 2>(1)
 
-    // State for temporary data between steps
     const [tempOfferData, setTempOfferData] = useState<{
         offerId: string;
         priceInfo: { amount: number; label: string; description: string };
@@ -91,7 +90,6 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
         })
     }
 
-    // Effect to transition to step 2 if creation is successful
     useEffect(() => {
         if (createState?.success && createState?.offerId && createState?.priceInfo) {
             setTempOfferData({
@@ -106,18 +104,32 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
     const errors = step === 1 ? (type === 'offer' ? createState?.errors : searchState?.errors) : null
     const message = step === 1 ? (type === 'offer' ? createState?.message : searchState?.message) : activateState?.message
 
+    const placeholders = {
+        offer: {
+            title: "np. Korepetycje z matematyki - Tanio!",
+            description: "Opisz swoje doświadczenie, metody nauczania..."
+        },
+        search: {
+            title: "np. Szukam korepetytora z matematyki",
+            description: "Opisz czego szukasz, na jakim poziomie..."
+        }
+    }
+
+    const currentPlaceholders = type === 'search' ? placeholders.search : placeholders.offer
+
     return (
-        <form className="space-y-8" onReset={(e) => e.preventDefault()}>
+        <form className="space-y-6" onReset={(e) => e.preventDefault()}>
             <input type="hidden" name="type" value={type} />
+            <input type="hidden" name="offerId" value={tempOfferData?.offerId || ''} />
             {formData.education_level.map((level) => (
                 <input key={level} type="hidden" name="education_level" value={level} />
             ))}
 
             {/* Step 1: Data Entry */}
-            <div className={cn("space-y-8", step === 2 && "hidden")}>
+            <div className={cn("space-y-6", step === 2 && "hidden")}>
                 {/* Basic Info */}
-                <div className="space-y-4 rounded-xl border bg-white p-6 shadow-sm dark:bg-gray-900">
-                    <h2 className="text-xl font-semibold">Podstawowe informacje</h2>
+                <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+                    <h2 className="text-lg font-semibold text-slate-900">Podstawowe informacje</h2>
 
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
@@ -127,7 +139,7 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                                 name="title"
                                 value={formData.title}
                                 onChange={handleChange}
-                                placeholder="np. Korepetycje z matematyki - Tanio!"
+                                placeholder={currentPlaceholders.title}
                                 required
                                 minLength={5}
                             />
@@ -157,7 +169,7 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
-                            placeholder="Opisz swoje doświadczenie, metody nauczania..."
+                            placeholder={currentPlaceholders.description}
                             className="min-h-[120px]"
                             required
                             minLength={20}
@@ -166,9 +178,8 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                     </div>
 
                     <div className="space-y-2">
-
                         <Label>Poziom nauczania</Label>
-                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                             {levels.map((level) => (
                                 <div key={level} className="flex items-center space-x-2">
                                     <Checkbox
@@ -186,8 +197,8 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                 </div>
 
                 {/* Details: Price & Location */}
-                <div className="space-y-4 rounded-xl border bg-white p-6 shadow-sm dark:bg-gray-900">
-                    <h2 className="text-xl font-semibold">Szczegóły</h2>
+                <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+                    <h2 className="text-lg font-semibold text-slate-900">Szczegóły</h2>
                     <div className="grid gap-4 md:grid-cols-2">
                         {type !== 'search' && (
                             <>
@@ -222,15 +233,10 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                                 </div>
                             </>
                         )}
-                        {type === 'search' && (
-                            <>
-                                {/* Price is optional and null for search type */}
-                            </>
-                        )}
 
                         <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="location">Lokalizacja</Label>
-                            <div className="flex gap-4 items-center">
+                            <div className="flex gap-3 items-center">
                                 <div className="flex-1">
                                     <Input
                                         id="location"
@@ -238,43 +244,41 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                                         value={formData.city_text || ''}
                                         onChange={handleChange}
                                         placeholder="np. Warszawa Praga"
-                                        className={isRemote ? '' : ''}
                                     />
                                 </div>
-                                <div className="flex items-center gap-2 min-w-fit bg-slate-50 p-2.5 rounded-md border border-slate-200">
+                                <div className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
                                     <Checkbox
                                         id="remote_mode"
                                         checked={isRemote}
                                         onCheckedChange={(checked) => setIsRemote(checked as boolean)}
                                     />
-                                    <Label htmlFor="remote_mode" className="cursor-pointer font-medium text-slate-700">Zdalnie</Label>
+                                    <Label htmlFor="remote_mode" className="cursor-pointer font-medium text-slate-700 text-sm">Zdalnie</Label>
                                 </div>
                             </div>
                             <input type="hidden" name="location" value={(formData.city_text || '') + (isRemote ? (formData.city_text ? ', Zdalnie' : 'Zdalnie') : '')} />
                             {errors?.location && <p className="text-sm text-red-500">{errors.location}</p>}
                         </div>
-                        <div className="space-y-2 md:col-span-2">
-                            {type !== 'search' && (
-                                <>
-                                    <Label htmlFor="tutor_gender">Płeć (opcjonalne)</Label>
-                                    <Select name="tutor_gender" value={formData.tutor_gender} onValueChange={(val) => handleSelectChange('tutor_gender', val)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Wybierz" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="male">Mężczyzna</SelectItem>
-                                            <SelectItem value="female">Kobieta</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </>
-                            )}
-                        </div>
+
+                        {type !== 'search' && (
+                            <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="tutor_gender">Płeć (opcjonalne)</Label>
+                                <Select name="tutor_gender" value={formData.tutor_gender} onValueChange={(val) => handleSelectChange('tutor_gender', val)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Wybierz" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="male">Mężczyzna</SelectItem>
+                                        <SelectItem value="female">Kobieta</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Contact */}
-                <div className="space-y-4 rounded-xl border bg-white p-6 shadow-sm dark:bg-gray-900">
-                    <h2 className="text-xl font-semibold">Kontakt</h2>
+                <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+                    <h2 className="text-lg font-semibold text-slate-900">Kontakt</h2>
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
@@ -299,7 +303,7 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                                 placeholder="123 456 789"
                                 required
                             />
-                            <p className="text-xs text-muted-foreground">Numer zostanie zweryfikowany w następnym kroku.</p>
+                            <p className="text-xs text-slate-500">Numer zostanie zweryfikowany w następnym kroku.</p>
                             {errors?.phone_contact && <p className="text-sm text-red-500">{errors.phone_contact}</p>}
                         </div>
                     </div>
@@ -308,57 +312,57 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
 
             {/* Step 2: Summary & Payment Info */}
             {step === 2 && tempOfferData && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="rounded-xl border bg-white p-8 shadow-lg dark:bg-gray-900">
+                <div className="space-y-6">
+                    <div className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
                         <div className="mb-6 flex items-center justify-center">
-                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                                <CheckCircle2 className="h-8 w-8 text-green-600" />
+                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
+                                <CheckCircle2 className="h-7 w-7 text-emerald-600" />
                             </div>
                         </div>
 
-                        <div className="text-center space-y-2 mb-8">
-                            <h2 className="text-2xl font-bold">Ogłoszenie utworzone (wersja robocza)</h2>
-                            <p className="text-slate-600">Twoje ogłoszenie zostało zapisane. Dokonaj aktywacji, aby stało się widoczne.</p>
+                        <div className="text-center space-y-2 mb-6">
+                            <h2 className="text-xl font-bold text-slate-900">Ogłoszenie utworzone</h2>
+                            <p className="text-slate-600">Dokonaj aktywacji, aby stało się widoczne.</p>
                         </div>
 
-                        <div className="rounded-lg border bg-slate-50 p-6 dark:bg-slate-800/50">
+                        <div className="rounded-lg bg-slate-50 border border-slate-200 p-5">
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <h3 className="font-semibold text-lg">{tempOfferData.priceInfo.label}</h3>
+                                    <h3 className="font-semibold text-slate-900">{tempOfferData.priceInfo.label}</h3>
                                     <p className="text-sm text-slate-500 mt-1">{tempOfferData.priceInfo.description}</p>
 
                                     {tempOfferData.phoneExists ? (
-                                        <div className="flex items-center gap-2 mt-4 text-amber-600 text-sm font-medium">
+                                        <div className="flex items-center gap-2 mt-3 text-amber-600 text-sm font-medium">
                                             <AlertCircle className="h-4 w-4" />
                                             Znaleziono aktywny numer w bazie
                                         </div>
                                     ) : (
-                                        <div className="flex items-center gap-2 mt-4 text-green-600 text-sm font-medium">
+                                        <div className="flex items-center gap-2 mt-3 text-emerald-600 text-sm font-medium">
                                             <CheckCircle2 className="h-4 w-4" />
                                             Nowy numer - stawka promocyjna
                                         </div>
                                     )}
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-3xl font-bold text-slate-900 dark:text-white">
+                                    <span className="text-2xl font-bold text-slate-900">
                                         {tempOfferData.priceInfo.amount.toFixed(2)} zł
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="mt-8">
+                        <div className="mt-6">
                             <input type="hidden" name="offerId" value={tempOfferData.offerId} />
 
                             {activateState?.message && (
-                                <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                                <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-4 text-red-600">
                                     {activateState.message}
                                 </div>
                             )}
 
                             <Button
                                 formAction={activateAction}
-                                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 py-6 text-lg font-semibold hover:from-indigo-700 hover:to-purple-700"
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-base font-semibold"
                                 disabled={isActivating}
                             >
                                 {isActivating ? (
@@ -367,14 +371,14 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                                         Aktywowanie...
                                     </>
                                 ) : (
-                                    'Potwierdź i Aktywuj Ogłoszenie'
+                                    'Potwierdź i Aktywuj'
                                 )}
                             </Button>
 
                             <button
                                 type="button"
                                 onClick={() => setStep(1)}
-                                className="mt-4 w-full text-sm text-slate-500 hover:text-slate-800 hover:underline"
+                                className="mt-3 w-full text-sm text-slate-500 hover:text-slate-700"
                                 disabled={isActivating}
                             >
                                 Wróć do edycji
@@ -384,32 +388,32 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                 </div>
             )}
 
-            {/* Error Message if not specific to a field */}
             {message && !step && (
-                <div className="rounded-lg bg-red-50 p-4 text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-red-600">
                     {message}
                 </div>
             )}
 
             {step === 1 && (
-                type === 'offer' ? (<Button
-                    formAction={createAction}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 py-6 text-lg font-semibold hover:from-indigo-700 hover:to-purple-700"
-                    disabled={isCreating}
-                >
-                    {isCreating ? (
-                        <>
-                            <Loader2 className="mr-2 size-5 animate-spin" />
-                            Tworzenie...
-                        </>
-                    ) : (
-                        'Dalej'
-                    )}
-                </Button>
+                type === 'offer' ? (
+                    <Button
+                        formAction={createAction}
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-base font-semibold"
+                        disabled={isCreating}
+                    >
+                        {isCreating ? (
+                            <>
+                                <Loader2 className="mr-2 size-5 animate-spin" />
+                                Tworzenie...
+                            </>
+                        ) : (
+                            'Dalej'
+                        )}
+                    </Button>
                 ) : (
                     <Button
                         formAction={searchAction}
-                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 py-6 text-lg font-semibold hover:from-indigo-700 hover:to-purple-700"
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-base font-semibold"
                         disabled={isSearching}
                     >
                         {isSearching ? (

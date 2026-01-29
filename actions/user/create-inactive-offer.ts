@@ -1,8 +1,8 @@
 'use server'
 
-import { createAdminClient } from '@/supabase/admin'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeAndHashPhone } from './hash_phone'
-import { adSchema } from '@/app/lib/ad-validation'
+import { adSchema } from '@/lib/ad-validation'
 
 export async function createInactiveOffer(prevState: any, formData: FormData) {
     const educationLevels = formData.getAll('education_level')
@@ -65,21 +65,57 @@ export async function createInactiveOffer(prevState: any, formData: FormData) {
             description: "Darmowe ogłoszenie."
         }
 
-    const { data, error } = await supabase.from('ads').insert({
-        type: validatedFields.data.type,
-        title: validatedFields.data.title,
-        description: validatedFields.data.description,
-        subject: validatedFields.data.subject,
-        location: validatedFields.data.location,
-        education_level: validatedFields.data.education_level,
-        price_amount: validatedFields.data.price_amount,
-        price_unit: validatedFields.data.price_unit,
-        email: validatedFields.data.email,
-        phone_contact: formatted,
-        phone_hash: hash,
-        tutor_gender: validatedFields.data.tutor_gender || null,
-        status: 'disabled',
-    }).select().single()
+    const offerId = formData.get('offerId') as string | null
+
+    let data;
+    let error;
+
+    if (offerId) {
+        // Update existing offer
+        const result = await supabase.from('ads')
+            .update({
+                type: validatedFields.data.type,
+                title: validatedFields.data.title,
+                description: validatedFields.data.description,
+                subject: validatedFields.data.subject,
+                location: validatedFields.data.location,
+                education_level: validatedFields.data.education_level,
+                price_amount: validatedFields.data.price_amount,
+                price_unit: validatedFields.data.price_unit,
+                email: validatedFields.data.email,
+                phone_contact: formatted,
+                phone_hash: hash,
+                tutor_gender: validatedFields.data.tutor_gender || null,
+                // Do not update status here, keep it as is (likely disabled)
+            })
+            .eq('id', offerId)
+            .select()
+            .single()
+
+        data = result.data;
+        error = result.error;
+    } else {
+        // Insert new offer
+        const result = await supabase.from('ads').insert({
+            type: validatedFields.data.type,
+            title: validatedFields.data.title,
+            description: validatedFields.data.description,
+            subject: validatedFields.data.subject,
+            location: validatedFields.data.location,
+            education_level: validatedFields.data.education_level,
+            price_amount: validatedFields.data.price_amount,
+            price_unit: validatedFields.data.price_unit,
+            email: validatedFields.data.email,
+            phone_contact: formatted,
+            phone_hash: hash,
+            tutor_gender: validatedFields.data.tutor_gender || null,
+            status: 'disabled',
+        }).select().single()
+
+        data = result.data;
+        error = result.error;
+    }
+
 
     if (error) {
         console.error('Database Error:', error)
@@ -87,6 +123,7 @@ export async function createInactiveOffer(prevState: any, formData: FormData) {
             message: 'Błąd bazy danych: Nie udało się dodać ogłoszenia.',
         }
     }
+
 
 
     return {
