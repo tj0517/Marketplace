@@ -19,9 +19,12 @@ const fetchAllAds = unstable_cache(
 
 
         // Select only necessary columns for the listing to reduce memory usage
+        // Order by promoted_at (if exists) or created_at descending for promoted ads to appear first
         const { data, error } = await supabase
             .from('ads')
-            .select('id, type, title, description, subject, location, education_level, price_amount, price_unit, phone_contact, created_at, expires_at, views_count, email, tutor_gender, management_token');
+            .select('id, type, title, description, subject, location, education_level, price_amount, price_unit, phone_contact, created_at, expires_at, views_count, email, tutor_gender, management_token, promoted_at')
+            .order('promoted_at', { ascending: false, nullsFirst: false })
+            .order('created_at', { ascending: false });
 
         if (error) {
             console.error('Error fetching ads:', error);

@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/app
 import { Badge } from "@/app/components/ui/badge";
 import { Eye, Clock, Calendar, ExternalLink, ArrowUpCircle, RefreshCcw } from "lucide-react";
 import { DeleteAdButton } from "@/app/components/delete-ad-button";
+import { ExtendAdButton } from "@/app/components/extend-ad-button";
+import { PromoteAdButton } from "@/app/components/promote-ad-button";
 
 function formatDate(dateString: string | null): string {
     if (!dateString) return "Brak daty";
@@ -152,9 +154,7 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
-                                        <Button className="w-full bg-white text-indigo-600 hover:bg-indigo-50 font-semibold">
-                                            Podbij ogłoszenie (10 zł)
-                                        </Button>
+                                        <PromoteAdButton token={token} />
                                         <p className="text-xs text-indigo-200 text-center">
                                             Ogłoszenie trafi na górę listy.
                                         </p>
@@ -172,9 +172,7 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <Button className="w-full" variant="outline">
-                                            Przedłuż o 30 dni (10 zł)
-                                        </Button>
+                                        <ExtendAdButton token={token} />
                                     </CardContent>
                                 </Card>
                             </>

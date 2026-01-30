@@ -44,7 +44,7 @@ export function HeroSearchSection() {
   }
 
   return (
-    <div className="relative w-full overflow-hidden bg-gradient-to-b from-indigo-50 via-white to-slate-50 pb-20 pt-24 sm:pb-28 sm:pt-32">
+    <div className="relative w-full overflow-hidden bg-gradient-to-b from-indigo-50 via-white to-slate-50 pb-12 pt-20 sm:pb-28 sm:pt-32">
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Subtle gradient orbs */}
@@ -65,7 +65,7 @@ export function HeroSearchSection() {
           </div>
 
           {/* Heading */}
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
             {activeTab === "offer" ? "Znajdź idealnego" : "Znajdź pilnego"}{" "}
             <span className="text-indigo-600 underline decoration-indigo-600 underline-offset-8 decoration-2">
               {activeTab === "offer" ? "korepetytora" : "ucznia"}
@@ -82,7 +82,7 @@ export function HeroSearchSection() {
           <div className="mt-10 flex flex-col items-center gap-5">
 
             {/* Type Toggle */}
-            <div className="flex bg-white p-1.5 rounded-2xl border border-slate-200 shadow-lg shadow-slate-200/50">
+            <div className="flex flex-col sm:flex-row bg-white p-1.5 rounded-2xl border border-slate-200 shadow-lg shadow-slate-200/50">
               <button
                 onClick={() => handleTabChange("offer")}
                 className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "offer"
@@ -90,7 +90,7 @@ export function HeroSearchSection() {
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center justify-center gap-2">
                   <Search className="size-4" />
                   Szukam korepetytora
                 </span>
@@ -102,7 +102,7 @@ export function HeroSearchSection() {
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center justify-center gap-2">
                   <Users className="size-4" />
                   Szukam korepetycji
                 </span>
@@ -111,37 +111,39 @@ export function HeroSearchSection() {
 
             {/* Search Input */}
             <div className="w-full max-w-xl">
-              <div className="flex items-center gap-2 p-2 bg-white rounded-2xl border border-slate-200 shadow-xl shadow-indigo-100/50 focus-within:border-indigo-300 focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
-                <div className="pl-3">
-                  <Search className="size-5 text-indigo-500" />
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2 bg-white rounded-2xl border border-slate-200 shadow-xl shadow-indigo-100/50 focus-within:border-indigo-300 focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
+                <div className="flex items-center flex-1 w-full">
+                  <div className="pl-3">
+                    <Search className="size-5 text-indigo-500" />
+                  </div>
+                  <Input
+                    type="text"
+                    placeholder={activeTab === "offer" ? "Czego chcesz się nauczyć?" : "Jakiego przedmiotu uczysz?"}
+                    className="h-12 border-none bg-transparent text-base text-slate-900 placeholder:text-slate-400 focus-visible:ring-0 shadow-none w-full"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setSearchQuery(value)
+                      const params = new URLSearchParams(searchParams)
+                      if (value) {
+                        params.set("query", value)
+                      } else {
+                        params.delete("query")
+                      }
+                      params.set("type", activeTab)
+                      params.delete("page")
+                      router.push(`/?${params.toString()}`)
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleSearch()
+                      }
+                    }}
+                  />
                 </div>
-                <Input
-                  type="text"
-                  placeholder={activeTab === "offer" ? "Czego chcesz się nauczyć?" : "Jakiego przedmiotu uczysz?"}
-                  className="h-12 border-none bg-transparent text-base text-slate-900 placeholder:text-slate-400 focus-visible:ring-0 shadow-none"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    const value = e.target.value
-                    setSearchQuery(value)
-                    const params = new URLSearchParams(searchParams)
-                    if (value) {
-                      params.set("query", value)
-                    } else {
-                      params.delete("query")
-                    }
-                    params.set("type", activeTab)
-                    params.delete("page")
-                    router.push(`/?${params.toString()}`)
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSearch()
-                    }
-                  }}
-                />
                 <Button
                   onClick={handleSearch}
-                  className="h-11 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-md shadow-indigo-200"
+                  className="h-11 w-full sm:w-auto px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-md shadow-indigo-200"
                 >
                   Szukaj
                 </Button>

@@ -54,6 +54,7 @@ export type Database = {
           phone_hash: string
           price_amount: number | null
           price_unit: string | null
+          promoted_at: string | null
           status: Database["public"]["Enums"]["ad_status"]
           subject: string
           title: string
@@ -76,6 +77,7 @@ export type Database = {
           phone_hash: string
           price_amount?: number | null
           price_unit?: string | null
+          promoted_at?: string | null
           status?: Database["public"]["Enums"]["ad_status"]
           subject: string
           title: string
@@ -98,6 +100,7 @@ export type Database = {
           phone_hash?: string
           price_amount?: number | null
           price_unit?: string | null
+          promoted_at?: string | null
           status?: Database["public"]["Enums"]["ad_status"]
           subject?: string
           title?: string

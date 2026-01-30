@@ -41,8 +41,8 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
 
 
   return (
-    <section className="w-full bg-white px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
+    <section className="w-full box-border bg-white px-4 py-8 sm:py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl w-full">
         {/* Section Header */}
         <div className="mb-10 text-center">
           <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
@@ -54,7 +54,7 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
         </div>
 
         {/* Tutors Grid */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 w-full min-w-0">
           {initialAds.length === 0 && (
             <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
               <div className="mb-4 rounded-2xl bg-slate-100 p-6">
@@ -74,12 +74,12 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
             return (
               <Card
                 key={ad.id}
-                className="px-4 group border border-slate-200 bg-white rounded-2xl shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300"
+                className="min-w-0 px-0 group border border-slate-200 bg-white rounded-2xl shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300"
               >
-                <CardContent className="p-5">
+                <CardContent className="p-4 sm:p-5">
                   {/* Header with Avatar */}
-                  <div className="mb-4 flex items-start gap-4">
-                    <Avatar className="size-14 border-2 border-white shadow-md">
+                  <div className="mb-3 sm:mb-4 flex items-start gap-3 sm:gap-4">
+                    <Avatar className="size-12 sm:size-14 border-2 border-white shadow-md">
                       <AvatarFallback className={`${avatarColor.bg} ${avatarColor.text} font-bold text-lg`}>
                         {initials}
                       </AvatarFallback>
@@ -98,12 +98,12 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
                   </div>
 
                   {/* Bio */}
-                  <p className="mb-4 line-clamp-2 text-sm text-slate-600 leading-relaxed">
+                  <p className="mb-3 sm:mb-4 line-clamp-2 text-sm text-slate-600 leading-relaxed">
                     {ad.description}
                   </p>
 
                   {/* Info */}
-                  <div className="mb-4 space-y-2">
+                  <div className="mb-3 sm:mb-4 space-y-1 sm:space-y-2">
                     <div className="flex items-center gap-2 text-sm text-slate-500">
                       <MapPin className="size-4 text-slate-400" />
                       <span>{ad.location}</span>
