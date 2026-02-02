@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { MapPin, Mail, Calendar, Eye, CheckCircle2, BookOpen, GraduationCap, ArrowRight } from "lucide-react"
+import { MapPin, Calendar, Eye, CheckCircle2, BookOpen, GraduationCap, ArrowRight, Phone } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
 import { Badge } from "@/app/components/ui/badge"
 import { Card, CardContent } from "@/app/components/ui/card"
@@ -7,10 +7,12 @@ import { Avatar, AvatarFallback } from "@/app/components/ui/avatar"
 import { getAd } from "@/actions/public/ads"
 import { Navbar } from "../../components/navbar"
 import { ViewCounter } from "../../components/view-counter"
+import { ContactButton } from "../../components/contact-button"
 
 
-function getInitials(email: string): string {
-  return email.charAt(0).toUpperCase()
+// Helper to get initials from title (since email is hidden)
+function getInitials(title: string): string {
+  return title.charAt(0).toUpperCase()
 }
 
 function formatPrice(priceAmount: number | null, priceUnit: string | null): string {
@@ -33,7 +35,7 @@ export default async function OfferPage({ params }: { params: Promise<{ slug: st
     notFound()
   }
 
-  const initials = getInitials(ad.email)
+  const initials = getInitials(ad.title)
   const priceDisplay = formatPrice(ad.price_amount, ad.price_unit)
 
   const isSearch = ad.type === 'search'
@@ -42,7 +44,7 @@ export default async function OfferPage({ params }: { params: Promise<{ slug: st
   const showPrice = !isSearch
   const showLevels = !isSearchWithDummyLevels
   const subjectLabel = isSearch ? "Szukany przedmiot" : "Wykładany przedmiot"
-  const ctaText = isSearch ? "Zgłoś się" : "Napisz teraz"
+
 
   // Single accent color based on type
   const accentBg = isSearch ? "bg-slate-900" : "bg-indigo-600"
@@ -114,46 +116,11 @@ export default async function OfferPage({ params }: { params: Promise<{ slug: st
                 </div>
               </div>
 
-              {/* Desktop CTA */}
-              <div className="hidden lg:flex flex-col items-end gap-4 shrink-0">
-                {showPrice && (
-                  <div className="text-right">
-                    <p className="text-sm text-slate-500 mb-1">Cena</p>
-                    <p className="text-4xl font-bold text-slate-900">{priceDisplay}</p>
-                  </div>
-                )}
-                <Button
-                  size="lg"
-                  className={`${accentBg} ${accentHover} text-white font-semibold px-6 h-12 shadow-lg hover:shadow-xl transition-shadow`}
-                >
-                  <Mail className="mr-2 size-5" /> {ctaText}
-                </Button>
-              </div>
+
+
             </div>
           </CardContent>
         </Card>
-
-        {/* Mobile CTA */}
-        <div className="lg:hidden mb-6">
-          <Card className="border-0 shadow-lg rounded-xl overflow-hidden">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-4">
-                {showPrice && (
-                  <div>
-                    <p className="text-sm text-slate-500">Cena</p>
-                    <p className="text-3xl font-bold text-slate-900">{priceDisplay}</p>
-                  </div>
-                )}
-              </div>
-              <Button
-                size="lg"
-                className={`w-full ${accentBg} ${accentHover} text-white font-semibold h-12 shadow-lg`}
-              >
-                <Mail className="mr-2 size-5" /> {ctaText}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Content Grid */}
         <div className="grid lg:grid-cols-3 gap-6">
@@ -227,6 +194,23 @@ export default async function OfferPage({ params }: { params: Promise<{ slug: st
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="lg:sticky lg:top-24 space-y-6">
+              {/* Contact Card */}
+              <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`size-10 rounded-xl ${accentLight} flex items-center justify-center`}>
+                      <Phone className={`size-5 ${accentText}`} />
+                    </div>
+                    <h3 className="font-bold text-slate-900">Kontakt</h3>
+                  </div>
+                  <p className="text-slate-600 mb-4 text-sm">
+                    Zainteresowany? Skontaktuj się bezpośrednio z ogłoszeniodawcą.
+                  </p>
+                  <div className="space-y-3">
+                    <ContactButton adId={ad.id} />
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Info Card */}
               <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
@@ -268,19 +252,7 @@ export default async function OfferPage({ params }: { params: Promise<{ slug: st
               </Card>
 
               {/* Secondary CTA */}
-              <Card className="border-0 shadow-lg rounded-2xl overflow-hidden hidden lg:block">
-                <CardContent className="p-6 text-center">
-                  <p className="text-slate-600 mb-4">
-                    Zainteresowany? Skontaktuj się bezpośrednio z ogłoszeniodawcą.
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="w-full font-semibold border-slate-200 hover:bg-slate-50"
-                  >
-                    <Mail className="mr-2 size-4" /> Wyślij wiadomość
-                  </Button>
-                </CardContent>
-              </Card>
+
 
             </div>
           </div>

@@ -3,11 +3,11 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeAndHashPhone } from './hash_phone'
 import { adSchema } from '@/lib/ad-validation'
+import { getPriceInCurrency } from '@/lib/config'
 
 export async function createInactiveOffer(prevState: any, formData: FormData) {
     const educationLevels = formData.getAll('education_level')
 
-    // Server-side validation
     const validatedFields = adSchema.safeParse({
         type: formData.get('type'),
         title: formData.get('title'),
@@ -42,27 +42,24 @@ export async function createInactiveOffer(prevState: any, formData: FormData) {
 
     const supabase = createAdminClient()
 
-    // Check if phone exists for pricing logic
-    const { count: phoneCount } = await supabase
-        .from('ads')
-        .select('*', { count: 'exact', head: true })
-        .eq('type', 'offer')
+    const { data: phoneRecord } = await supabase
+        .from('phone_hashes')
+        .select('free_used_at')
         .eq('phone_hash', hash)
+        .single()
 
+    const hasUsedFreeSlot = phoneRecord !== null && phoneRecord.free_used_at !== null
 
-    const phoneExists = phoneCount !== null && phoneCount > 0
-
-    // Pricing logic
-    const priceInfo = phoneExists
+    const priceInfo = hasUsedFreeSlot
         ? {
-            amount: 30.00,
-            label: "Płatność (Użytkownik powracający)",
+            amount: getPriceInCurrency('activation'),
+            label: "Płatność wymagana",
             description: "Cena za wystawienie kolejnego ogłoszenia."
         }
         : {
             amount: 0.00,
-            label: "Płatność (Nowy użytkownik)",
-            description: "Darmowe ogłoszenie."
+            label: "Darmowe ogłoszenie",
+            description: "Pierwsze ogłoszenie jest bezpłatne."
         }
 
     const offerId = formData.get('offerId') as string | null
@@ -71,7 +68,6 @@ export async function createInactiveOffer(prevState: any, formData: FormData) {
     let error;
 
     if (offerId) {
-        // Update existing offer
         const result = await supabase.from('ads')
             .update({
                 type: validatedFields.data.type,
@@ -86,7 +82,6 @@ export async function createInactiveOffer(prevState: any, formData: FormData) {
                 phone_contact: formatted,
                 phone_hash: hash,
                 tutor_gender: validatedFields.data.tutor_gender || null,
-                // Do not update status here, keep it as is (likely disabled)
             })
             .eq('id', offerId)
             .select()
@@ -95,7 +90,6 @@ export async function createInactiveOffer(prevState: any, formData: FormData) {
         data = result.data;
         error = result.error;
     } else {
-        // Insert new offer
         const result = await supabase.from('ads').insert({
             type: validatedFields.data.type,
             title: validatedFields.data.title,
@@ -109,13 +103,12 @@ export async function createInactiveOffer(prevState: any, formData: FormData) {
             phone_contact: formatted,
             phone_hash: hash,
             tutor_gender: validatedFields.data.tutor_gender || null,
-            status: 'disabled',
+            status: 'inactive',
         }).select().single()
 
         data = result.data;
         error = result.error;
     }
-
 
     if (error) {
         console.error('Database Error:', error)
@@ -124,13 +117,12 @@ export async function createInactiveOffer(prevState: any, formData: FormData) {
         }
     }
 
-
-
     return {
         success: true,
         offerId: data.id,
+        managementToken: data.management_token,
         priceInfo,
-        phoneExists,
+        hasUsedFreeSlot,
         message: 'Ogłoszenie utworzone (nieaktywne).',
     }
 }

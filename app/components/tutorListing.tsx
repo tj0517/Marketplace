@@ -5,18 +5,16 @@ import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { Card, CardContent } from "./ui/card"
 import { Avatar, AvatarFallback } from "./ui/avatar"
-import { Database } from '@/types/supabase';
-
-type Ad = Database['public']['Tables']['ads']['Row'];
+import { PublicAd } from '@/actions/public/ads';
 
 interface TutorListingProps {
-  initialAds: Ad[];
+  initialAds: PublicAd[];
 }
 
 export function TutorListing({ initialAds = [] }: TutorListingProps) {
 
-  function getInitials(email: string): string {
-    return email.charAt(0).toUpperCase()
+  function getInitials(name: string): string {
+    return name.charAt(0).toUpperCase()
   }
 
   function formatPrice(priceAmount: number | null, priceUnit: string | null): string {
@@ -25,8 +23,7 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
     return `${priceAmount} zł/${unit}`
   }
 
-  // Get avatar background color based on email
-  function getAvatarColor(email: string): { bg: string; text: string } {
+  function getAvatarColor(id: string): { bg: string; text: string } {
     const colors = [
       { bg: "bg-indigo-100", text: "text-indigo-600" },
       { bg: "bg-emerald-100", text: "text-emerald-600" },
@@ -35,7 +32,12 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
       { bg: "bg-cyan-100", text: "text-cyan-600" },
       { bg: "bg-violet-100", text: "text-violet-600" },
     ]
-    const index = email.charCodeAt(0) % colors.length
+    // Simple hash from string
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colors.length
     return colors[index]
   }
 
@@ -67,9 +69,9 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
             </div>
           )}
           {initialAds.map((ad) => {
-            const initials = getInitials(ad.email)
+            const initials = getInitials(ad.title || '?')
             const priceDisplay = formatPrice(ad.price_amount, ad.price_unit)
-            const avatarColor = getAvatarColor(ad.email)
+            const avatarColor = getAvatarColor(ad.id)
 
             return (
               <Card
@@ -98,7 +100,7 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
                   </div>
 
                   {/* Bio */}
-                  <p className="mb-3 sm:mb-4 line-clamp-2 text-sm text-slate-600 leading-relaxed">
+                  <p className="mb-3 sm:mb-4 line-clamp-2 text-sm text-slate-600 leading-relaxed min-h-10">
                     {ad.description}
                   </p>
 

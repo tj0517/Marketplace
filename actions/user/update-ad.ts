@@ -10,12 +10,26 @@ export async function updateAd(
     prevState: any,
     formData: FormData
 ) {
+    const locationFromForm = formData.get('location') as string | null
+    const cityText = formData.get('city_text') as string | null
+    const isRemote = formData.get('is_remote') === 'on'
+
+    let finalLocation: string
+    if (cityText !== null) {
+        const parts: string[] = []
+        if (cityText.trim()) parts.push(cityText.trim())
+        if (isRemote) parts.push('Zdalnie')
+        finalLocation = parts.join(', ') || ''
+    } else {
+        finalLocation = locationFromForm || ''
+    }
+
     const validatedFields = adSchema.safeParse({
         type: formData.get('type'),
         title: formData.get('title'),
         description: formData.get('description'),
         subject: formData.get('subject'),
-        location: formData.get('location'),
+        location: finalLocation,
         education_level: formData.getAll('education_level'),
         price_amount: formData.get('price_amount'),
         price_unit: formData.get('price_unit'),
@@ -31,9 +45,9 @@ export async function updateAd(
         }
     }
 
-    const validatedFieldsWithoutSuccess = validatedFields.data; // Just for cleaner access
+    const data = validatedFields.data
 
-    const { hash, formatted, isValid } = normalizeAndHashPhone(validatedFieldsWithoutSuccess.phone_contact)
+    const { hash, formatted, isValid } = normalizeAndHashPhone(data.phone_contact)
 
     if (!isValid) {
         return {
@@ -46,20 +60,20 @@ export async function updateAd(
 
     const supabase = createAdminClient()
 
-    const { data, error } = await supabase
+    const { data: result, error } = await supabase
         .from('ads')
         .update({
-            title: validatedFieldsWithoutSuccess.title,
-            description: validatedFieldsWithoutSuccess.description,
-            subject: validatedFieldsWithoutSuccess.subject,
-            location: validatedFieldsWithoutSuccess.location,
-            education_level: validatedFieldsWithoutSuccess.education_level,
-            price_amount: validatedFieldsWithoutSuccess.type === 'search' ? null : validatedFieldsWithoutSuccess.price_amount,
-            price_unit: validatedFieldsWithoutSuccess.type === 'search' ? null : validatedFieldsWithoutSuccess.price_unit,
-            email: validatedFieldsWithoutSuccess.email,
+            title: data.title,
+            description: data.description,
+            subject: data.subject,
+            location: data.location,
+            education_level: data.education_level,
+            price_amount: data.type === 'search' ? null : data.price_amount,
+            price_unit: data.type === 'search' ? null : data.price_unit,
+            email: data.email,
             phone_contact: formatted,
             phone_hash: hash,
-            tutor_gender: validatedFieldsWithoutSuccess.type === 'search' ? null : (validatedFieldsWithoutSuccess.tutor_gender || null),
+            tutor_gender: data.type === 'search' ? null : (data.tutor_gender || null),
         })
         .eq('management_token', token)
         .select('id')
@@ -73,7 +87,7 @@ export async function updateAd(
     }
 
     revalidatePath(`/offers/manage/${token}`)
-    revalidatePath(`/offers/${(data as any).id}`)
+    revalidatePath(`/offers/${(result as any).id}`)
 
     return {
         message: 'Ogłoszenie zostało zaktualizowane!',

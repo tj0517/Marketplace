@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeAndHashPhone } from './hash_phone'
 import { adSchema } from '@/lib/ad-validation'
+import { getBaseUrl } from '@/lib/config'
 
 export async function createInformalOffer(prevState: any, formData: FormData) {
 
@@ -76,7 +77,7 @@ export async function createInformalOffer(prevState: any, formData: FormData) {
 
     try {
         const { sendEmail } = await import('@/actions/emails');
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        const baseUrl = getBaseUrl();
         const magicLink = `${baseUrl}/offers/manage/${ad.management_token}`;
         const publicLink = `${baseUrl}/offers/${ad.id}`;
 

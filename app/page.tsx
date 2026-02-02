@@ -31,36 +31,6 @@ export default async function Home({
       <TutorListing initialAds={ads} />
       <Pagination totalPages={Math.ceil(adsCount / limit)} />
 
-      {/* CTA Section */}
-      <section className="bg-slate-900 py-16 sm:py-20">
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
-          <h2 className="text-2xl font-bold text-white sm:text-3xl mb-4">
-            Zacznij uczyć lub ucz się już dziś
-          </h2>
-
-          <p className="text-slate-400 mb-8 max-w-xl mx-auto">
-            Dołącz do naszej społeczności. Dodaj ogłoszenie za darmo i połącz się z osobami szukającymi wiedzy.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/add-offer?query=offer"
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white hover:bg-indigo-700 transition-colors"
-            >
-              Dodaj ogłoszenie
-              <ArrowRight className="size-4" />
-            </Link>
-            <Link
-              href="/add-offer?query=search"
-              className="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-6 py-3 text-base font-semibold text-white hover:bg-slate-700 transition-colors border border-slate-700"
-            >
-              Szukam korepetycji
-              <ArrowRight className="size-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer className="bg-slate-900 border-t border-slate-800">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
@@ -79,11 +49,12 @@ export default async function Home({
               Łączymy uczniów z najlepszymi korepetytorami w Polsce.
             </p>
 
-            {/* Links */}
+            {/* Legal Links */}
             <div className="flex flex-wrap justify-center gap-6 text-sm text-slate-400 mb-6">
-              <Link href="/" className="hover:text-white transition-colors">Strona główna</Link>
-              <Link href="/add-offer?query=offer" className="hover:text-white transition-colors">Dodaj ogłoszenie</Link>
-              <Link href="/add-offer?query=search" className="hover:text-white transition-colors">Szukam korepetycji</Link>
+              <Link href="/regulamin" className="hover:text-white transition-colors">Regulamin</Link>
+              <Link href="/polityka-prywatnosci" className="hover:text-white transition-colors">Polityka prywatności</Link>
+              <Link href="/recover-magic-link" className="hover:text-white transition-colors">Odzyskaj link zarządzania</Link>
+              <Link href="/kontakt" className="hover:text-white transition-colors">Kontakt</Link>
             </div>
 
             {/* Copyright */}

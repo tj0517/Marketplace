@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { extendAdExpiration } from '@/actions/user/extend-ad'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/app/components/ui/button'
-import { RefreshCcw, Loader2, CheckCircle } from 'lucide-react'
+import { RefreshCcw, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -18,49 +19,61 @@ import {
 
 interface ExtendAdButtonProps {
     token: string
+    adId: string
 }
 
-export function ExtendAdButton({ token }: ExtendAdButtonProps) {
-    const [isExtending, setIsExtending] = useState(false)
-    const [result, setResult] = useState<{ success: boolean; message: string } | null>(null)
+export function ExtendAdButton({ token, adId }: ExtendAdButtonProps) {
+    const router = useRouter()
+    const [isProcessing, setIsProcessing] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     const handleExtend = async () => {
-        setIsExtending(true)
-        setResult(null)
-        try {
-            const response = await extendAdExpiration(token)
-            setResult(response)
-            if (response.success) {
-                // Refresh the page after a short delay to show updated expiration
-                setTimeout(() => {
-                    window.location.reload()
-                }, 1500)
-            }
-        } catch (error) {
-            console.error("Extend failed", error)
-            setResult({ success: false, message: 'Wystąpił błąd podczas przedłużania.' })
-        } finally {
-            setIsExtending(false)
-        }
-    }
+        setIsProcessing(true)
+        setError(null)
 
-    if (result?.success) {
-        return (
-            <Button className="w-full" variant="outline" disabled>
-                <CheckCircle className="mr-2 size-4 text-green-600" />
-                Przedłużono
-            </Button>
-        )
+        try {
+            const response = await fetch('/api/payments/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ad_id: adId,
+                    type: 'extension',
+                    management_token: token,
+                }),
+            })
+
+            const data = await response.json()
+
+            if (data.redirectUrl) {
+                window.location.href = data.redirectUrl
+            } else if (data.error) {
+                setError(data.error)
+                toast.error(data.error)
+                setIsProcessing(false)
+            } else {
+                // Unexpected response - no redirectUrl and no error
+                const unexpectedError = 'Nieoczekiwana odpowiedź serwera. Spróbuj ponownie.'
+                setError(unexpectedError)
+                toast.error(unexpectedError)
+                setIsProcessing(false)
+            }
+        } catch (err) {
+            console.error("Payment init failed", err)
+            const errorMsg = 'Wystąpił błąd podczas inicjowania płatności.'
+            setError(errorMsg)
+            toast.error(errorMsg)
+            setIsProcessing(false)
+        }
     }
 
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
-                <Button className="w-full" variant="outline" disabled={isExtending}>
-                    {isExtending ? (
+                <Button className="w-full" variant="outline" disabled={isProcessing}>
+                    {isProcessing ? (
                         <>
                             <Loader2 className="mr-2 size-4 animate-spin" />
-                            Przedłużanie...
+                            Przekierowywanie...
                         </>
                     ) : (
                         <>
@@ -78,15 +91,20 @@ export function ExtendAdButton({ token }: ExtendAdButtonProps) {
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                         Twoje ogłoszenie zostanie przedłużone o 30 dni. Koszt: 10 zł.
-                        {result && !result.success && (
-                            <span className="block mt-2 text-red-600">{result.message}</span>
+                        Zostaniesz przekierowany do płatności.
+                        {error && (
+                            <span className="block mt-2 text-red-600">{error}</span>
                         )}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Anuluj</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleExtend} className="bg-indigo-600 hover:bg-indigo-700">
-                        Przedłuż teraz
+                    <AlertDialogAction
+                        onClick={handleExtend}
+                        className="bg-indigo-600 hover:bg-indigo-700"
+                        disabled={isProcessing}
+                    >
+                        {isProcessing ? 'Przetwarzanie...' : 'Przejdź do płatności'}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>

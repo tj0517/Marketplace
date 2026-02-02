@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { updateAd } from '@/actions/user/update-ad'
 import { Button } from '@/app/components/ui/button'
 import { Input } from '@/app/components/ui/input'
@@ -15,6 +16,7 @@ import {
     SelectValue,
 } from '@/app/components/ui/select'
 import { Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { Database } from '@/types/supabase'
 
 type Ad = Database['public']['Tables']['ads']['Row']
@@ -24,7 +26,7 @@ const subjects = [
     "Fizyka", "Chemia", "Biologia", "Geografia", "Historia", "Informatyka", "Muzyka"
 ]
 
-const levels = ["Szkoła Podstawowa", "Liceum / Technikum", "Studia", "Dorośli"]
+const levels = ["Szkoła Podstawowa", "Liceum / Technikum", "Studia", "Dorośli", "Inne"]
 
 const units = [
     { value: '60 min', label: '60 min' },
@@ -39,6 +41,29 @@ interface EditAdFormProps {
 export function EditAdForm({ ad }: EditAdFormProps) {
     const updateAdWithToken = updateAd.bind(null, ad.management_token!)
     const [state, action, isPending] = useActionState(updateAdWithToken, null)
+    const [selectedLevels, setSelectedLevels] = useState<string[]>(ad.education_level || [])
+
+    const toggleLevel = (level: string) => {
+        setSelectedLevels(prev =>
+            prev.includes(level)
+                ? prev.filter(l => l !== level)
+                : [...prev, level]
+        )
+    }
+
+    const [remoteChecked, setRemoteChecked] = useState(ad.location?.toLowerCase().includes('zdalnie') || false)
+    const [cityTextValue, setCityTextValue] = useState(ad.location?.replace(/,?\s*zdalnie/gi, '').trim() || '')
+
+    const router = useRouter()
+    const [isReloading, setIsReloading] = useState(false)
+
+    // Full page reload after successful save to reinitialize component with fresh data
+    useEffect(() => {
+        if (state?.success) {
+            setIsReloading(true)
+            window.location.reload()
+        }
+    }, [state?.success])
 
     const placeholders = {
         offer: {
@@ -54,7 +79,13 @@ export function EditAdForm({ ad }: EditAdFormProps) {
     const currentPlaceholders = ad.type === 'search' ? placeholders.search : placeholders.offer
 
     return (
-        <form action={action} className="space-y-6">
+        <form action={action} className="space-y-6 relative">
+            {isReloading && (
+                <div className="absolute -inset-1 bg-white/90 z-[100] flex flex-col items-center justify-center rounded-xl backdrop-blur-sm transition-all duration-300">
+                    <Loader2 className="size-10 animate-spin text-indigo-600 mb-2" />
+                    <p className="text-sm font-medium text-slate-600">Odświeżanie...</p>
+                </div>
+            )}
             <input type="hidden" name="type" value={ad.type} />
 
             {/* Basic Info */}
@@ -106,19 +137,27 @@ export function EditAdForm({ ad }: EditAdFormProps) {
                 {ad.type !== 'search' && (
                     <div className="space-y-2">
                         <Label>Poziom nauczania</Label>
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        <div className="flex flex-wrap gap-2">
                             {levels.map((level) => (
-                                <div key={level} className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id={`level-${level}`}
-                                        name="education_level"
-                                        value={level}
-                                        defaultChecked={ad.education_level?.includes(level)}
-                                    />
-                                    <Label htmlFor={`level-${level}`} className="text-sm font-normal">{level}</Label>
-                                </div>
+                                <button
+                                    key={level}
+                                    type="button"
+                                    onClick={() => toggleLevel(level)}
+                                    className={cn(
+                                        "px-4 py-2 rounded-full border text-sm font-medium transition-all",
+                                        selectedLevels.includes(level)
+                                            ? "bg-indigo-600 text-white border-indigo-600"
+                                            : "bg-white text-slate-700 border-slate-300 hover:border-indigo-300"
+                                    )}
+                                >
+                                    {level}
+                                </button>
                             ))}
                         </div>
+                        {/* Hidden inputs for form submission */}
+                        {selectedLevels.map(level => (
+                            <input key={level} type="hidden" name="education_level" value={level} />
+                        ))}
                         {state?.errors?.education_level && <p className="text-sm text-red-500">{state.errors.education_level}</p>}
                     </div>
                 )}
@@ -163,13 +202,26 @@ export function EditAdForm({ ad }: EditAdFormProps) {
 
                     <div className="space-y-2 md:col-span-2">
                         <Label htmlFor="location">Lokalizacja</Label>
-                        <Input
-                            id="location"
-                            name="location"
-                            defaultValue={ad.location}
-                            placeholder="np. Warszawa Praga / Online"
-                            required
-                        />
+                        <div className="flex gap-3 items-center">
+                            <div className="flex-1">
+                                <Input
+                                    id="city_text"
+                                    name="city_text"
+                                    value={cityTextValue}
+                                    onChange={(e) => setCityTextValue(e.target.value)}
+                                    placeholder="np. Warszawa Praga"
+                                />
+                            </div>
+                            <div className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <Checkbox
+                                    id="remote_mode"
+                                    name="is_remote"
+                                    checked={remoteChecked}
+                                    onCheckedChange={(checked) => setRemoteChecked(checked as boolean)}
+                                />
+                                <Label htmlFor="remote_mode" className="cursor-pointer font-medium text-slate-700 text-sm">Zdalnie</Label>
+                            </div>
+                        </div>
                         {state?.errors?.location && <p className="text-sm text-red-500">{state.errors.location}</p>}
                     </div>
 

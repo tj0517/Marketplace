@@ -2,6 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { getBaseUrl, AD_CONFIG, getPriceInCurrency } from '@/lib/config'
 
 export type ExtendAdResult = {
     success: boolean
@@ -19,10 +20,9 @@ export async function extendAdExpiration(token: string): Promise<ExtendAdResult>
 
     const supabase = createAdminClient()
 
-    // Get the ad by management token
     const { data: ad, error: fetchError } = await supabase
         .from('ads')
-        .select('id, expires_at, status, type')
+        .select('id, expires_at, status, type, email, title')
         .eq('management_token', token)
         .single()
 
@@ -34,7 +34,6 @@ export async function extendAdExpiration(token: string): Promise<ExtendAdResult>
         }
     }
 
-    // Only allow extension for 'offer' type ads
     if (ad.type === 'search') {
         return {
             success: false,
@@ -42,9 +41,6 @@ export async function extendAdExpiration(token: string): Promise<ExtendAdResult>
         }
     }
 
-    // Calculate new expiration date
-    // If ad is expired or has no expiration, start from now
-    // Otherwise, extend from current expiration
     const now = new Date()
     let baseDate: Date
 
@@ -55,14 +51,14 @@ export async function extendAdExpiration(token: string): Promise<ExtendAdResult>
     }
 
     const newExpiresAt = new Date(baseDate)
-    newExpiresAt.setDate(newExpiresAt.getDate() + 30)
+    newExpiresAt.setDate(newExpiresAt.getDate() + AD_CONFIG.extensionDays)
 
-    // Update the ad
     const { error: updateError } = await supabase
         .from('ads')
         .update({
             expires_at: newExpiresAt.toISOString(),
-            status: 'active', // Reactivate if was expired
+            status: 'active',
+            expiring_warning_sent_at: null,
         })
         .eq('id', ad.id)
 
@@ -74,19 +70,35 @@ export async function extendAdExpiration(token: string): Promise<ExtendAdResult>
         }
     }
 
-    // Create transaction record (payment webhooks disabled for now)
     const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
             ad_id: ad.id,
-            amount: 10.00, // Extension price
+            amount: getPriceInCurrency('extension'),
             type: 'extension',
-            status: 'completed', // Auto-complete since payments are disabled
+            status: 'completed',
+            payment_provider: 'manual',
         })
 
     if (transactionError) {
         console.error('Transaction Error:', transactionError)
-        // Don't fail the operation, just log
+    }
+
+    try {
+        const { sendEmail } = await import('@/actions/emails')
+        const baseUrl = getBaseUrl()
+
+        await sendEmail({
+            to: ad.email,
+            type: 'payment_extend',
+            props: {
+                adTitle: ad.title,
+                newExpiresAt: newExpiresAt.toISOString(),
+                manageLink: `${baseUrl}/offers/manage/${token}`,
+            },
+        })
+    } catch (emailError) {
+        console.error('Failed to send extend confirmation email:', emailError)
     }
 
     revalidatePath('/offers')
@@ -95,7 +107,7 @@ export async function extendAdExpiration(token: string): Promise<ExtendAdResult>
 
     return {
         success: true,
-        message: 'Ogłoszenie zostało przedłużone o 30 dni.',
+        message: `Ogłoszenie zostało przedłużone o ${AD_CONFIG.extensionDays} dni.`,
         newExpiresAt: newExpiresAt.toISOString(),
     }
 }

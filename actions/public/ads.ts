@@ -5,33 +5,34 @@ import { Database } from '@/types/supabase';
 
 type Ad = Database['public']['Tables']['ads']['Row'];
 
-
-// Initialize client outside to reuse connection/instance
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
+export type PublicAd = Pick<Ad,
+    'id' | 'type' | 'title' | 'description' | 'subject' | 'location' |
+    'education_level' | 'price_amount' | 'price_unit' | 'created_at' |
+    'expires_at' | 'views_count' | 'tutor_gender' | 'visible_at'
+>;
+
 const fetchAllAds = unstable_cache(
-    async (): Promise<Ad[]> => {
+    async (): Promise<PublicAd[]> => {
         if (!supabaseUrl || !supabaseKey) {
             return [];
         }
 
-
-        // Select only necessary columns for the listing to reduce memory usage
-        // Order by promoted_at (if exists) or created_at descending for promoted ads to appear first
         const { data, error } = await supabase
             .from('ads')
-            .select('id, type, title, description, subject, location, education_level, price_amount, price_unit, phone_contact, created_at, expires_at, views_count, email, tutor_gender, management_token, promoted_at')
-            .order('promoted_at', { ascending: false, nullsFirst: false })
-            .order('created_at', { ascending: false });
+            .select('id, type, title, description, subject, location, education_level, price_amount, price_unit, created_at, expires_at, views_count, tutor_gender, visible_at')
+            .neq('status', 'deleted')
+            .order('visible_at', { ascending: false });
 
         if (error) {
             console.error('Error fetching ads:', error);
             throw error;
         }
 
-        return (data as unknown as Ad[]) || [];
+        return (data as PublicAd[]) || [];
     },
     ['all-ads-cache'],
     {
@@ -40,7 +41,7 @@ const fetchAllAds = unstable_cache(
     }
 );
 
-export const filterAds = (ads: Ad[], query: string | undefined, type: 'offer' | 'search' = 'offer'): Ad[] => {
+export const filterAds = (ads: PublicAd[], query: string | undefined, type: 'offer' | 'search' = 'offer'): PublicAd[] => {
     let filteredResults = ads.filter(ad => ad.type === type);
 
     if (!query) {
@@ -64,7 +65,7 @@ export const getAdsCount = async (params?: { query?: string, type?: 'offer' | 's
     return filteredAds.length;
 };
 
-export const getAds = async (params?: { query?: string, page?: number, limit?: number, type?: 'offer' | 'search' }): Promise<Ad[]> => {
+export const getAds = async (params?: { query?: string, page?: number, limit?: number, type?: 'offer' | 'search' }): Promise<PublicAd[]> => {
     const allAds = await fetchAllAds();
     const filteredAds = filterAds(allAds, params?.query, params?.type);
 
@@ -74,14 +75,63 @@ export const getAds = async (params?: { query?: string, page?: number, limit?: n
     return filteredAds.slice((page - 1) * limit, page * limit);
 };
 
-// Direct DB call to ensure fresh data for single page view
-export const getAd = async (id: string): Promise<Ad | null> => {
+export const getAdPublic = async (id: string): Promise<PublicAd | null> => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+        return null;
+    }
+
     const { data, error } = await supabase
         .from('ads')
-        .select('*')
+        .select('id, type, title, description, subject, location, education_level, price_amount, price_unit, created_at, expires_at, views_count, tutor_gender, visible_at')
         .eq('id', id)
+        .neq('status', 'deleted')
         .single();
 
-    if (error) return null;
+    if (error) {
+        if (error.code !== 'PGRST116') {
+            console.error('Error fetching ad:', error);
+        }
+        return null;
+    }
     return data;
+};
+
+export const getAd = getAdPublic;
+
+export const searchAdsNative = async (params: {
+    query: string;
+    type?: 'offer' | 'search';
+    page?: number;
+    limit?: number;
+}): Promise<{ ads: PublicAd[]; count: number }> => {
+    const { query, type = 'offer', page = 1, limit = 10 } = params;
+    const offset = (page - 1) * limit;
+
+    let queryBuilder = supabase
+        .from('ads')
+        .select('id, type, title, description, subject, location, education_level, price_amount, price_unit, created_at, expires_at, views_count, tutor_gender, visible_at', { count: 'exact' })
+        .eq('status', 'active')
+        .eq('type', type);
+
+    if (query && query.trim()) {
+        queryBuilder = queryBuilder.textSearch('fts', query, {
+            type: 'websearch',
+            config: 'polish'
+        });
+    }
+
+    const { data, error, count } = await queryBuilder
+        .order('visible_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+    if (error) {
+        console.error('Error searching ads:', error);
+        return { ads: [], count: 0 };
+    }
+
+    return {
+        ads: (data as PublicAd[]) || [],
+        count: count || 0
+    };
 };

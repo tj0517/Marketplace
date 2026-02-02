@@ -2,11 +2,12 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { getBaseUrl, getPriceInCurrency } from '@/lib/config'
 
 export type PromoteAdResult = {
     success: boolean
     message: string
-    promotedAt?: string
+    visibleAt?: string
 }
 
 export async function promoteAd(token: string): Promise<PromoteAdResult> {
@@ -19,10 +20,9 @@ export async function promoteAd(token: string): Promise<PromoteAdResult> {
 
     const supabase = createAdminClient()
 
-    // Get the ad by management token
     const { data: ad, error: fetchError } = await supabase
         .from('ads')
-        .select('id, status, type, expires_at')
+        .select('id, status, type, expires_at, email, title')
         .eq('management_token', token)
         .single()
 
@@ -34,7 +34,6 @@ export async function promoteAd(token: string): Promise<PromoteAdResult> {
         }
     }
 
-    // Only allow promotion for 'offer' type ads
     if (ad.type === 'search') {
         return {
             success: false,
@@ -42,7 +41,6 @@ export async function promoteAd(token: string): Promise<PromoteAdResult> {
         }
     }
 
-    // Check if ad is active
     if (ad.status !== 'active') {
         return {
             success: false,
@@ -50,7 +48,6 @@ export async function promoteAd(token: string): Promise<PromoteAdResult> {
         }
     }
 
-    // Check if ad is not expired
     if (ad.expires_at && new Date(ad.expires_at) < new Date()) {
         return {
             success: false,
@@ -58,13 +55,12 @@ export async function promoteAd(token: string): Promise<PromoteAdResult> {
         }
     }
 
-    const promotedAt = new Date().toISOString()
+    const visibleAt = new Date().toISOString()
 
-    // Update the ad with promoted_at
     const { error: updateError } = await supabase
         .from('ads')
         .update({
-            promoted_at: promotedAt,
+            visible_at: visibleAt,
         })
         .eq('id', ad.id)
 
@@ -76,19 +72,34 @@ export async function promoteAd(token: string): Promise<PromoteAdResult> {
         }
     }
 
-    // Create transaction record (payment webhooks disabled for now)
     const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
             ad_id: ad.id,
-            amount: 10.00, // Promotion price
+            amount: getPriceInCurrency('bump'),
             type: 'bump',
-            status: 'completed', // Auto-complete since payments are disabled
+            status: 'completed',
+            payment_provider: 'manual',
         })
 
     if (transactionError) {
         console.error('Transaction Error:', transactionError)
-        // Don't fail the operation, just log
+    }
+
+    try {
+        const { sendEmail } = await import('@/actions/emails')
+        const baseUrl = getBaseUrl()
+
+        await sendEmail({
+            to: ad.email,
+            type: 'payment_bump',
+            props: {
+                adTitle: ad.title,
+                manageLink: `${baseUrl}/offers/manage/${token}`,
+            },
+        })
+    } catch (emailError) {
+        console.error('Failed to send bump confirmation email:', emailError)
     }
 
     revalidatePath('/offers')
@@ -98,6 +109,6 @@ export async function promoteAd(token: string): Promise<PromoteAdResult> {
     return {
         success: true,
         message: 'Ogłoszenie zostało promowane i pojawi się na górze listy.',
-        promotedAt,
+        visibleAt,
     }
 }

@@ -1,0 +1,68 @@
+---
+description: Fix validation, security, and logic errors identified by CodeRabbit
+---
+
+# CodeRabbit Error Fixes Implementation Plan
+
+This workflow addresses the 10 issues identified in [analiza_bledow_coderabbit.md.resolved](analiza_bledow_coderabbit.md.resolved).
+
+## 1. Security & Middleware
+
+### Fix Timing Attacks in Basic Auth
+- **File**: `app/middleware.ts`
+- **Task**: Replace direct string comparison with `crypto.timingSafeEqual` or a constant-time comparison helper.
+```typescript
+// Example usage
+const encoder = new TextEncoder();
+const a = encoder.encode(password);
+const b = encoder.encode(envPassword);
+if (a.length === b.length && crypto.timingSafeEqual(a, b)) { ... }
+```
+
+## 2. Payments API (P24)
+
+### Fix P24 Signature Calculation (Escaping) & Error Typing & Validation
+- **File**: [app/api/payments/create/route.ts](file:///Users/tymonjezionek/Desktop/freelnace_wb/projekty/korepetycje_marketplace/app/app/api/payments/create/route.ts)
+- **Task**: 
+    1.  Implement a JSON serializer that does NOT escape forward slashes (or matches P24 requirements) for the signature generation.
+    2.  Check `p24Response.ok` before parsing JSON.
+    3.  When saving P24 errors to DB, `JSON.stringify` the error object.
+
+### Fix Webhook Signature Verification
+- **File**: [app/api/webhooks/p24/route.ts](file:///Users/tymonjezionek/Desktop/freelnace_wb/projekty/korepetycje_marketplace/app/app/api/webhooks/p24/route.ts)
+- **Task**: Ensure the signature verification logic here also uses the correct JSON serialization (un-escaped slashes) if applicable/mirrored.
+
+## 3. Frontend & Forms
+
+### Fix External Links Security
+- **File**: [app/components/add-offer-form.tsx](file:///Users/tymonjezionek/Desktop/freelnace_wb/projekty/korepetycje_marketplace/app/app/components/add-offer-form.tsx)
+- **Task**: Add `rel="noopener noreferrer"` to all `target="_blank"` links.
+
+### Fix Payment Redirect
+- **File**: [app/components/add-offer-form.tsx](file:///Users/tymonjezionek/Desktop/freelnace_wb/projekty/korepetycje_marketplace/app/app/components/add-offer-form.tsx)
+- **Task**: Change `router.push(url)` to `window.location.href = url` for P24 redirects.
+
+## 4. Logic & Stability Checks
+
+### Phone Hash Validation (Null Safety) & Database Error Handling
+- **Files**: 
+    - [app/api/webhooks/p24/route.ts](file:///Users/tymonjezionek/Desktop/freelnace_wb/projekty/korepetycje_marketplace/app/app/api/webhooks/p24/route.ts)
+    - [actions/user/activate-offer.ts](file:///Users/tymonjezionek/Desktop/freelnace_wb/projekty/korepetycje_marketplace/app/actions/user/activate-offer.ts)
+    - [app/api/check-free-slot/route.ts](file:///Users/tymonjezionek/Desktop/freelnace_wb/projekty/korepetycje_marketplace/app/app/api/check-free-slot/route.ts)
+- **Task**:
+    1.  In `normalizeAndHashPhone`, add a guard clause for null/empty input.
+    2.  In `activate-offer.ts` and `check-free-slot/route.ts`, handle database errors explicitly (don't ignore `error` from Supabase).
+
+### Magic Links & Environment Variables
+- **Files**: 
+    - [app/api/recover-magic-link/route.ts](file:///Users/tymonjezionek/Desktop/freelnace_wb/projekty/korepetycje_marketplace/app/app/api/recover-magic-link/route.ts)
+    - `app/api/cron/route.ts` (assuming .tsx was a typo in report, checking file existence recommended)
+- **Task**:
+    1.  Validate `process.env.NEXT_PUBLIC_APP_URL` at start. Throw error if missing.
+    2.  In `recover-magic-link`, wrap JSON parsing and phone normalization in `try/catch`.
+
+## Verification Steps
+
+1.  **Build**: Run `npm run build` to ensure type safety.
+2.  **Lint**: Run `npm run lint` to check for any new linting errors.
+3.  **Tests**: Run existing tests `npx playwright test` to ensure no regressions.

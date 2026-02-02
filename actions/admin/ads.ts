@@ -19,7 +19,7 @@ export async function getAdminAds() {
     return ads;
 }
 
-export async function updateAdStatus(adId: string, status: 'active' | 'expired' | 'disabled') {
+export async function updateAdStatus(adId: string, status: 'active' | 'expired' | 'banned') {
     const supabase = await createAdminClient();
 
     const { error } = await supabase
@@ -43,18 +43,13 @@ export async function updateAdStatus(adId: string, status: 'active' | 'expired' 
 export async function deleteAd(adId: string) {
     const supabase = await createAdminClient();
 
-    const { data, error } = await supabase
+    const { error } = await supabase
         .from('ads')
-        .delete()
-        .eq('id', adId)
-        .select();
+        .update({ status: 'deleted' })
+        .eq('id', adId);
 
     if (error) {
         console.error('[Server] deleteAd DB Error:', error);
-    }
-
-    if (error) {
-        console.error('Error deleting ad:', error);
         throw new Error('Failed to delete ad');
     }
 

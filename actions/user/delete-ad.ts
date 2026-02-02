@@ -13,7 +13,6 @@ export async function deleteAd(token: string) {
 
     const supabase = createAdminClient()
 
-    // 1. Verify ad exists with this token
     const { data: ad, error: fetchError } = await supabase
         .from('ads')
         .select('id')
@@ -27,10 +26,9 @@ export async function deleteAd(token: string) {
         }
     }
 
-    // 2. Delete the ad
     const { error: deleteError } = await supabase
         .from('ads')
-        .delete()
+        .update({ status: 'deleted' })
         .eq('id', ad.id)
 
     if (deleteError) {
@@ -41,7 +39,6 @@ export async function deleteAd(token: string) {
         }
     }
 
-    // 3. Revalidate and Redirect
     revalidatePath('/offers')
     redirect('/')
 }

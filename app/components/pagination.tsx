@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import { useSearchParams, usePathname, useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 import { Button } from "./ui/button"
@@ -9,7 +10,7 @@ interface PaginationProps {
     totalPages: number
 }
 
-export function Pagination({ totalPages }: PaginationProps) {
+function PaginationContent({ totalPages }: PaginationProps) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -129,3 +130,14 @@ export function Pagination({ totalPages }: PaginationProps) {
         </div>
     )
 }
+
+export function Pagination({ totalPages }: PaginationProps) {
+    if (totalPages <= 1) return null
+
+    return (
+        <Suspense fallback={<div className="py-10 text-center text-slate-400">Ładowanie...</div>}>
+            <PaginationContent totalPages={totalPages} />
+        </Suspense>
+    )
+}
+

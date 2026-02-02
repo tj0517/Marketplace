@@ -48,7 +48,7 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
         .eq("management_token", token)
         .single();
 
-    if (!ad) {
+    if (!ad || ad.status === 'deleted') {
         return notFound();
     }
 
@@ -154,7 +154,7 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
-                                        <PromoteAdButton token={token} />
+                                        <PromoteAdButton token={token} adId={ad.id} />
                                         <p className="text-xs text-indigo-200 text-center">
                                             Ogłoszenie trafi na górę listy.
                                         </p>
@@ -172,7 +172,7 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <ExtendAdButton token={token} />
+                                        <ExtendAdButton token={token} adId={ad.id} />
                                     </CardContent>
                                 </Card>
                             </>

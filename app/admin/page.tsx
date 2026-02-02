@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
+import { Textarea } from "@/app/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import Link from "next/link";
 import { Badge } from "@/app/components/ui/badge";
 import {
@@ -25,10 +28,11 @@ export default function AdminPage() {
     const [transactions, setTransactions] = useState<any[]>([]);
     const [emailSubject, setEmailSubject] = useState('');
     const [emailContent, setEmailContent] = useState('');
+    const [emailSegment, setEmailSegment] = useState('');
+    const [isSending, setIsSending] = useState(false);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
 
-    // New state for filtering ads
     const [adTypeFilter, setAdTypeFilter] = useState<'offer' | 'search'>('offer');
 
     useEffect(() => {
@@ -53,8 +57,7 @@ export default function AdminPage() {
         }
     };
 
-    const handleAdStatusChange = async (adId: string, status: 'active' | 'expired' | 'disabled') => {
-        console.log('[Client] handleAdStatusChange initiating:', { adId, status });
+    const handleAdStatusChange = async (adId: string, status: 'active' | 'expired' | 'banned') => {
         try {
             await updateAdStatus(adId, status);
             loadData(); // Reload to reflect changes
@@ -64,10 +67,8 @@ export default function AdminPage() {
 
     const handleDeleteAd = async (adId: string) => {
         if (confirm('Are you sure you want to delete this ad?')) {
-            console.log('[Client] handleDeleteAd initiating:', adId);
             try {
                 await deleteAd(adId);
-                console.log('[Client] handleDeleteAd success');
                 loadData();
             } catch (error) {
                 console.error('[Client] handleDeleteAd failed:', error);
@@ -77,11 +78,34 @@ export default function AdminPage() {
     };
 
     const handleSendEmail = async () => {
-        alert('Bulk email feature is currently disabled due to removal of selection logic.');
-        // Logic removed as per request to remove selection buttons
+        const segmentLabels: Record<string, string> = {
+            active: 'Aktywne ogłoszenia',
+            expired: 'Wygasłe ogłoszenia',
+            expiring_soon: 'Wygasające w ciągu 7 dni',
+        };
+
+        if (!confirm(`Czy na pewno chcesz wysłać e-mail do segmentu "${segmentLabels[emailSegment]}"?`)) {
+            return;
+        }
+
+        setIsSending(true);
+        try {
+            const result = await sendBulkEmail({
+                segment: emailSegment as 'active' | 'expired' | 'expiring_soon',
+                subject: emailSubject,
+                content: emailContent,
+            });
+            alert(`Wysłano ${result.sentCount} e-maili.`);
+            setEmailSubject('');
+            setEmailContent('');
+            setEmailSegment('');
+        } catch (error) {
+            alert('Błąd podczas wysyłania.');
+        } finally {
+            setIsSending(false);
+        }
     };
 
-    // Filter ads based on the selected type
     const filteredAds = ads.filter(ad => ad.type === adTypeFilter);
 
     return (
@@ -168,13 +192,15 @@ export default function AdminPage() {
                                             <TableHead>Email</TableHead>
                                             <TableHead>Date</TableHead>
                                             <TableHead>Expired</TableHead>
+                                            <TableHead>Views</TableHead>
+                                            <TableHead>Kontakty</TableHead>
                                             <TableHead className="text-right">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {filteredAds.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                                                     No ads found for type: {adTypeFilter}
                                                 </TableCell>
                                             </TableRow>
@@ -190,10 +216,12 @@ export default function AdminPage() {
                                                     <TableCell>{ad.email}</TableCell>
                                                     <TableCell>{new Date(ad.created_at).toLocaleDateString()}</TableCell>
                                                     <TableCell>{ad.expires_at ? new Date(ad.expires_at).toLocaleDateString() : '-'}</TableCell>
+                                                    <TableCell>{ad.views_count ?? 0}</TableCell>
+                                                    <TableCell>{ad.contact_count ?? 0}</TableCell>
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-2">
                                                             {ad.status === 'active' ? (
-                                                                <Button size="sm" variant="outline" onClick={() => handleAdStatusChange(ad.id, 'disabled')}>
+                                                                <Button size="sm" variant="outline" onClick={() => handleAdStatusChange(ad.id, 'banned')}>
                                                                     Disable
                                                                 </Button>
                                                             ) : (
@@ -260,18 +288,49 @@ export default function AdminPage() {
                 <TabsContent value="email">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Send Email</CardTitle>
-                            <CardDescription>
-                                Bulk email feature is largely disabled as selection logic was removed.
-                            </CardDescription>
+                            <CardTitle>Wyślij E-mail</CardTitle>
+                            <CardDescription>Wysyłka e-maili do wybranych segmentów.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">To:</label>
-                                <div className="text-sm text-muted-foreground p-2 border rounded-md bg-muted">
-                                    Feature disabled.
-                                </div>
+                                <label className="text-sm font-medium">Segment odbiorców</label>
+                                <Select value={emailSegment} onValueChange={setEmailSegment}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Wybierz segment" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="active">Aktywne ogłoszenia</SelectItem>
+                                        <SelectItem value="expired">Wygasłe ogłoszenia</SelectItem>
+                                        <SelectItem value="expiring_soon">Wygasające w ciągu 7 dni</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Temat</label>
+                                <Input
+                                    value={emailSubject}
+                                    onChange={e => setEmailSubject(e.target.value)}
+                                    placeholder="Temat wiadomości"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Treść</label>
+                                <Textarea
+                                    value={emailContent}
+                                    onChange={e => setEmailContent(e.target.value)}
+                                    placeholder="Treść wiadomości..."
+                                    rows={6}
+                                />
+                            </div>
+
+                            <Button
+                                onClick={handleSendEmail}
+                                disabled={!emailSegment || !emailSubject || !emailContent || isSending}
+                            >
+                                {isSending ? 'Wysyłanie...' : 'Wyślij e-mail'}
+                            </Button>
                         </CardContent>
                     </Card>
                 </TabsContent>
