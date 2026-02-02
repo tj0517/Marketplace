@@ -78,7 +78,7 @@ export default async function OfferPage({ params }: { params: Promise<{ slug: st
               </div>
 
               {/* Info */}
-              <div className="flex-1 text-center lg:text-left">
+              <div className="flex-1 text-center lg:text-left min-w-0">
                 {/* Type Badge */}
                 <div className="mb-3">
                   {isSearch ? (
@@ -93,18 +93,18 @@ export default async function OfferPage({ params }: { params: Promise<{ slug: st
                 </div>
 
                 {/* Title */}
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-4 break-words">
                   {ad.title}
                 </h1>
 
                 {/* Meta */}
                 <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 text-sm text-slate-500">
                   <span className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full">
-                    <MapPin className="size-4" />
-                    {ad.location}
+                    <MapPin className="size-4 shrink-0" />
+                    <span className="truncate max-w-[200px]">{ad.location}</span>
                   </span>
                   <span className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full">
-                    <Eye className="size-4" />
+                    <Eye className="size-4 shrink-0" />
                     {ad.views_count || 0} wyświetleń
                   </span>
                 </div>
@@ -126,7 +126,7 @@ export default async function OfferPage({ params }: { params: Promise<{ slug: st
         <div className="grid lg:grid-cols-3 gap-6">
 
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 min-w-0">
 
             {/* Description Card */}
             <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
@@ -137,7 +137,7 @@ export default async function OfferPage({ params }: { params: Promise<{ slug: st
                   </div>
                   <h2 className="text-xl font-bold text-slate-900">Opis</h2>
                 </div>
-                <p className="text-slate-600 leading-relaxed whitespace-pre-line text-base">
+                <p className="text-slate-600 leading-relaxed whitespace-pre-line text-base break-words">
                   {ad.description}
                 </p>
               </CardContent>
