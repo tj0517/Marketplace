@@ -126,7 +126,7 @@ function HeroSearchContent() {
         </div>
 
         {/* Quick Filters */}
-        <div className="flex flex-wrap justify-center items-center gap-2 mt-2">
+        <div className="flex flex-wrap justify-center items-center gap-2 mt-4 sm:mt-6">
           <span className="text-xs font-medium text-slate-400 uppercase tracking-wide mr-2">Popularne:</span>
           {quickFilters.map((filter) => (
             <button

@@ -1,7 +1,4 @@
-/**
- * Centralized configuration for environment-dependent values.
- * All hardcoded values that differ between dev/staging/production should be here.
- */
+
 
 const isProduction = process.env.NODE_ENV === 'production';
 

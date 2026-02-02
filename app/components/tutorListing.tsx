@@ -120,16 +120,16 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
                   </div>
 
                   {/* Price and CTA */}
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4 border-t border-slate-100">
                     <div>
                       <p className="text-xs text-slate-400 uppercase tracking-wide font-medium">Cena</p>
                       <p className="text-xl font-bold text-slate-900">{priceDisplay}</p>
                     </div>
                     <Button
                       asChild
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm"
+                      className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm"
                     >
-                      <Link href={`/offers/${ad.id}`} className="flex items-center gap-1.5">
+                      <Link href={`/offers/${ad.id}`} className="flex items-center justify-center gap-1.5">
                         Zobacz
                         <ArrowRight className="size-4" />
                       </Link>

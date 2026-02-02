@@ -22,7 +22,7 @@ export function Navbar({ showBackButton = false }: NavbarProps) {
                             <div className="flex items-center justify-center size-9 rounded-lg bg-indigo-600">
                                 <BookOpen className="size-5 text-white" />
                             </div>
-                            <span className="text-lg font-bold text-slate-900">
+                            <span className="text-lg font-bold text-slate-900 hidden sm:block">
                                 Korepetycje
                             </span>
                         </Link>
@@ -34,22 +34,22 @@ export function Navbar({ showBackButton = false }: NavbarProps) {
                     <Button
                         asChild
                         variant="outline"
-                        className="rounded-lg border-slate-200 px-3 sm:px-4 h-9 font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                        className="rounded-lg border-slate-200 px-2 sm:px-4 h-9 font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300"
                     >
                         <Link href="/add-offer?query=offer" className="flex items-center gap-1.5">
                             <Plus className="size-4" />
                             <span className="hidden sm:inline">Dodaj ogłoszenie</span>
-                            <span className="sm:hidden">Ogłoszenie</span>
+                            <span className="sm:hidden">Dodaj</span>
                         </Link>
                     </Button>
                     <Button
                         asChild
-                        className="rounded-lg bg-indigo-600 hover:bg-indigo-700 px-3 sm:px-4 h-9 font-medium text-white"
+                        className="rounded-lg bg-indigo-600 hover:bg-indigo-700 px-2 sm:px-4 h-9 font-medium text-white"
                     >
                         <Link href="/add-offer?query=search" className="flex items-center gap-1.5">
                             <Plus className="size-4" />
                             <span className="hidden sm:inline">Szukam korepetycji</span>
-                            <span className="sm:hidden">Zapytanie</span>
+                            <span className="sm:hidden">Szukam</span>
                         </Link>
                     </Button>
                 </div>

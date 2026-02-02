@@ -271,7 +271,7 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                         <div className="space-y-2">
                             <Label htmlFor="subject">Przedmiot</Label>
                             <Select name="subject" value={formData.subject} onValueChange={(val) => handleSelectChange('subject', val)} required>
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Wybierz przedmiot" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -317,7 +317,7 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                                     type="button"
                                     onClick={() => handleCheckboxChange(level, !formData.education_level.includes(level))}
                                     className={cn(
-                                        "px-4 py-2 rounded-full border text-sm font-medium transition-all",
+                                        "px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border text-sm font-medium transition-all text-center",
                                         formData.education_level.includes(level)
                                             ? "bg-indigo-600 text-white border-indigo-600"
                                             : "bg-white text-slate-700 border-slate-300 hover:border-indigo-300"
@@ -384,7 +384,7 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
 
                         <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="location">Lokalizacja</Label>
-                            <div className="flex gap-3 items-center">
+                            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
                                 <div className="flex-1">
                                     <Input
                                         id="location"
