@@ -1,9 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function getAdminTransactions() {
-    const supabase = await createClient();
+    const supabase = await createAdminClient();
 
     const { data: transactions, error } = await supabase
         .from('transactions')

@@ -141,7 +141,7 @@ export default function AdminPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {stats?.totalRevenue ? `${(stats.totalRevenue / 100).toFixed(2)} PLN` : '-'}
+                                    {stats?.totalRevenue ? `${(stats.totalRevenue).toFixed(2)} PLN` : '-'}
                                 </div>
                             </CardContent>
                         </Card>
@@ -270,7 +270,7 @@ export default function AdminPage() {
                                                 <TableCell className="capitalize">{tx.type}</TableCell>
                                                 <TableCell>{tx.ads?.title || 'Unknown Ad'}</TableCell>
                                                 <TableCell>{tx.ads?.email || '-'}</TableCell>
-                                                <TableCell>{(tx.amount / 100).toFixed(2)} PLN</TableCell>
+                                                <TableCell>{(tx.amount).toFixed(2)} PLN</TableCell>
                                                 <TableCell>
                                                     <Badge variant={tx.status === 'completed' ? 'default' : 'outline'}>
                                                         {tx.status}

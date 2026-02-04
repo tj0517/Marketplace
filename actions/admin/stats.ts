@@ -1,9 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function getAdminStats() {
-    const supabase = await createClient();
+    const supabase = await createAdminClient();
 
     // Get total ads count
     const { count: adsCount, error: adsError } = await supabase

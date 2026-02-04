@@ -1,14 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getBaseUrl, getPrice, PAYMENT_CONFIG, APP_CONFIG } from '@/lib/config';
+import {
+    getBaseUrl,
+    getPrice,
+    PAYMENT_CONFIG,
+    APP_CONFIG,
+    PAYMENT_PROVIDER,
+    isP24Enabled
+} from '@/lib/config';
 import crypto from 'crypto';
+import Stripe from 'stripe';
 
 const P24_MERCHANT_ID = process.env.P24_MERCHANT_ID;
 const P24_POS_ID = process.env.P24_POS_ID;
 const P24_CRC = process.env.P24_CRC;
 const P24_API_KEY = process.env.P24_API_KEY;
 
+const stripe = process.env.STRIPE_SECRET_KEY
+    ? new Stripe(process.env.STRIPE_SECRET_KEY)
+    : null;
+
 type TransactionType = 'activation' | 'extension' | 'bump';
+
+interface Ad {
+    id: string;
+    email: string;
+    title: string | null;
+    status: string;
+}
+
+interface Transaction {
+    id: string;
+    ad_id: string;
+    type: string;
+    amount: number;
+    status: string;
+}
 
 export async function POST(request: NextRequest) {
     try {
@@ -45,7 +72,7 @@ export async function POST(request: NextRequest) {
                 type,
                 amount: amount / 100,
                 status: 'pending',
-                payment_provider: 'p24',
+                payment_provider: PAYMENT_PROVIDER,
             })
             .select()
             .single();
@@ -55,134 +82,212 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Failed to create transaction' }, { status: 500 });
         }
 
-        if (!P24_MERCHANT_ID || !P24_POS_ID || !P24_CRC || !P24_API_KEY) {
-            console.warn('[P24] Credentials not configured - returning test mode response');
-
-            return NextResponse.json({
-                testMode: true,
-                message: 'P24 credentials not configured. Transaction created but payment skipped.',
-                transactionId: tx.id,
-                redirectUrl: `${baseUrl}/payment/test?session=${tx.id}&token=${management_token}`,
-            });
-        }
-
-        const sessionId = tx.id;
-        const safeTitle = ad.title || 'Ogłoszenie';
-        const description = `${APP_CONFIG.name} - ${type} - ${safeTitle.substring(0, 30)}`;
-
-        const signData = {
-            sessionId,
-            merchantId: parseInt(P24_MERCHANT_ID),
-            amount,
-            currency: PAYMENT_CONFIG.currency,
-            crc: P24_CRC,
-        };
-
-        const signString = JSON.stringify(signData)
-            .replace(/\\u[\dA-F]{4}/gi, function (match) {
-                return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
-            })
-            .replace(/\\\//g, '/');
-
-        const sign = crypto
-            .createHash('sha384')
-            .update(signString)
-            .digest('hex');
-
-        const p24RequestBody = {
-            merchantId: parseInt(P24_MERCHANT_ID),
-            posId: parseInt(P24_POS_ID),
-            sessionId,
-            amount,
-            currency: PAYMENT_CONFIG.currency,
-            description,
-            email: ad.email,
-            country: PAYMENT_CONFIG.country,
-            language: PAYMENT_CONFIG.language,
-            urlReturn: `${baseUrl}/payment/success?session=${sessionId}`,
-            urlStatus: `${baseUrl}/api/webhooks/p24`,
-            sign,
-        };
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-        let p24Response;
-        try {
-            p24Response = await fetch(`${PAYMENT_CONFIG.apiUrl}/api/v1/transaction/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Basic ${Buffer.from(`${P24_POS_ID}:${P24_API_KEY}`).toString('base64')}`,
-                },
-                body: JSON.stringify(p24RequestBody),
-                signal: controller.signal,
-            });
-        } catch (fetchError) {
-            clearTimeout(timeoutId);
-            if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-                console.error('[P24] Request timeout');
-                await supabase
-                    .from('transactions')
-                    .update({ status: 'failed', error_message: 'P24 request timeout' })
-                    .eq('id', tx.id);
-                return NextResponse.json({ error: 'Payment service timeout' }, { status: 504 });
-            }
-            throw fetchError;
-        }
-        clearTimeout(timeoutId);
-
-        if (!p24Response.ok) {
-            const errorText = await p24Response.text();
-            console.error('[P24] API request failed:', p24Response.status, errorText);
+        if (PAYMENT_PROVIDER === 'stripe' && stripe) {
+            return await createStripeSession(tx, ad, amount, type, baseUrl, supabase);
+        } else if (isP24Enabled()) {
+            return await createP24Session(tx, ad, amount, type, baseUrl, supabase);
+        } else {
+            console.error('[Payment] No payment provider configured');
             await supabase
                 .from('transactions')
-                .update({
-                    status: 'failed',
-                    error_message: `P24 API error: ${p24Response.status}`
-                })
+                .update({ status: 'failed', error_message: 'No payment provider configured' })
                 .eq('id', tx.id);
-            return NextResponse.json({ error: 'Payment service error' }, { status: 502 });
+            return NextResponse.json({ error: 'Payment system not configured' }, { status: 503 });
         }
 
-        const p24Result = await p24Response.json();
+    } catch (error) {
+        console.error('[Payment] Unexpected error:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+}
 
-        if (p24Result.data?.token) {
-            const { error: updateError } = await supabase
-                .from('transactions')
-                .update({ payment_session_id: p24Result.data.token })
-                .eq('id', tx.id);
+async function createStripeSession(
+    tx: Transaction,
+    ad: Ad,
+    amount: number,
+    type: string,
+    baseUrl: string,
+    supabase: ReturnType<typeof createAdminClient>
+) {
+    if (!stripe) {
+        return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 });
+    }
 
-            if (updateError) {
-                console.error('[P24] Failed to save token to database:', updateError);
-            }
+    const description = `${APP_CONFIG.name} - ${type} - ${(ad.title || 'Ogłoszenie').substring(0, 30)}`;
 
-            return NextResponse.json({
-                redirectUrl: `${PAYMENT_CONFIG.apiUrl}/trnRequest/${p24Result.data.token}`,
-                transactionId: tx.id,
-            });
-        }
+    try {
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card', 'p24', 'blik'],
+            line_items: [{
+                price_data: {
+                    currency: 'pln',
+                    product_data: { name: description },
+                    unit_amount: amount,
+                },
+                quantity: 1,
+            }],
+            mode: 'payment',
+            success_url: `${baseUrl}/payment/success?session=${tx.id}`,
+            cancel_url: `${baseUrl}/payment/error`,
+            customer_email: ad.email,
+            metadata: {
+                transaction_id: tx.id,
+                ad_id: ad.id,
+                type: type,
+            },
+        });
 
-        console.error('[P24] Registration failed:', p24Result);
+        await supabase
+            .from('transactions')
+            .update({ payment_session_id: session.id })
+            .eq('id', tx.id);
 
-        const errorMessage = p24Result.error
-            ? (typeof p24Result.error === 'string' ? p24Result.error : JSON.stringify(p24Result.error))
-            : 'P24 registration failed';
+        return NextResponse.json({
+            redirectUrl: session.url,
+            transactionId: tx.id,
+        });
+    } catch (error) {
+        console.error('[Stripe] Session creation failed:', error);
         await supabase
             .from('transactions')
             .update({
                 status: 'failed',
-                error_message: errorMessage
+                error_message: error instanceof Error ? error.message : 'Stripe session creation failed'
             })
             .eq('id', tx.id);
+        return NextResponse.json({ error: 'Payment initialization failed' }, { status: 500 });
+    }
+}
+
+async function createP24Session(
+    tx: Transaction,
+    ad: Ad,
+    amount: number,
+    type: string,
+    baseUrl: string,
+    supabase: ReturnType<typeof createAdminClient>
+) {
+    if (!P24_MERCHANT_ID || !P24_POS_ID || !P24_CRC || !P24_API_KEY) {
+        console.error('[P24] Credentials not configured');
+        await supabase
+            .from('transactions')
+            .update({ status: 'failed', error_message: 'P24 credentials not configured' })
+            .eq('id', tx.id);
+        return NextResponse.json({ error: 'Payment system not configured' }, { status: 503 });
+    }
+
+    const sessionId = tx.id;
+    const safeTitle = ad.title || 'Ogłoszenie';
+    const description = `${APP_CONFIG.name} - ${type} - ${safeTitle.substring(0, 30)}`;
+
+    const signData = {
+        sessionId,
+        merchantId: parseInt(P24_MERCHANT_ID),
+        amount,
+        currency: PAYMENT_CONFIG.currency,
+        crc: P24_CRC,
+    };
+
+    const signString = JSON.stringify(signData)
+        .replace(/\\u[\dA-F]{4}/gi, function (match) {
+            return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
+        })
+        .replace(/\\\//g, '/');
+
+    const sign = crypto
+        .createHash('sha384')
+        .update(signString)
+        .digest('hex');
+
+    const p24RequestBody = {
+        merchantId: parseInt(P24_MERCHANT_ID),
+        posId: parseInt(P24_POS_ID),
+        sessionId,
+        amount,
+        currency: PAYMENT_CONFIG.currency,
+        description,
+        email: ad.email,
+        country: PAYMENT_CONFIG.country,
+        language: PAYMENT_CONFIG.language,
+        urlReturn: `${baseUrl}/payment/success?session=${sessionId}`,
+        urlStatus: `${baseUrl}/api/webhooks/p24`,
+        sign,
+    };
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    let p24Response;
+    try {
+        p24Response = await fetch(`${PAYMENT_CONFIG.apiUrl}/api/v1/transaction/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${Buffer.from(`${P24_POS_ID}:${P24_API_KEY}`).toString('base64')}`,
+            },
+            body: JSON.stringify(p24RequestBody),
+            signal: controller.signal,
+        });
+    } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+            console.error('[P24] Request timeout');
+            await supabase
+                .from('transactions')
+                .update({ status: 'failed', error_message: 'P24 request timeout' })
+                .eq('id', tx.id);
+            return NextResponse.json({ error: 'Payment service timeout' }, { status: 504 });
+        }
+        throw fetchError;
+    }
+    clearTimeout(timeoutId);
+
+    if (!p24Response.ok) {
+        const errorText = await p24Response.text();
+        console.error('[P24] API request failed:', p24Response.status, errorText);
+        await supabase
+            .from('transactions')
+            .update({
+                status: 'failed',
+                error_message: `P24 API error: ${p24Response.status}`
+            })
+            .eq('id', tx.id);
+        return NextResponse.json({ error: 'Payment service error' }, { status: 502 });
+    }
+
+    const p24Result = await p24Response.json();
+
+    if (p24Result.data?.token) {
+        const { error: updateError } = await supabase
+            .from('transactions')
+            .update({ payment_session_id: p24Result.data.token })
+            .eq('id', tx.id);
+
+        if (updateError) {
+            console.error('[P24] Failed to save token to database:', updateError);
+        }
 
         return NextResponse.json({
-            error: 'Payment initialization failed',
-            details: p24Result.error
-        }, { status: 500 });
-
-    } catch (error) {
-        console.error('[P24] Unexpected error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+            redirectUrl: `${PAYMENT_CONFIG.apiUrl}/trnRequest/${p24Result.data.token}`,
+            transactionId: tx.id,
+        });
     }
+
+    console.error('[P24] Registration failed:', p24Result);
+
+    const errorMessage = p24Result.error
+        ? (typeof p24Result.error === 'string' ? p24Result.error : JSON.stringify(p24Result.error))
+        : 'P24 registration failed';
+    await supabase
+        .from('transactions')
+        .update({
+            status: 'failed',
+            error_message: errorMessage
+        })
+        .eq('id', tx.id);
+
+    return NextResponse.json({
+        error: 'Payment initialization failed',
+        details: p24Result.error
+    }, { status: 500 });
 }
