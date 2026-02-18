@@ -129,9 +129,6 @@ export const AD_CONFIG = {
     /** Extension period in days */
     extensionDays: parseInt(process.env.AD_EXTENSION_DAYS || '30', 10),
 
-    /** Bump/promote boost duration in days */
-    bumpDays: parseInt(process.env.AD_BUMP_DAYS || '7', 10),
-
     /** Days before expiry to send warning email */
     expiryWarningDays: parseInt(process.env.AD_EXPIRY_WARNING_DAYS || '3', 10),
 

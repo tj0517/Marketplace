@@ -24,7 +24,7 @@ const fetchAllAds = unstable_cache(
         const { data, error } = await supabase
             .from('ads')
             .select('id, type, title, description, subject, location, education_level, price_amount, price_unit, created_at, expires_at, views_count, tutor_gender, visible_at')
-            .neq('status', 'deleted')
+            .eq('status', 'active')
             .order('visible_at', { ascending: false });
 
         if (error) {

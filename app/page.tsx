@@ -5,6 +5,7 @@ import { Navbar } from "./components/navbar"
 import { Pagination } from "./components/pagination"
 import { BookOpen, ArrowRight, Heart } from "lucide-react"
 import Link from "next/link"
+import { APP_CONFIG } from "@/lib/config"
 
 
 export default async function Home({
@@ -41,7 +42,7 @@ export default async function Home({
                 <BookOpen className="size-4 text-white" />
               </div>
               <span className="text-lg font-bold text-white">
-                Korepetycje
+                {APP_CONFIG.name}
               </span>
             </Link>
 
@@ -60,10 +61,10 @@ export default async function Home({
             {/* Copyright */}
             <div className="pt-6 border-t border-slate-800 w-full">
               <p className="text-slate-500 text-sm flex items-center justify-center gap-1">
-                Stworzone z TJ.
+                Stworzone z {'\u2764\uFE0F'} przez {APP_CONFIG.companyName}
               </p>
               <p className="text-slate-600 text-xs mt-1">
-                © {new Date().getFullYear()} Korepetycje. Wszystkie prawa zastrzeżone.
+                © {new Date().getFullYear()} {APP_CONFIG.companyName}. Wszystkie prawa zastrzeżone.
               </p>
             </div>
           </div>

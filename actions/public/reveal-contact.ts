@@ -1,12 +1,21 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function revealContact(adId: string): Promise<string | null> {
-    // Validate adId format (UUID)
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!adId || !uuidRegex.test(adId)) {
         return null;
+    }
+
+    const headersList = await headers()
+    const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    const { allowed } = checkRateLimit(`reveal-contact:${ip}`)
+
+    if (!allowed) {
+        return null
     }
 
     const supabase = await createClient()
@@ -18,7 +27,6 @@ export async function revealContact(adId: string): Promise<string | null> {
         .single()
 
     if (error || !data) {
-        console.error('Error revealing contact:', error)
         return null
     }
 
