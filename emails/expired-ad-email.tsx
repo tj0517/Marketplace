@@ -37,7 +37,7 @@ export const ExpiredAdEmail = ({
                 <Hr style={{ borderColor: '#e6ebf1', margin: '20px 0' }} />
 
                 <Text style={{ fontSize: '14px', color: '#888', textAlign: 'center' }}>
-                    Korepetycje Marketplace - Dziękujemy że jesteś z nami!
+                    Lekcjo - Dziękujemy że jesteś z nami!
                 </Text>
             </Container>
         </Body>

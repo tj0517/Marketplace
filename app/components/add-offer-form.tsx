@@ -206,7 +206,7 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
 
     const placeholders = {
         offer: {
-            title: "np. Korepetycje z matematyki - Tanio!",
+            title: "np. Matematyka dla licealistów - Tanio!",
             description: "Opisz swoje doświadczenie, metody nauczania..."
         },
         search: {

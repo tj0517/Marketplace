@@ -14,10 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Korepetycje - Znajdź najlepszego korepetytora | Lekcjo.pl",
+  title: "Lekcjo - Znajdź najlepszego korepetytora | Lekcjo.pl",
   description: "Największa platforma korepetycji w Polsce. Znajdź korepetytora lub ucznia w kilka minut. Matematyka, angielski, fizyka i wiele więcej.",
   openGraph: {
-    title: "Korepetycje - Znajdź najlepszego korepetytora | Lekcjo.pl",
+    title: "Lekcjo - Znajdź najlepszego korepetytora | Lekcjo.pl",
     description: "Największa platforma korepetycji w Polsce. Znajdź korepetytora lub ucznia w kilka minut.",
     url: "https://lekcjo.pl",
     siteName: "Lekcjo.pl",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Korepetycje - Znajdź najlepszego korepetytora | Lekcjo.pl",
+    title: "Lekcjo - Znajdź najlepszego korepetytora | Lekcjo.pl",
     description: "Największa platforma korepetycji w Polsce. Znajdź korepetytora lub ucznia w kilka minut.",
   },
 };

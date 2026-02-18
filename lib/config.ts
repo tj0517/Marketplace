@@ -8,7 +8,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 export const APP_CONFIG = {
     /** Application name used in emails and UI */
-    name: process.env.NEXT_PUBLIC_APP_NAME || 'Korepetycje',
+    name: process.env.NEXT_PUBLIC_APP_NAME || 'Lekcjo',
 
     /** Company/brand name for formal communications */
     companyName: process.env.NEXT_PUBLIC_COMPANY_NAME || 'Lekcjo.pl',
@@ -31,7 +31,7 @@ export const EMAIL_CONFIG = {
     fromEmail: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
 
     /** Sender name for transactional emails */
-    fromName: process.env.RESEND_FROM_NAME || 'Korepetycje',
+    fromName: process.env.RESEND_FROM_NAME || 'Lekcjo',
 
     /** No-reply sender email for admin communications */
     noreplyEmail: process.env.RESEND_NOREPLY_EMAIL || 'noreply@resend.dev',

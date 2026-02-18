@@ -23,7 +23,7 @@ export function Navbar({ showBackButton = false }: NavbarProps) {
                                 <BookOpen className="size-5 text-white" />
                             </div>
                             <span className="text-lg font-bold text-slate-900 hidden sm:block">
-                                Korepetycje
+                                Lekcjo
                             </span>
                         </Link>
                     )}

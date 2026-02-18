@@ -170,7 +170,7 @@ export default function AdminPage() {
                                         size="sm"
                                         onClick={() => setAdTypeFilter('offer')}
                                     >
-                                        Offers (Korepetycje)
+                                        Offers (Lekcjo)
                                     </Button>
                                     <Button
                                         variant={adTypeFilter === 'search' ? 'default' : 'ghost'}
