@@ -446,6 +446,30 @@ export default function AdminPage() {
                                 </div>
                             </div>
                             <div className="space-y-2">
+                                <label className="text-sm font-medium">Poziomy nauczania</label>
+                                <div className="flex flex-wrap gap-3">
+                                    {['Szkoła podstawowa', 'Szkoła średnia', 'Matura', 'Studia', 'Dorosły'].map(level => (
+                                        <label key={level} className="flex items-center gap-2 text-sm cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={(featuredForm.education_level ?? []).includes(level)}
+                                                onChange={e => {
+                                                    const current = featuredForm.education_level ?? [];
+                                                    setFeaturedForm(f => ({
+                                                        ...f,
+                                                        education_level: e.target.checked
+                                                            ? [...current, level]
+                                                            : current.filter(l => l !== level)
+                                                    }));
+                                                }}
+                                                className="accent-indigo-600"
+                                            />
+                                            {level}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="space-y-2">
                                 <label className="text-sm font-medium">Opis *</label>
                                 <Textarea value={featuredForm.description} onChange={e => setFeaturedForm(f => ({ ...f, description: e.target.value }))} placeholder="Opis ogłoszenia..." rows={4} />
                             </div>
