@@ -21,7 +21,8 @@ import { getAdminAds, updateAdStatus, deleteAd } from '@/actions/admin/ads';
 import { getAdminTransactions } from '@/actions/admin/transactions';
 import { getAdminStats } from '@/actions/admin/stats';
 import { sendBulkEmail } from '@/actions/admin/email';
-import { RefreshCw, AlertTriangle } from 'lucide-react';
+import { createFeaturedAd, toggleFeaturedAd, extendFeaturedAd, type CreateFeaturedAdInput } from '@/actions/admin/featured-ad';
+import { RefreshCw, AlertTriangle, Star } from 'lucide-react';
 
 export default function AdminPage() {
     const [stats, setStats] = useState<any>(null);
@@ -35,6 +36,15 @@ export default function AdminPage() {
     const [error, setError] = useState<string | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
     const [emailResult, setEmailResult] = useState<string | null>(null);
+
+    // Featured ad form state
+    const [featuredForm, setFeaturedForm] = useState<CreateFeaturedAdInput>({
+        title: '', description: '', subject: '', location: '', email: '',
+        phone_contact: '',
+        price_amount: null, price_unit: 'godz',
+    });
+    const [isCreatingFeatured, setIsCreatingFeatured] = useState(false);
+    const [featuredResult, setFeaturedResult] = useState<string | null>(null);
 
     const [adTypeFilter, setAdTypeFilter] = useState<'offer' | 'search'>('offer');
 
@@ -111,6 +121,46 @@ export default function AdminPage() {
         }
     };
 
+    const handleCreateFeatured = async () => {
+        if (!featuredForm.title || !featuredForm.description || !featuredForm.subject || !featuredForm.location || !featuredForm.email) {
+            setFeaturedResult('❌ Wypełnij wszystkie wymagane pola.');
+            return;
+        }
+        setIsCreatingFeatured(true);
+        setFeaturedResult(null);
+        try {
+            await createFeaturedAd(featuredForm);
+            setFeaturedResult('✅ Ogłoszenie promowane dodane i widoczne na górze listy.');
+            setFeaturedForm({ title: '', description: '', subject: '', location: '', email: '', price_amount: null, price_unit: 'godz' });
+            await loadData();
+        } catch (err) {
+            setFeaturedResult('❌ Błąd podczas dodawania ogłoszenia.');
+        } finally {
+            setIsCreatingFeatured(false);
+        }
+    };
+
+    const handleToggleFeatured = async (adId: string, currentFeatured: boolean) => {
+        setActionError(null);
+        try {
+            await toggleFeaturedAd(adId, !currentFeatured);
+            await loadData();
+        } catch (err) {
+            setActionError('Nie udało się zmienić statusu promowania.');
+        }
+    };
+
+    const handleExtendFeatured = async (adId: string) => {
+        if (!window.confirm('Przedłużyć ogłoszenie o 1 rok?')) return;
+        setActionError(null);
+        try {
+            await extendFeaturedAd(adId);
+            await loadData();
+        } catch (err) {
+            setActionError('Nie udało się przedłużyć ogłoszenia.');
+        }
+    };
+
     const filteredAds = ads.filter(ad => ad.type === adTypeFilter);
 
     return (
@@ -138,10 +188,11 @@ export default function AdminPage() {
             )}
 
             <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="overview">Przegląd</TabsTrigger>
                     <TabsTrigger value="ads">Ogłoszenia</TabsTrigger>
                     <TabsTrigger value="transactions">Transakcje</TabsTrigger>
+                    <TabsTrigger value="featured">⭐ Promowane</TabsTrigger>
                     <TabsTrigger value="email">Masowy e-mail</TabsTrigger>
                 </TabsList>
 
@@ -258,6 +309,19 @@ export default function AdminPage() {
                                                     <TableCell>{ad.contact_count ?? 0}</TableCell>
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                variant={ad.is_featured ? 'default' : 'outline'}
+                                                                onClick={() => handleToggleFeatured(ad.id, ad.is_featured)}
+                                                                title={ad.is_featured ? 'Odpromuj' : 'Promuj'}
+                                                            >
+                                                                <Star className={`size-3 ${ad.is_featured ? 'fill-white' : ''}`} />
+                                                            </Button>
+                                                            {ad.is_featured && (
+                                                                <Button size="sm" variant="outline" onClick={() => handleExtendFeatured(ad.id)} title="Przedłuż o rok">
+                                                                    +1 rok
+                                                                </Button>
+                                                            )}
                                                             {ad.status === 'active' ? (
                                                                 <Button size="sm" variant="outline" onClick={() => handleAdStatusChange(ad.id, 'banned')}>
                                                                     Zablokuj
@@ -338,6 +402,57 @@ export default function AdminPage() {
                                     </TableBody>
                                 </Table>
                             </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                {/* ── FEATURED ── */}
+                <TabsContent value="featured">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Star className="size-5 fill-yellow-400 text-yellow-400" />
+                                Dodaj ogłoszenie promowane
+                            </CardTitle>
+                            <CardDescription>
+                                Ogłoszenie pojawi się zawsze pierwsze na liście. Bezpłatne.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Tytuł *</label>
+                                    <Input value={featuredForm.title} onChange={e => setFeaturedForm(f => ({ ...f, title: e.target.value }))} placeholder="np. Korepetycje z matematyki" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Przedmiot *</label>
+                                    <Input value={featuredForm.subject} onChange={e => setFeaturedForm(f => ({ ...f, subject: e.target.value }))} placeholder="np. Matematyka" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Lokalizacja *</label>
+                                    <Input value={featuredForm.location} onChange={e => setFeaturedForm(f => ({ ...f, location: e.target.value }))} placeholder="np. Warszawa / Online" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Telefon kontaktowy</label>
+                                    <Input value={featuredForm.phone_contact ?? ''} onChange={e => setFeaturedForm(f => ({ ...f, phone_contact: e.target.value }))} placeholder="+48 123 456 789" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Email kontaktowy *</label>
+                                    <Input type="email" value={featuredForm.email} onChange={e => setFeaturedForm(f => ({ ...f, email: e.target.value }))} placeholder="kontakt@lekcjo.pl" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Cena (zł)</label>
+                                    <Input type="number" value={featuredForm.price_amount ?? ''} onChange={e => setFeaturedForm(f => ({ ...f, price_amount: e.target.value ? Number(e.target.value) : null }))} placeholder="np. 80" />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Opis *</label>
+                                <Textarea value={featuredForm.description} onChange={e => setFeaturedForm(f => ({ ...f, description: e.target.value }))} placeholder="Opis ogłoszenia..." rows={4} />
+                            </div>
+                            {featuredResult && <p className="text-sm font-medium">{featuredResult}</p>}
+                            <Button onClick={handleCreateFeatured} disabled={isCreatingFeatured}>
+                                {isCreatingFeatured ? 'Dodawanie...' : '⭐ Dodaj ogłoszenie promowane'}
+                            </Button>
                         </CardContent>
                     </Card>
                 </TabsContent>
