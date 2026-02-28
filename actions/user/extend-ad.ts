@@ -57,6 +57,7 @@ export async function extendAdExpiration(token: string): Promise<ExtendAdResult>
         .from('ads')
         .update({
             expires_at: newExpiresAt.toISOString(),
+            visible_at: now.toISOString(),
             status: 'active',
             expiring_warning_sent_at: null,
         })

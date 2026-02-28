@@ -66,6 +66,9 @@ specyfikacja.md
 braki.md
 testy-manualne.md
 braki/
+deployment-readiness.md
+problemy-przed-launch.md
+audit-deploy.md
 
 # Example files (keep tracked)
 !.env.example

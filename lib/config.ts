@@ -110,7 +110,7 @@ export const AD_CONFIG = {
     extensionDays: parseInt(process.env.AD_EXTENSION_DAYS || '30', 10),
 
     /** Days before expiry to send warning email */
-    expiryWarningDays: parseInt(process.env.AD_EXPIRY_WARNING_DAYS || '3', 10),
+    expiryWarningDays: parseInt(process.env.AD_EXPIRY_WARNING_DAYS || '5', 10),
 
     /** Transaction timeout in hours (for abandoned payments) */
     transactionTimeoutHours: parseInt(process.env.TRANSACTION_TIMEOUT_HOURS || '1', 10),
