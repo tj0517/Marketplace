@@ -51,11 +51,8 @@ export const EMAIL_CONFIG = {
 } as const;
 
 // =============================================================================
-// PAYMENT CONFIGURATION
+// PAYMENT CONFIGURATION (P24 only)
 // =============================================================================
-
-/** Payment provider selector: 'p24' or 'stripe' */
-export const PAYMENT_PROVIDER = (process.env.PAYMENT_PROVIDER || 'p24') as 'p24' | 'stripe';
 
 export const PAYMENT_CONFIG = {
     /** Currency for payments */
@@ -89,33 +86,16 @@ export const PAYMENT_CONFIG = {
 } as const;
 
 // =============================================================================
-// STRIPE CONFIGURATION
-// =============================================================================
-
-export const STRIPE_CONFIG = {
-    secretKey: process.env.STRIPE_SECRET_KEY,
-    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-} as const;
-
-// =============================================================================
 // PAYMENT PROVIDER HELPERS
 // =============================================================================
-
-/**
- * Check if Stripe is enabled and configured
- */
-export function isStripeEnabled(): boolean {
-    return PAYMENT_PROVIDER === 'stripe' && !!STRIPE_CONFIG.secretKey;
-}
 
 /**
  * Check if P24 is enabled and configured
  */
 export function isP24Enabled(): boolean {
-    return PAYMENT_PROVIDER === 'p24' &&
-        !!(process.env.P24_MERCHANT_ID &&
-            process.env.P24_CRC &&
-            process.env.P24_API_KEY);
+    return !!(process.env.P24_MERCHANT_ID &&
+        process.env.P24_CRC &&
+        process.env.P24_API_KEY);
 }
 
 // =============================================================================

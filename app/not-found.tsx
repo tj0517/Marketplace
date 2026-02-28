@@ -27,7 +27,7 @@ export default function NotFound() {
                         Wróć do strony głównej
                     </Button>
                 </Link>
-                <Link href="/">
+                <Link href="/?type=offer">
                     <Button variant="outline" size="lg" className="w-full font-semibold border-slate-200 sm:w-auto">
                         Przeglądaj ogłoszenia
                     </Button>

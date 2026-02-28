@@ -61,7 +61,7 @@ export default async function Home({
             {/* Copyright */}
             <div className="pt-6 border-t border-slate-800 w-full">
               <p className="text-slate-500 text-sm flex items-center justify-center gap-1">
-                Stworzone z  przez {APP_CONFIG.companyName}
+                Stworzone z <Heart className="size-3 fill-red-500 text-red-500" /> przez {APP_CONFIG.companyName}
               </p>
               <p className="text-slate-600 text-xs mt-1">
                 © {new Date().getFullYear()} {APP_CONFIG.companyName}. Wszystkie prawa zastrzeżone.

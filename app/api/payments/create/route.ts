@@ -5,20 +5,14 @@ import {
     getPrice,
     PAYMENT_CONFIG,
     APP_CONFIG,
-    PAYMENT_PROVIDER,
     isP24Enabled
 } from '@/lib/config';
 import crypto from 'crypto';
-import Stripe from 'stripe';
 
 const P24_MERCHANT_ID = process.env.P24_MERCHANT_ID;
 const P24_POS_ID = process.env.P24_POS_ID;
 const P24_CRC = process.env.P24_CRC;
 const P24_API_KEY = process.env.P24_API_KEY;
-
-const stripe = process.env.STRIPE_SECRET_KEY
-    ? new Stripe(process.env.STRIPE_SECRET_KEY)
-    : null;
 
 type TransactionType = 'activation' | 'extension' | 'bump';
 
@@ -72,7 +66,7 @@ export async function POST(request: NextRequest) {
                 type,
                 amount: amount / 100,
                 status: 'pending',
-                payment_provider: PAYMENT_PROVIDER,
+                payment_provider: 'p24',
             })
             .select()
             .single();
@@ -82,15 +76,13 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Failed to create transaction' }, { status: 500 });
         }
 
-        if (PAYMENT_PROVIDER === 'stripe' && stripe) {
-            return await createStripeSession(tx, ad, amount, type, baseUrl, supabase);
-        } else if (isP24Enabled()) {
+        if (isP24Enabled()) {
             return await createP24Session(tx, ad, amount, type, baseUrl, supabase);
         } else {
-            console.error('[Payment] No payment provider configured');
+            console.error('[Payment] P24 credentials not configured');
             await supabase
                 .from('transactions')
-                .update({ status: 'failed', error_message: 'No payment provider configured' })
+                .update({ status: 'failed', error_message: 'P24 not configured' })
                 .eq('id', tx.id);
             return NextResponse.json({ error: 'Payment system not configured' }, { status: 503 });
         }
@@ -98,64 +90,6 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('[Payment] Unexpected error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }
-}
-
-async function createStripeSession(
-    tx: Transaction,
-    ad: Ad,
-    amount: number,
-    type: string,
-    baseUrl: string,
-    supabase: ReturnType<typeof createAdminClient>
-) {
-    if (!stripe) {
-        return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 });
-    }
-
-    const description = `${APP_CONFIG.name} - ${type} - ${(ad.title || 'Ogłoszenie').substring(0, 30)}`;
-
-    try {
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card', 'p24', 'blik'],
-            line_items: [{
-                price_data: {
-                    currency: 'pln',
-                    product_data: { name: description },
-                    unit_amount: amount,
-                },
-                quantity: 1,
-            }],
-            mode: 'payment',
-            success_url: `${baseUrl}/payment/success?session=${tx.id}`,
-            cancel_url: `${baseUrl}/payment/error`,
-            customer_email: ad.email,
-            metadata: {
-                transaction_id: tx.id,
-                ad_id: ad.id,
-                type: type,
-            },
-        });
-
-        await supabase
-            .from('transactions')
-            .update({ payment_session_id: session.id })
-            .eq('id', tx.id);
-
-        return NextResponse.json({
-            redirectUrl: session.url,
-            transactionId: tx.id,
-        });
-    } catch (error) {
-        console.error('[Stripe] Session creation failed:', error);
-        await supabase
-            .from('transactions')
-            .update({
-                status: 'failed',
-                error_message: error instanceof Error ? error.message : 'Stripe session creation failed'
-            })
-            .eq('id', tx.id);
-        return NextResponse.json({ error: 'Payment initialization failed' }, { status: 500 });
     }
 }
 
