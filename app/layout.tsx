@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,6 +44,13 @@ export default function RootLayout({
       >
         {children}
         <Toaster position="top-right" richColors />
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-XC9JGJEGBK" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-XC9JGJEGBK');
+        `}</Script>
       </body>
     </html>
   );
