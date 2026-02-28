@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
@@ -21,6 +21,7 @@ import { getAdminAds, updateAdStatus, deleteAd } from '@/actions/admin/ads';
 import { getAdminTransactions } from '@/actions/admin/transactions';
 import { getAdminStats } from '@/actions/admin/stats';
 import { sendBulkEmail } from '@/actions/admin/email';
+import { RefreshCw, AlertTriangle } from 'lucide-react';
 
 export default function AdminPage() {
     const [stats, setStats] = useState<any>(null);
@@ -31,16 +32,15 @@ export default function AdminPage() {
     const [emailSegment, setEmailSegment] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState('overview');
+    const [error, setError] = useState<string | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
+    const [emailResult, setEmailResult] = useState<string | null>(null);
 
     const [adTypeFilter, setAdTypeFilter] = useState<'offer' | 'search'>('offer');
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setLoading(true);
+        setError(null);
         try {
             const [statsData, adsData, txData] = await Promise.all([
                 getAdminStats(),
@@ -50,30 +50,36 @@ export default function AdminPage() {
             setStats(statsData);
             setAds(adsData || []);
             setTransactions(txData || []);
-        } catch (error) {
-            console.error('Failed to load admin data', error);
+        } catch (err) {
+            console.error('Failed to load admin data', err);
+            setError('Nie udało się załadować danych. Odśwież stronę.');
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
 
     const handleAdStatusChange = async (adId: string, status: 'active' | 'expired' | 'banned') => {
+        setActionError(null);
         try {
             await updateAdStatus(adId, status);
-            loadData(); // Reload to reflect changes
-        } catch (error) {
+            await loadData();
+        } catch (err) {
+            setActionError('Nie udało się zmienić statusu ogłoszenia.');
         }
     };
 
-    const handleDeleteAd = async (adId: string) => {
-        if (confirm('Are you sure you want to delete this ad?')) {
-            try {
-                await deleteAd(adId);
-                loadData();
-            } catch (error) {
-                console.error('[Client] handleDeleteAd failed:', error);
-                alert('Failed to delete ad. Check console for details.');
-            }
+    const handleDeleteAd = async (adId: string, title: string) => {
+        if (!window.confirm(`Czy na pewno chcesz usunąć ogłoszenie "${title}"?`)) return;
+        setActionError(null);
+        try {
+            await deleteAd(adId);
+            await loadData();
+        } catch (err) {
+            setActionError('Nie udało się usunąć ogłoszenia.');
         }
     };
 
@@ -84,23 +90,22 @@ export default function AdminPage() {
             expiring_soon: 'Wygasające w ciągu 7 dni',
         };
 
-        if (!confirm(`Czy na pewno chcesz wysłać e-mail do segmentu "${segmentLabels[emailSegment]}"?`)) {
-            return;
-        }
+        if (!window.confirm(`Czy na pewno chcesz wysłać e-mail do segmentu "${segmentLabels[emailSegment]}"?`)) return;
 
         setIsSending(true);
+        setEmailResult(null);
         try {
             const result = await sendBulkEmail({
                 segment: emailSegment as 'active' | 'expired' | 'expiring_soon',
                 subject: emailSubject,
                 content: emailContent,
             });
-            alert(`Wysłano ${result.sentCount} e-maili.`);
+            setEmailResult(`✅ Wysłano ${result.sentCount} e-maili.`);
             setEmailSubject('');
             setEmailContent('');
             setEmailSegment('');
-        } catch (error) {
-            alert('Błąd podczas wysyłania.');
+        } catch (err) {
+            setEmailResult('❌ Błąd podczas wysyłania e-maili.');
         } finally {
             setIsSending(false);
         }
@@ -109,60 +114,79 @@ export default function AdminPage() {
     const filteredAds = ads.filter(ad => ad.type === adTypeFilter);
 
     return (
-        <div className="container mx-auto p-6 space-y-8">
+        <div className="container mx-auto p-6 space-y-6">
             <header className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-                <Button onClick={loadData} variant="outline" disabled={loading}>
-                    {loading ? 'Refreshing...' : 'Refresh Data'}
+                <h1 className="text-3xl font-bold tracking-tight">Panel Administratora</h1>
+                <Button onClick={loadData} variant="outline" disabled={loading} size="sm">
+                    <RefreshCw className={`mr-2 size-4 ${loading ? 'animate-spin' : ''}`} />
+                    {loading ? 'Ładowanie...' : 'Odśwież'}
                 </Button>
             </header>
 
-            <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
+            {error && (
+                <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm">
+                    <AlertTriangle className="size-4 shrink-0" />
+                    {error}
+                </div>
+            )}
+
+            {actionError && (
+                <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm">
+                    <AlertTriangle className="size-4 shrink-0" />
+                    {actionError}
+                </div>
+            )}
+
+            <Tabs defaultValue="overview" className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="ads">Ads Management</TabsTrigger>
-                    <TabsTrigger value="transactions">Transactions</TabsTrigger>
-                    <TabsTrigger value="email">Email Center</TabsTrigger>
+                    <TabsTrigger value="overview">Przegląd</TabsTrigger>
+                    <TabsTrigger value="ads">Ogłoszenia</TabsTrigger>
+                    <TabsTrigger value="transactions">Transakcje</TabsTrigger>
+                    <TabsTrigger value="email">Masowy e-mail</TabsTrigger>
                 </TabsList>
 
+                {/* ── OVERVIEW ── */}
                 <TabsContent value="overview" className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-3">
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Ads</CardTitle>
+                                <CardTitle className="text-sm font-medium">Wszystkie ogłoszenia</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stats?.adsCount ?? '-'}</div>
+                                <div className="text-2xl font-bold">{stats?.adsCount ?? '—'}</div>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                                <CardTitle className="text-sm font-medium">Przychód łączny</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {stats?.totalRevenue ? `${(stats.totalRevenue).toFixed(2)} PLN` : '-'}
+                                    {stats?.totalRevenue != null ? `${stats.totalRevenue.toFixed(2)} PLN` : '—'}
                                 </div>
                             </CardContent>
                         </Card>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Completed Transactions</CardTitle>
+                                <CardTitle className="text-sm font-medium">Zakończone płatności</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stats?.successfulPaymentsCount ?? '-'}</div>
+                                <div className="text-2xl font-bold">{stats?.successfulPaymentsCount ?? '—'}</div>
                             </CardContent>
                         </Card>
                     </div>
                 </TabsContent>
 
+                {/* ── ADS ── */}
                 <TabsContent value="ads">
                     <Card>
                         <CardHeader>
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <CardTitle>Ads Management</CardTitle>
-                                    <CardDescription>Manage all ads in the system.</CardDescription>
+                                    <CardTitle>Zarządzanie ogłoszeniami</CardTitle>
+                                    <CardDescription>
+                                        {filteredAds.length} ogłoszeń · typ: {adTypeFilter === 'offer' ? 'Oferuję' : 'Szukam'}
+                                    </CardDescription>
                                 </div>
                                 <div className="flex gap-2 bg-muted p-1 rounded-lg">
                                     <Button
@@ -170,14 +194,14 @@ export default function AdminPage() {
                                         size="sm"
                                         onClick={() => setAdTypeFilter('offer')}
                                     >
-                                        Offers (Lekcjo)
+                                        Oferuję
                                     </Button>
                                     <Button
                                         variant={adTypeFilter === 'search' ? 'default' : 'ghost'}
                                         size="sm"
                                         onClick={() => setAdTypeFilter('search')}
                                     >
-                                        Search (Szukam)
+                                        Szukam
                                     </Button>
                                 </div>
                             </div>
@@ -188,54 +212,67 @@ export default function AdminPage() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Status</TableHead>
-                                            <TableHead>Title</TableHead>
-                                            <TableHead>Email</TableHead>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead>Expired</TableHead>
-                                            <TableHead>Views</TableHead>
+                                            <TableHead>Tytuł</TableHead>
+                                            <TableHead>E-mail</TableHead>
+                                            <TableHead>Dodano</TableHead>
+                                            <TableHead>Wygasa</TableHead>
+                                            <TableHead>Wyświetlenia</TableHead>
                                             <TableHead>Kontakty</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
+                                            <TableHead className="text-right">Akcje</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredAds.length === 0 ? (
+                                        {loading ? (
                                             <TableRow>
                                                 <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                                                    No ads found for type: {adTypeFilter}
+                                                    Ładowanie...
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : filteredAds.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                                    Brak ogłoszeń typu „{adTypeFilter === 'offer' ? 'Oferuję' : 'Szukam'}"
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
                                             filteredAds.map((ad) => (
                                                 <TableRow key={ad.id}>
                                                     <TableCell>
-                                                        <Badge variant={ad.status === 'active' ? 'default' : 'secondary'}>
+                                                        <Badge variant={
+                                                            ad.status === 'active' ? 'default' :
+                                                                ad.status === 'banned' ? 'destructive' :
+                                                                    'secondary'
+                                                        }>
                                                             {ad.status}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell className="font-medium"> <Link href={"/offers/" + ad.id}>{ad.title.slice(0, 20) + "..."}</Link></TableCell>
-                                                    <TableCell>{ad.email}</TableCell>
-                                                    <TableCell>{new Date(ad.created_at).toLocaleDateString()}</TableCell>
-                                                    <TableCell>{ad.expires_at ? new Date(ad.expires_at).toLocaleDateString() : '-'}</TableCell>
+                                                    <TableCell className="font-medium max-w-[180px] truncate">
+                                                        <Link href={`/offers/${ad.id}`} className="hover:underline" target="_blank">
+                                                            {ad.title || '(bez tytułu)'}
+                                                        </Link>
+                                                    </TableCell>
+                                                    <TableCell className="text-sm">{ad.email}</TableCell>
+                                                    <TableCell className="text-sm">{new Date(ad.created_at).toLocaleDateString('pl-PL')}</TableCell>
+                                                    <TableCell className="text-sm">{ad.expires_at ? new Date(ad.expires_at).toLocaleDateString('pl-PL') : '—'}</TableCell>
                                                     <TableCell>{ad.views_count ?? 0}</TableCell>
                                                     <TableCell>{ad.contact_count ?? 0}</TableCell>
                                                     <TableCell className="text-right">
                                                         <div className="flex justify-end gap-2">
                                                             {ad.status === 'active' ? (
                                                                 <Button size="sm" variant="outline" onClick={() => handleAdStatusChange(ad.id, 'banned')}>
-                                                                    Disable
+                                                                    Zablokuj
                                                                 </Button>
                                                             ) : (
                                                                 <Button size="sm" variant="outline" onClick={() => handleAdStatusChange(ad.id, 'active')}>
-                                                                    Enable
+                                                                    Aktywuj
                                                                 </Button>
                                                             )}
-                                                            <Button size="sm" variant="destructive" onClick={() => handleDeleteAd(ad.id)}>
-                                                                Delete
+                                                            <Button size="sm" variant="destructive" onClick={() => handleDeleteAd(ad.id, ad.title || '(bez tytułu)')}>
+                                                                Usuń
                                                             </Button>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
-
                                             ))
                                         )}
                                     </TableBody>
@@ -245,39 +282,59 @@ export default function AdminPage() {
                     </Card>
                 </TabsContent>
 
+                {/* ── TRANSACTIONS ── */}
                 <TabsContent value="transactions">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Transactions</CardTitle>
+                            <CardTitle>Transakcje</CardTitle>
+                            <CardDescription>{transactions.length} transakcji łącznie</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="rounded-md border">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead>Type</TableHead>
-                                            <TableHead>Ad</TableHead>
-                                            <TableHead>Email</TableHead>
-                                            <TableHead>Amount</TableHead>
+                                            <TableHead>Data</TableHead>
+                                            <TableHead>Typ</TableHead>
+                                            <TableHead>Ogłoszenie</TableHead>
+                                            <TableHead>E-mail</TableHead>
+                                            <TableHead>Kwota</TableHead>
                                             <TableHead>Status</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {transactions.map((tx) => (
-                                            <TableRow key={tx.id}>
-                                                <TableCell>{new Date(tx.created_at).toLocaleDateString()}</TableCell>
-                                                <TableCell className="capitalize">{tx.type}</TableCell>
-                                                <TableCell>{tx.ads?.title || 'Unknown Ad'}</TableCell>
-                                                <TableCell>{tx.ads?.email || '-'}</TableCell>
-                                                <TableCell>{(tx.amount).toFixed(2)} PLN</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={tx.status === 'completed' ? 'default' : 'outline'}>
-                                                        {tx.status}
-                                                    </Badge>
+                                        {loading ? (
+                                            <TableRow>
+                                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                                    Ładowanie...
                                                 </TableCell>
                                             </TableRow>
-                                        ))}
+                                        ) : transactions.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                                    Brak transakcji
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : (
+                                            transactions.map((tx) => (
+                                                <TableRow key={tx.id}>
+                                                    <TableCell className="text-sm">{new Date(tx.created_at).toLocaleDateString('pl-PL')}</TableCell>
+                                                    <TableCell className="capitalize">{tx.type}</TableCell>
+                                                    <TableCell className="max-w-[160px] truncate">{tx.ads?.title || '—'}</TableCell>
+                                                    <TableCell className="text-sm">{tx.ads?.email || '—'}</TableCell>
+                                                    <TableCell>{tx.amount.toFixed(2)} PLN</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={
+                                                            tx.status === 'completed' ? 'default' :
+                                                                tx.status === 'failed' ? 'destructive' :
+                                                                    'outline'
+                                                        }>
+                                                            {tx.status}
+                                                        </Badge>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -285,16 +342,17 @@ export default function AdminPage() {
                     </Card>
                 </TabsContent>
 
+                {/* ── EMAIL ── */}
                 <TabsContent value="email">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Wyślij E-mail</CardTitle>
-                            <CardDescription>Wysyłka e-maili do wybranych segmentów.</CardDescription>
+                            <CardTitle>Masowy E-mail</CardTitle>
+                            <CardDescription>Wyślij wiadomość do wybranej grupy ogłoszeniodawców.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Segment odbiorców</label>
-                                <Select value={emailSegment} onValueChange={setEmailSegment}>
+                                <Select value={emailSegment} onValueChange={(v) => { setEmailSegment(v); setEmailResult(null); }}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Wybierz segment" />
                                     </SelectTrigger>
@@ -316,7 +374,7 @@ export default function AdminPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Treść</label>
+                                <label className="text-sm font-medium">Treść (plain text)</label>
                                 <Textarea
                                     value={emailContent}
                                     onChange={e => setEmailContent(e.target.value)}
@@ -324,6 +382,10 @@ export default function AdminPage() {
                                     rows={6}
                                 />
                             </div>
+
+                            {emailResult && (
+                                <p className="text-sm font-medium">{emailResult}</p>
+                            )}
 
                             <Button
                                 onClick={handleSendEmail}

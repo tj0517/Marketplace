@@ -64,7 +64,6 @@ export async function POST(request: NextRequest) {
 
         const supabase = createAdminClient();
 
-        // @ts-ignore - RPC function defined in database
         const { data, error } = await supabase.rpc('complete_payment', {
             p_transaction_id: sessionId,
             p_payment_id: orderId?.toString() || null,

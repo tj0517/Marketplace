@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
 
         const supabase = createAdminClient();
 
-        // @ts-ignore - RPC function defined in database
         const { error } = await supabase.rpc('increment_contact_count', {
             ad_id: adId
         });

@@ -1,37 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Lekcjo.pl — Marketplace korepetycji
 
-## Getting Started
+Platforma ogłoszeniowa łącząca uczniów z korepetytorami. Zbudowana na Next.js 16, Supabase i Przelewy24.
 
-First, run the development server:
+## Stack
+
+- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS v4
+- **Backend:** Next.js API Routes (server actions)
+- **Baza danych:** Supabase (PostgreSQL)
+- **Płatności:** Przelewy24 (P24)
+- **Email:** Resend
+- **Deploy:** Vercel
+
+## Uruchomienie lokalne
 
 ```bash
+npm install
+cp .env.p24.example .env.local   # uzupełnij zmienne środowiskowe
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Zmienne środowiskowe
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Zmienna | Opis |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL projektu Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Klucz anon Supabase |
+| `SUPABASE_SERVICE_ROLE_KEY` | Klucz service role Supabase |
+| `NEXT_PUBLIC_APP_URL` | URL aplikacji (np. `https://lekcjo.pl`) |
+| `P24_MERCHANT_ID` | ID Sprzedawcy z panelu Przelewy24 |
+| `P24_POS_ID` | ID Punktu Sprzedaży (zazwyczaj = MERCHANT_ID) |
+| `P24_API_KEY` | Klucz API z panelu Przelewy24 |
+| `P24_CRC` | Klucz CRC z panelu Przelewy24 |
+| `P24_SANDBOX` | `true` dla środowiska testowego |
+| `RESEND_API_KEY` | Klucz API Resend |
+| `RESEND_FROM_EMAIL` | Adres nadawcy emaili |
+| `CRON_SECRET` | Token autoryzacji dla `/api/cron` |
+| `ADMIN_USER` | Login do panelu `/admin` |
+| `ADMIN_PASS` | Hasło do panelu `/admin` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Webhook P24
 
-## Learn More
+W panelu Przelewy24 ustaw:
+- **URL statusu:** `https://lekcjo.pl/api/webhooks/p24`
+- **URL powrotu:** `https://lekcjo.pl/payment/success`
 
-To learn more about Next.js, take a look at the following resources:
+## Cron job
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Endpoint `/api/cron` obsługuje:
+- Wysyłkę emaili o zbliżającym się wygaśnięciu ogłoszenia
+- Wygaszanie przeterminowanych ogłoszeń
+- Oznaczanie porzuconych transakcji jako `failed`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Wywołanie:
+```bash
+curl -H "Authorization: Bearer <CRON_SECRET>" https://lekcjo.pl/api/cron
+```
 
-## Deploy on Vercel
+Zalecana konfiguracja cronjoba: co 24h (np. przez Vercel Cron lub zewnętrzny scheduler).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Panel administracyjny
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# Marketplace
+Dostępny pod `/admin`, zabezpieczony HTTP Basic Auth (`ADMIN_USER` / `ADMIN_PASS`).
+
+## Deploy
+
+1. Wdróż na Vercel
+2. Ustaw zmienne środowiskowe w Vercel → Settings → Environment Variables
+3. Ustaw `P24_SANDBOX=false` i live credentials P24
+4. Zarejestruj webhook w panelu Przelewy24
+5. Skonfiguruj Vercel Cron dla `/api/cron`
