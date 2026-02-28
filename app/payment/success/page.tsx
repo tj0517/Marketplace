@@ -7,7 +7,7 @@ import { CheckCircle, Clock, XCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent } from '@/app/components/ui/card';
 
-type PaymentStatus = 'pending' | 'completed' | 'failed' | 'unknown' | 'loading';
+type PaymentStatus = 'pending' | 'completed' | 'failed' | 'unknown' | 'loading' | 'timeout';
 
 const MAX_POLL_ATTEMPTS = 30;
 
@@ -33,14 +33,21 @@ function PaymentSuccessContent() {
             setStatus(data.status);
             if (data.adId) setAdId(data.adId);
 
+            pollCountRef.current += 1;
+
             // Stop polling if completed, failed, or max attempts reached
-            if (data.status !== 'pending' || pollCountRef.current >= MAX_POLL_ATTEMPTS) {
+            if (data.status !== 'pending') {
                 if (intervalRef.current) {
                     clearInterval(intervalRef.current);
                     intervalRef.current = null;
                 }
+            } else if (pollCountRef.current >= MAX_POLL_ATTEMPTS) {
+                if (intervalRef.current) {
+                    clearInterval(intervalRef.current);
+                    intervalRef.current = null;
+                }
+                setStatus('timeout');
             }
-            pollCountRef.current += 1;
         } catch (error) {
             console.error('Failed to check payment status:', error);
             setStatus('unknown');
@@ -141,6 +148,23 @@ function PaymentSuccessContent() {
                         <Button asChild variant="outline" className="w-full">
                             <Link href="/offers">
                                 Wróć do listy ogłoszeń
+                            </Link>
+                        </Button>
+                    </>
+                )}
+
+                {status === 'timeout' && (
+                    <>
+                        <Clock className="size-16 text-amber-500 mx-auto mb-4" />
+                        <h1 className="text-2xl font-bold text-slate-900 mb-2">
+                            Płatność w trakcie weryfikacji
+                        </h1>
+                        <p className="text-slate-600 mb-6">
+                            Potwierdzenie płatności trwa dłużej niż zwykle. Sprawdź swoją skrzynkę e-mail — wyślemy potwierdzenie, gdy płatność zostanie zaksięgowana.
+                        </p>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/">
+                                Wróć do strony głównej
                             </Link>
                         </Button>
                     </>
