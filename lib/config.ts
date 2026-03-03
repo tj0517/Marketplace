@@ -66,7 +66,7 @@ export const PAYMENT_CONFIG = {
 
     /** Prices in groszy (1 PLN = 100 groszy) */
     prices: {
-        activation: parseInt(process.env.PRICE_ACTIVATION || '1000', 10),
+        activation: parseInt(process.env.PRICE_ACTIVATION || '10', 10),
         extension: parseInt(process.env.PRICE_EXTENSION || '1000', 10),
         bump: parseInt(process.env.PRICE_BUMP || '1000', 10),
     },

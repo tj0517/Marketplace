@@ -29,8 +29,10 @@ export default async function Home({
       <HeroSearchSection />
 
 
-      <TutorListing initialAds={ads} />
-      <Pagination totalPages={Math.ceil(adsCount / limit)} />
+      <div id="wyniki">
+        <TutorListing initialAds={ads} />
+        <Pagination totalPages={Math.ceil(adsCount / limit)} />
+      </div>
 
       {/* Footer */}
       <footer className="bg-slate-900 border-t border-slate-800">

@@ -38,12 +38,6 @@ npm run dev
 | `ADMIN_USER` | Login do panelu `/admin` |
 | `ADMIN_PASS` | Hasło do panelu `/admin` |
 
-## Webhook P24
-
-W panelu Przelewy24 ustaw:
-- **URL statusu:** `https://lekcjo.pl/api/webhooks/p24`
-- **URL powrotu:** `https://lekcjo.pl/payment/success`
-
 ## Cron job
 
 Endpoint `/api/cron` obsługuje:

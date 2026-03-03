@@ -39,17 +39,16 @@ export function Navbar({ showBackButton = false }: NavbarProps) {
                         <Link href="/add-offer?query=offer" className="flex items-center gap-1.5">
                             <Plus className="size-4" />
                             <span className="hidden sm:inline">Dodaj ogłoszenie</span>
-                            <span className="sm:hidden">Dodaj</span>
+                            <span className="sm:hidden">Dodaj ogłoszenie</span>
                         </Link>
                     </Button>
                     <Button
                         asChild
-                        className="rounded-lg bg-indigo-600 hover:bg-indigo-700 px-2 sm:px-4 h-9 font-medium text-white"
+                        className="hidden sm:flex rounded-lg bg-indigo-600 hover:bg-indigo-700 px-4 h-9 font-medium text-white"
                     >
                         <Link href="/add-offer?query=search" className="flex items-center gap-1.5">
                             <Plus className="size-4" />
-                            <span className="hidden sm:inline">Szukam korepetycji</span>
-                            <span className="sm:hidden">Szukam</span>
+                            <span>Szukam korepetycji</span>
                         </Link>
                     </Button>
                 </div>
