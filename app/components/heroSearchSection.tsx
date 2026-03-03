@@ -34,7 +34,7 @@ function HeroSearchContent() {
   const scrollToResults = () => {
     setTimeout(() => {
       document.getElementById("wyniki")?.scrollIntoView({ behavior: "smooth", block: "start" })
-    }, 100)
+    }, 200)
   }
 
   const handleSearch = () => {
@@ -46,7 +46,7 @@ function HeroSearchContent() {
     }
     params.set("type", activeTab)
     params.delete("page")
-    router.push(`/?${params.toString()}`)
+    router.push(`/?${params.toString()}`, { scroll: false })
     scrollToResults()
   }
 
@@ -145,7 +145,7 @@ function HeroSearchContent() {
                 params.set("query", filter)
                 params.set("type", activeTab)
                 params.delete("page") // Reset pagination
-                router.push(`/?${params.toString()}`)
+                router.push(`/?${params.toString()}`, { scroll: false })
                 scrollToResults()
               }}
             >

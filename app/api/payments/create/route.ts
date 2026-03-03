@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
             .insert({
                 ad_id,
                 type,
-                amount: amount / 100,
+                amount: Math.round(amount / 100),
                 status: 'pending',
                 payment_provider: 'p24',
             })

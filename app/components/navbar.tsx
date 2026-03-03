@@ -33,8 +33,7 @@ export function Navbar({ showBackButton = false }: NavbarProps) {
                 <div className="flex items-center gap-2 sm:gap-3">
                     <Button
                         asChild
-                        variant="outline"
-                        className="rounded-lg border-slate-200 px-2 sm:px-4 h-9 font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                        className="rounded-lg bg-indigo-600 hover:bg-indigo-700 px-2 sm:px-4 h-9 font-medium text-white"
                     >
                         <Link href="/add-offer?query=offer" className="flex items-center gap-1.5">
                             <Plus className="size-4" />
@@ -44,7 +43,8 @@ export function Navbar({ showBackButton = false }: NavbarProps) {
                     </Button>
                     <Button
                         asChild
-                        className="hidden sm:flex rounded-lg bg-indigo-600 hover:bg-indigo-700 px-4 h-9 font-medium text-white"
+                        variant="outline"
+                        className="hidden sm:flex rounded-lg border-slate-200 px-4 h-9 font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300"
                     >
                         <Link href="/add-offer?query=search" className="flex items-center gap-1.5">
                             <Plus className="size-4" />
