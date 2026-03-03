@@ -30,24 +30,23 @@ export function Navbar({ showBackButton = false }: NavbarProps) {
                 </div>
 
                 {/* Right Actions */}
-                <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-3">
                     <Button
                         asChild
-                        className="rounded-lg bg-indigo-600 hover:bg-indigo-700 px-2 sm:px-4 h-9 font-medium text-white"
+                        className="rounded-lg bg-indigo-600 hover:bg-indigo-700 px-3 sm:px-4 h-8 sm:h-9 text-xs sm:text-sm font-medium text-white"
                     >
                         <Link href="/add-offer?query=offer" className="flex items-center gap-1.5">
-                            <Plus className="size-4" />
-                            <span className="hidden sm:inline">Dodaj ogłoszenie</span>
-                            <span className="sm:hidden">Dodaj ogłoszenie</span>
+                            <Plus className="size-3.5 sm:size-4" />
+                            <span>Dodaj ogłoszenie</span>
                         </Link>
                     </Button>
                     <Button
                         asChild
                         variant="outline"
-                        className="hidden sm:flex rounded-lg border-slate-200 px-4 h-9 font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                        className="rounded-lg border-slate-200 px-3 sm:px-4 h-8 sm:h-9 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300"
                     >
                         <Link href="/add-offer?query=search" className="flex items-center gap-1.5">
-                            <Plus className="size-4" />
+                            <Plus className="size-3.5 sm:size-4" />
                             <span>Szukam korepetycji</span>
                         </Link>
                     </Button>
