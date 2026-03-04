@@ -10,7 +10,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
 export type PublicAd = Pick<Ad,
-    'id' | 'type' | 'title' | 'description' | 'subject' | 'location' |
+    'id' | 'type' | 'title' | 'description' | 'subject' | 'subjects' | 'location' |
     'education_level' | 'price_amount' | 'price_unit' | 'created_at' |
     'expires_at' | 'views_count' | 'tutor_gender' | 'visible_at' | 'is_featured'
 >;
@@ -23,7 +23,7 @@ const fetchAllAds = unstable_cache(
 
         const { data, error } = await supabase
             .from('ads')
-            .select('id, type, title, description, subject, location, education_level, price_amount, price_unit, created_at, expires_at, views_count, tutor_gender, visible_at, is_featured')
+            .select('id, type, title, description, subject, subjects, location, education_level, price_amount, price_unit, created_at, expires_at, views_count, tutor_gender, visible_at, is_featured')
             .eq('status', 'active')
             .order('visible_at', { ascending: false });
 
@@ -52,10 +52,11 @@ export const filterAds = (ads: PublicAd[], query: string | undefined, type: 'off
         const titleMatch = ad.title?.toLowerCase().includes(searchTerm) ?? false;
         const descriptionMatch = ad.description?.toLowerCase().includes(searchTerm) ?? false;
         const subjectMatch = ad.subject?.toLowerCase().includes(searchTerm) ?? false;
+        const subjectsMatch = ad.subjects?.some(s => s.toLowerCase().includes(searchTerm)) ?? false;
         const locationMatch = ad.location?.toLowerCase().includes(searchTerm) ?? false;
         const levelMatch = ad.education_level?.some(level => level.toLowerCase().includes(searchTerm)) ?? false;
 
-        return titleMatch || descriptionMatch || subjectMatch || locationMatch || levelMatch;
+        return titleMatch || descriptionMatch || subjectMatch || subjectsMatch || locationMatch || levelMatch;
     });
 };
 
@@ -83,7 +84,7 @@ export const getAdPublic = async (id: string): Promise<PublicAd | null> => {
 
     const { data, error } = await supabase
         .from('ads')
-        .select('id, type, title, description, subject, location, education_level, price_amount, price_unit, created_at, expires_at, views_count, tutor_gender, visible_at, is_featured')
+        .select('id, type, title, description, subject, subjects, location, education_level, price_amount, price_unit, created_at, expires_at, views_count, tutor_gender, visible_at, is_featured')
         .eq('id', id)
         .neq('status', 'deleted')
         .single();

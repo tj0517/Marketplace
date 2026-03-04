@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { MapPin, Calendar, Eye, CheckCircle2, BookOpen, GraduationCap, ArrowRight, Phone } from "lucide-react"
+import { MapPin, Calendar, Eye, CheckCircle2, BookOpen, GraduationCap, Phone, Clock } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
 import { Badge } from "@/app/components/ui/badge"
 import { Card, CardContent } from "@/app/components/ui/card"
@@ -109,10 +109,14 @@ export default async function OfferPage({ params }: { params: Promise<{ slug: st
                   </span>
                 </div>
 
-                {/* Subject Pill */}
-                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl mt-4 ${accentLight}`}>
-                  <div className={`size-2.5 rounded-full ${accentBg}`} />
-                  <span className={`font-semibold ${accentText}`}>{ad.subject}</span>
+                {/* Subject Pills */}
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {(ad.subjects && ad.subjects.length > 0 ? ad.subjects : [ad.subject]).map((s) => s && (
+                    <div key={s} className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl ${accentLight}`}>
+                      <div className={`size-2.5 rounded-full ${accentBg}`} />
+                      <span className={`font-semibold ${accentText}`}>{s}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -156,14 +160,18 @@ export default async function OfferPage({ params }: { params: Promise<{ slug: st
                 </div>
 
                 <div className="space-y-6">
-                  {/* Subject */}
+                  {/* Subjects */}
                   <div className={`rounded-xl p-5 ${accentLight}`}>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
                       {subjectLabel}
                     </p>
-                    <div className="flex items-center gap-2">
-                      <div className={`size-3 rounded-full ${accentBg}`} />
-                      <span className={`text-lg font-bold ${accentText}`}>{ad.subject}</span>
+                    <div className="flex flex-wrap gap-2">
+                      {(ad.subjects && ad.subjects.length > 0 ? ad.subjects : [ad.subject]).map((s) => s && (
+                        <div key={s} className="flex items-center gap-2">
+                          <div className={`size-3 rounded-full ${accentBg}`} />
+                          <span className={`text-lg font-bold ${accentText}`}>{s}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -228,7 +236,7 @@ export default async function OfferPage({ params }: { params: Promise<{ slug: st
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 pb-4 border-b border-slate-100">
+                    <div className={`flex items-center gap-4 pb-4 border-b border-slate-100 ${showPrice && ad.price_unit ? '' : 'border-b-0'}`}>
                       <div className={`size-10 rounded-xl ${accentLight} flex items-center justify-center shrink-0`}>
                         <Eye className={`size-5 ${accentText}`} />
                       </div>
@@ -237,6 +245,18 @@ export default async function OfferPage({ params }: { params: Promise<{ slug: st
                         <p className="font-semibold text-slate-900">{ad.views_count || 0}</p>
                       </div>
                     </div>
+
+                    {showPrice && ad.price_unit && (
+                      <div className="flex items-center gap-4 pb-4 border-b border-slate-100">
+                        <div className={`size-10 rounded-xl ${accentLight} flex items-center justify-center shrink-0`}>
+                          <Clock className={`size-5 ${accentText}`} />
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 font-medium uppercase">Czas zajęć</p>
+                          <p className="font-semibold text-slate-900">{ad.price_unit}</p>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex items-center gap-4">
                       <div className="size-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">

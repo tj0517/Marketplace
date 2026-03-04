@@ -23,7 +23,7 @@ type Ad = Database['public']['Tables']['ads']['Row']
 
 const subjects = [
     "Matematyka", "Język Angielski", "Język Niemiecki", "Język Hiszpański",
-    "Fizyka", "Chemia", "Biologia", "Geografia", "Historia", "Informatyka", "Muzyka"
+    "Fizyka", "Chemia", "Biologia", "Geografia", "Historia", "Informatyka", "Muzyka", "Inne"
 ]
 
 const levels = ["Szkoła Podstawowa", "Liceum / Technikum", "Studia", "Dorośli", "Inne"]
@@ -42,6 +42,14 @@ export function EditAdForm({ ad }: EditAdFormProps) {
     const updateAdWithToken = updateAd.bind(null, ad.management_token!)
     const [state, action, isPending] = useActionState(updateAdWithToken, null)
     const [selectedLevels, setSelectedLevels] = useState<string[]>(ad.education_level || [])
+
+    const initialSubjects = (ad.subjects && ad.subjects.length > 0) ? ad.subjects : (ad.subject ? [ad.subject] : [])
+    const [selectedSubjects, setSelectedSubjects] = useState<string[]>(() => {
+        return initialSubjects.map(s => subjects.includes(s) ? s : 'Inne')
+    })
+    const [customSubject, setCustomSubject] = useState(() => {
+        return initialSubjects.find(s => !subjects.includes(s)) || ''
+    })
 
     const toggleLevel = (level: string) => {
         setSelectedLevels(prev =>
@@ -104,19 +112,45 @@ export function EditAdForm({ ad }: EditAdFormProps) {
                         {state?.errors?.title && <p className="text-sm text-red-500">{state.errors.title}</p>}
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="subject">Przedmiot</Label>
-                        <Select name="subject" defaultValue={ad.subject} required>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Wybierz przedmiot" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {subjects.map(s => (
-                                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {state?.errors?.subject && <p className="text-sm text-red-500">{state.errors.subject}</p>}
+                    <div className="space-y-2 md:col-span-2">
+                        <Label>Przedmioty</Label>
+                        <div className="flex flex-wrap gap-2">
+                            {subjects.map((s) => (
+                                <button
+                                    key={s}
+                                    type="button"
+                                    onClick={() => setSelectedSubjects(prev =>
+                                        prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]
+                                    )}
+                                    className={cn(
+                                        "px-4 py-2 rounded-full border text-sm font-medium transition-all",
+                                        selectedSubjects.includes(s)
+                                            ? "bg-indigo-600 text-white border-indigo-600"
+                                            : "bg-white text-slate-700 border-slate-300 hover:border-indigo-300"
+                                    )}
+                                >
+                                    {s}
+                                </button>
+                            ))}
+                        </div>
+                        {selectedSubjects.includes('Inne') && (
+                            <Input
+                                placeholder="Wpisz nazwę przedmiotu (max 50 znaków)"
+                                value={customSubject}
+                                onChange={(e) => setCustomSubject(e.target.value.slice(0, 50))}
+                                maxLength={50}
+                                className="mt-2"
+                            />
+                        )}
+                        {/* Hidden inputs for subjects */}
+                        {selectedSubjects.map((s) => {
+                            if (s === 'Inne') return null;
+                            return <input key={s} type="hidden" name="subjects" value={s} />;
+                        })}
+                        {selectedSubjects.includes('Inne') && customSubject.trim() && (
+                            <input type="hidden" name="subjects" value={customSubject.trim()} />
+                        )}
+                        {state?.errors?.subjects && <p className="text-sm text-red-500">{state.errors.subjects}</p>}
                     </div>
                 </div>
 

@@ -64,7 +64,16 @@ export async function POST(request: NextRequest) {
 
         const supabase = createAdminClient();
 
-        const { data, error } = await supabase.rpc('complete_payment', {
+        // Check idempotency — if webhook was already processed, skip email
+        const { data: existingTx } = await supabase
+            .from('transactions')
+            .select('webhook_received_at, type, ad_id')
+            .eq('id', sessionId)
+            .single();
+
+        const alreadyProcessed = !!existingTx?.webhook_received_at;
+
+        const { error } = await supabase.rpc('complete_payment', {
             p_transaction_id: sessionId,
             p_payment_id: orderId?.toString() || null,
         });
@@ -79,11 +88,12 @@ export async function POST(request: NextRequest) {
             .update({ webhook_received_at: new Date().toISOString() })
             .eq('id', sessionId);
 
-        const { data: tx } = await supabase
-            .from('transactions')
-            .select('type, ad_id')
-            .eq('id', sessionId)
-            .single();
+        if (alreadyProcessed) {
+            console.log('[P24 Webhook] Duplicate webhook ignored for session:', sessionId);
+            return NextResponse.json({ status: 'ok' });
+        }
+
+        const tx = existingTx;
 
         if (tx?.type === 'activation') {
             const { data: ad } = await supabase

@@ -34,6 +34,7 @@ export type Database = {
           price_unit: string | null
           status: Database["public"]["Enums"]["ad_status"]
           subject: string
+          subjects: string[] | null
           title: string
           tutor_gender: string | null
           type: Database["public"]["Enums"]["ad_type"]
@@ -59,6 +60,7 @@ export type Database = {
           price_unit?: string | null
           status?: Database["public"]["Enums"]["ad_status"]
           subject: string
+          subjects?: string[] | null
           title: string
           tutor_gender?: string | null
           type?: Database["public"]["Enums"]["ad_type"]
@@ -84,6 +86,7 @@ export type Database = {
           price_unit?: string | null
           status?: Database["public"]["Enums"]["ad_status"]
           subject?: string
+          subjects?: string[] | null
           title?: string
           tutor_gender?: string | null
           type?: Database["public"]["Enums"]["ad_type"]

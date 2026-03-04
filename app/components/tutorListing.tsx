@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link"
-import { MapPin, GraduationCap, SearchX, ArrowRight } from "lucide-react"
+import { MapPin, GraduationCap, SearchX, ArrowRight, Clock } from "lucide-react"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { Card, CardContent } from "./ui/card"
@@ -90,12 +90,17 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
                       <h3 className="font-semibold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
                         {ad.title}
                       </h3>
-                      <Badge
-                        variant="secondary"
-                        className="mt-1.5 bg-indigo-50 text-indigo-700 border-0 text-xs font-medium"
-                      >
-                        {ad.subject}
-                      </Badge>
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {(ad.subjects && ad.subjects.length > 0 ? ad.subjects : [ad.subject]).map((s) => s && (
+                          <Badge
+                            key={s}
+                            variant="secondary"
+                            className="bg-indigo-50 text-indigo-700 border-0 text-xs font-medium"
+                          >
+                            {s}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
@@ -124,6 +129,12 @@ export function TutorListing({ initialAds = [] }: TutorListingProps) {
                     <div>
                       <p className="text-xs text-slate-400 uppercase tracking-wide font-medium">Cena</p>
                       <p className="text-xl font-bold text-slate-900">{priceDisplay}</p>
+                      {ad.type !== 'search' && ad.price_unit && (
+                        <span className="flex items-center gap-1 text-xs text-slate-500 mt-0.5">
+                          <Clock className="size-3" />
+                          {ad.price_unit}
+                        </span>
+                      )}
                     </div>
                     <Button
                       asChild

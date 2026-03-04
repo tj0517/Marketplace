@@ -7,12 +7,13 @@ import { getPriceInCurrency } from '@/lib/config'
 
 export async function createInactiveOffer(prevState: any, formData: FormData) {
     const educationLevels = formData.getAll('education_level')
+    const subjects = formData.getAll('subjects') as string[]
 
     const validatedFields = adSchema.safeParse({
         type: formData.get('type'),
         title: formData.get('title'),
         description: formData.get('description'),
-        subject: formData.get('subject'),
+        subjects,
         location: formData.get('location'),
         education_level: educationLevels,
         price_amount: formData.get('price_amount'),
@@ -73,7 +74,8 @@ export async function createInactiveOffer(prevState: any, formData: FormData) {
                 type: validatedFields.data.type,
                 title: validatedFields.data.title,
                 description: validatedFields.data.description,
-                subject: validatedFields.data.subject,
+                subjects: validatedFields.data.subjects,
+                subject: validatedFields.data.subjects[0] ?? '',
                 location: validatedFields.data.location,
                 education_level: validatedFields.data.education_level,
                 price_amount: validatedFields.data.price_amount,
@@ -94,7 +96,8 @@ export async function createInactiveOffer(prevState: any, formData: FormData) {
             type: validatedFields.data.type,
             title: validatedFields.data.title,
             description: validatedFields.data.description,
-            subject: validatedFields.data.subject,
+            subjects: validatedFields.data.subjects,
+            subject: validatedFields.data.subjects[0] ?? '',
             location: validatedFields.data.location,
             education_level: validatedFields.data.education_level,
             price_amount: validatedFields.data.price_amount,

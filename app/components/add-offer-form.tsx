@@ -54,11 +54,11 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
     const [acceptedTerms, setAcceptedTerms] = useState(false)
     const [otherLevelText, setOtherLevelText] = useState('')
     const [customSubject, setCustomSubject] = useState('')
+    const [selectedSubjects, setSelectedSubjects] = useState<string[]>([])
 
     const [formData, setFormData] = useState({
         type,
         title: '',
-        subject: '',
         description: '',
         education_level: [] as string[],
         price_amount: '',
@@ -221,9 +221,13 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
         <form className="space-y-6" onReset={(e) => e.preventDefault()} noValidate>
             <input type="hidden" name="type" value={type} />
             <input type="hidden" name="offerId" value={tempOfferData?.offerId || ''} />
-            {/* Override subject if 'Inne' is selected with custom value */}
-            {formData.subject === 'Inne' && customSubject.trim() && (
-                <input type="hidden" name="subject" value={customSubject.trim()} />
+            {/* subjects hidden inputs */}
+            {selectedSubjects.map((s) => {
+                if (s === 'Inne') return null;
+                return <input key={s} type="hidden" name="subjects" value={s} />;
+            })}
+            {selectedSubjects.includes('Inne') && customSubject.trim() && (
+                <input type="hidden" name="subjects" value={customSubject.trim()} />
             )}
             {formData.education_level.map((level) => {
                 // Skip 'Inne' if custom text is provided (custom text will be added separately)
@@ -268,19 +272,31 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                             {errors?.title && <p className="text-sm text-red-500">{errors.title}</p>}
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="subject">Przedmiot</Label>
-                            <Select name="subject" value={formData.subject} onValueChange={(val) => handleSelectChange('subject', val)} required>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Wybierz przedmiot" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {subjects.map(s => (
-                                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {formData.subject === 'Inne' && (
+                        <div className="space-y-2 md:col-span-2">
+                            <Label>Przedmioty</Label>
+                            <div className="flex flex-wrap gap-2">
+                                {subjects.map((s) => (
+                                    <button
+                                        key={s}
+                                        type="button"
+                                        onClick={() => {
+                                            if (step !== 1) return
+                                            setSelectedSubjects(prev =>
+                                                prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]
+                                            )
+                                        }}
+                                        className={cn(
+                                            "px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border text-sm font-medium transition-all text-center",
+                                            selectedSubjects.includes(s)
+                                                ? "bg-indigo-600 text-white border-indigo-600"
+                                                : "bg-white text-slate-700 border-slate-300 hover:border-indigo-300"
+                                        )}
+                                    >
+                                        {s}
+                                    </button>
+                                ))}
+                            </div>
+                            {selectedSubjects.includes('Inne') && (
                                 <Input
                                     placeholder="Wpisz nazwę przedmiotu (max 50 znaków)"
                                     value={customSubject}
@@ -289,7 +305,7 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                                     className="mt-2"
                                 />
                             )}
-                            {errors?.subject && <p className="text-sm text-red-500">{errors.subject}</p>}
+                            {errors?.subjects && <p className="text-sm text-red-500">{errors.subjects}</p>}
                         </div>
                     </div>
 

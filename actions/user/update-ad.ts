@@ -28,7 +28,7 @@ export async function updateAd(
         type: formData.get('type'),
         title: formData.get('title'),
         description: formData.get('description'),
-        subject: formData.get('subject'),
+        subjects: formData.getAll('subjects') as string[],
         location: finalLocation,
         education_level: formData.getAll('education_level'),
         price_amount: formData.get('price_amount'),
@@ -65,7 +65,8 @@ export async function updateAd(
         .update({
             title: data.title,
             description: data.description,
-            subject: data.subject,
+            subjects: data.subjects,
+            subject: data.subjects[0] ?? '',
             location: data.location,
             education_level: data.education_level,
             price_amount: data.type === 'search' ? null : data.price_amount,
