@@ -66,8 +66,6 @@ export const PAYMENT_CONFIG = {
 
     /** Prices in groszy (1 PLN = 100 groszy) */
     prices: {
-        activation: parseInt(process.env.PRICE_ACTIVATION || '1000', 10),
-        extension: parseInt(process.env.PRICE_EXTENSION || '1000', 10),
         bump: parseInt(process.env.PRICE_BUMP || '1000', 10),
     },
 
@@ -103,25 +101,12 @@ export function isP24Enabled(): boolean {
 // =============================================================================
 
 export const AD_CONFIG = {
-    /** Ad validity period in days after activation */
-    validityDays: parseInt(process.env.AD_VALIDITY_DAYS || '30', 10),
-
-    /** Extension period in days */
-    extensionDays: parseInt(process.env.AD_EXTENSION_DAYS || '30', 10),
-
-    /** Days before expiry to send warning email */
-    expiryWarningDays: parseInt(process.env.AD_EXPIRY_WARNING_DAYS || '5', 10),
+    /** Cooldown in days after deletion before a new ad can be created for the same phone */
+    deletionCooldownDays: parseInt(process.env.AD_DELETION_COOLDOWN_DAYS || '14', 10),
 
     /** Transaction timeout in hours (for abandoned payments) */
     transactionTimeoutHours: parseInt(process.env.TRANSACTION_TIMEOUT_HOURS || '1', 10),
 
-    // Computed values in milliseconds
-    get validityMs() {
-        return this.validityDays * 24 * 60 * 60 * 1000;
-    },
-    get extensionMs() {
-        return this.extensionDays * 24 * 60 * 60 * 1000;
-    },
     get transactionTimeoutMs() {
         return this.transactionTimeoutHours * 60 * 60 * 1000;
     },
@@ -145,13 +130,13 @@ export function getBaseUrl(): string {
 /**
  * Get price for a transaction type in groszy
  */
-export function getPrice(type: 'activation' | 'extension' | 'bump'): number {
+export function getPrice(type: 'bump'): number {
     return PAYMENT_CONFIG.prices[type];
 }
 
 /**
  * Get price for a transaction type in PLN (or configured currency)
  */
-export function getPriceInCurrency(type: 'activation' | 'extension' | 'bump'): number {
+export function getPriceInCurrency(type: 'bump'): number {
     return PAYMENT_CONFIG.prices[type] / 100;
 }

@@ -6,9 +6,8 @@ import { Navbar } from "@/app/components/navbar";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
-import { Eye, Clock, Calendar, ExternalLink, ArrowUpCircle, RefreshCcw } from "lucide-react";
+import { Eye, Calendar, ExternalLink, ArrowUpCircle, MessageCircle } from "lucide-react";
 import { DeleteAdButton } from "@/app/components/delete-ad-button";
-import { ExtendAdButton } from "@/app/components/extend-ad-button";
 import { PromoteAdButton } from "@/app/components/promote-ad-button";
 
 function formatDate(dateString: string | null): string {
@@ -23,7 +22,6 @@ function formatDate(dateString: string | null): string {
 function getStatusColor(status: string) {
     switch (status) {
         case 'active': return 'bg-emerald-500';
-        case 'expired': return 'bg-red-500';
         case 'disabled': return 'bg-slate-500';
         default: return 'bg-slate-500';
     }
@@ -32,7 +30,6 @@ function getStatusColor(status: string) {
 function getStatusLabel(status: string) {
     switch (status) {
         case 'active': return 'Aktywne';
-        case 'expired': return 'Wygasłe';
         case 'disabled': return 'Nieaktywne';
         default: return status;
     }
@@ -106,11 +103,11 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
                     {ad.type !== 'search' ? (
                         <Card className="border-slate-200">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-slate-600">Wygasa</CardTitle>
-                                <Clock className="h-4 w-4 text-slate-400" />
+                                <CardTitle className="text-sm font-medium text-slate-600">Kontakty</CardTitle>
+                                <MessageCircle className="h-4 w-4 text-slate-400" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-slate-900">{formatDate(ad.expires_at)}</div>
+                                <div className="text-2xl font-bold text-slate-900">{ad.contact_count || 0}</div>
                             </CardContent>
                         </Card>
                     ) : (
@@ -142,40 +139,23 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
                     {/* Sidebar */}
                     <div className="space-y-6">
                         {ad.type !== 'search' && (
-                            <>
-                                <Card className="bg-indigo-600 text-white border-0">
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2 text-white">
-                                            <ArrowUpCircle className="size-5" />
-                                            Promocja
-                                        </CardTitle>
-                                        <CardDescription className="text-indigo-100">
-                                            Zwiększ widoczność ogłoszenia.
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-3">
-                                        <PromoteAdButton token={token} adId={ad.id} />
-                                        <p className="text-xs text-indigo-200 text-center">
-                                            Ogłoszenie trafi na górę listy.
-                                        </p>
-                                    </CardContent>
-                                </Card>
-
-                                <Card className="border-slate-200">
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2 text-slate-900">
-                                            <RefreshCcw className="size-5" />
-                                            Przedłużenie
-                                        </CardTitle>
-                                        <CardDescription>
-                                            Wygasa {formatDate(ad.expires_at)}.
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <ExtendAdButton token={token} adId={ad.id} />
-                                    </CardContent>
-                                </Card>
-                            </>
+                            <Card className="bg-indigo-600 text-white border-0">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2 text-white">
+                                        <ArrowUpCircle className="size-5" />
+                                        Promocja
+                                    </CardTitle>
+                                    <CardDescription className="text-indigo-100">
+                                        Zwiększ widoczność ogłoszenia.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    <PromoteAdButton token={token} adId={ad.id} />
+                                    <p className="text-xs text-indigo-200 text-center">
+                                        Ogłoszenie trafi na górę listy.
+                                    </p>
+                                </CardContent>
+                            </Card>
                         )}
 
                         <Card className="border-slate-200">

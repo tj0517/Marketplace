@@ -73,3 +73,4 @@ audit-deploy.md
 # Example files (keep tracked)
 !.env.example
 !.env.p24.example
+.env*

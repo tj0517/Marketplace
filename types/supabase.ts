@@ -21,8 +21,6 @@ export type Database = {
           description: string
           education_level: string[] | null
           email: string
-          expires_at: string | null
-          expiring_warning_sent_at: string | null
           fts: unknown
           id: string
           is_featured: boolean
@@ -47,8 +45,6 @@ export type Database = {
           description: string
           education_level?: string[] | null
           email: string
-          expires_at?: string | null
-          expiring_warning_sent_at?: string | null
           fts?: unknown
           id?: string
           is_featured?: boolean
@@ -73,8 +69,6 @@ export type Database = {
           description?: string
           education_level?: string[] | null
           email?: string
-          expires_at?: string | null
-          expiring_warning_sent_at?: string | null
           fts?: unknown
           id?: string
           is_featured?: boolean
@@ -105,15 +99,15 @@ export type Database = {
       }
       phone_hashes: {
         Row: {
-          free_used_at: string | null
+          deleted_at: string | null
           phone_hash: string
         }
         Insert: {
-          free_used_at?: string | null
+          deleted_at?: string | null
           phone_hash: string
         }
         Update: {
-          free_used_at?: string | null
+          deleted_at?: string | null
           phone_hash?: string
         }
         Relationships: []
@@ -184,14 +178,13 @@ export type Database = {
     Enums: {
       ad_status:
       | "active"
-      | "expired"
       | "banned"
       | "inactive"
       | "archived"
       | "deleted"
       ad_type: "offer" | "search"
       transaction_status: "pending" | "completed" | "failed"
-      transaction_type: "activation" | "extension" | "bump"
+      transaction_type: "bump"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -321,7 +314,6 @@ export const Constants = {
     Enums: {
       ad_status: [
         "active",
-        "expired",
         "banned",
         "inactive",
         "archived",
@@ -329,7 +321,7 @@ export const Constants = {
       ],
       ad_type: ["offer", "search"],
       transaction_status: ["pending", "completed", "failed"],
-      transaction_type: ["activation", "extension", "bump"],
+      transaction_type: ["bump"],
     },
   },
 } as const

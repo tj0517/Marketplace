@@ -22,7 +22,7 @@ export async function promoteAd(token: string): Promise<PromoteAdResult> {
 
     const { data: ad, error: fetchError } = await supabase
         .from('ads')
-        .select('id, status, type, expires_at, email, title')
+        .select('id, status, type, email, title')
         .eq('management_token', token)
         .single()
 
@@ -45,13 +45,6 @@ export async function promoteAd(token: string): Promise<PromoteAdResult> {
         return {
             success: false,
             message: 'Tylko aktywne ogłoszenia mogą być promowane.',
-        }
-    }
-
-    if (ad.expires_at && new Date(ad.expires_at) < new Date()) {
-        return {
-            success: false,
-            message: 'Ogłoszenie wygasło. Najpierw je przedłuż.',
         }
     }
 

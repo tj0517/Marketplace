@@ -14,7 +14,7 @@ const P24_POS_ID = process.env.P24_POS_ID;
 const P24_CRC = process.env.P24_CRC;
 const P24_API_KEY = process.env.P24_API_KEY;
 
-type TransactionType = 'activation' | 'extension' | 'bump';
+type TransactionType = 'bump';
 
 interface Ad {
     id: string;
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     try {
         const { ad_id, type, management_token } = await request.json();
 
-        if (!['activation', 'extension', 'bump'].includes(type)) {
+        if (type !== 'bump') {
             return NextResponse.json({ error: 'Invalid transaction type' }, { status: 400 });
         }
 

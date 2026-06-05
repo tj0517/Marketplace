@@ -1,9 +1,7 @@
 'use client'
 
-import { useActionState, useEffect, useState, useCallback, useRef } from 'react'
-import { createInactiveOffer } from '@/actions/user/create-inactive-offer'
-import { activateOffer } from '@/actions/user/activate-offer'
-import { createInformalOffer } from '@/actions/user/create-informational-offer'
+import { useActionState, useState } from 'react'
+import { createOffer } from '@/actions/user/create-offer'
 import { Button } from '@/app/components/ui/button'
 import { Input } from '@/app/components/ui/input'
 import { Textarea } from '@/app/components/ui/textarea'
@@ -16,9 +14,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/app/components/ui/select'
-import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { toast } from 'sonner'
 
 const subjects = [
     "Matematyka", "Język Angielski", "Język Niemiecki", "Język Hiszpański",
@@ -34,21 +31,7 @@ const units = [
 ]
 
 export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
-    const [step, setStep] = useState<1 | 2>(1)
-
-    const [tempOfferData, setTempOfferData] = useState<{
-        offerId: string;
-        managementToken: string;
-        priceInfo: { amount: number; label: string; description: string };
-        hasUsedFreeSlot: boolean;
-    } | null>(null)
-
-    const [isRedirecting, setIsRedirecting] = useState(false)
-    const [paymentError, setPaymentError] = useState<string | null>(null)
-
-    const [searchState, searchAction, isSearching] = useActionState(createInformalOffer, null)
-    const [createState, createAction, isCreating] = useActionState(createInactiveOffer, null)
-    const [activateState, activateAction, isActivating] = useActionState(activateOffer, null)
+    const [state, formAction, isPending] = useActionState(createOffer, null)
 
     const [isRemote, setIsRemote] = useState(false)
     const [acceptedTerms, setAcceptedTerms] = useState(false)
@@ -70,75 +53,20 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
         phone_contact: ''
     })
 
-    const [pricePreview, setPricePreview] = useState<{ isFree: boolean; price: number } | null>(null)
-    const [isCheckingPrice, setIsCheckingPrice] = useState(false)
-    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
-
-    const checkFreeSlot = useCallback(async (phone: string) => {
-        if (phone.length < 9) {
-            setPricePreview(null)
-            return
-        }
-
-        setIsCheckingPrice(true)
-        try {
-            const res = await fetch('/api/check-free-slot', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone }),
-            })
-            const data = await res.json()
-            setPricePreview(data)
-        } catch (error) {
-            console.error('Failed to check free slot:', error)
-            setPricePreview(null)
-        } finally {
-            setIsCheckingPrice(false)
-        }
-    }, [])
-
-    const debouncedCheckFreeSlot = useCallback((phone: string) => {
-        if (debounceTimerRef.current) {
-            clearTimeout(debounceTimerRef.current)
-        }
-        debounceTimerRef.current = setTimeout(() => {
-            checkFreeSlot(phone)
-        }, 500)
-    }, [checkFreeSlot])
-
-    // Cleanup debounce timer on unmount
-    useEffect(() => {
-        return () => {
-            if (debounceTimerRef.current) {
-                clearTimeout(debounceTimerRef.current)
-            }
-        }
-    }, [])
-
     const updateFormData = (updater: (prev: typeof formData) => typeof formData) => {
-        setFormData(prev => {
-            const next = updater(prev)
-            return next
-        })
+        setFormData(prev => updater(prev))
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        if (step !== 1) return
         const { name, value } = e.target
         updateFormData(prev => ({ ...prev, [name]: value }))
-
-        if (name === 'phone_contact' && type === 'offer') {
-            debouncedCheckFreeSlot(value)
-        }
     }
 
     const handleSelectChange = (name: string, value: string) => {
-        if (step !== 1) return
         updateFormData(prev => ({ ...prev, [name]: value }))
     }
 
     const handleCheckboxChange = (value: string, checked: boolean) => {
-        if (step !== 1) return
         updateFormData(prev => {
             const levels = checked
                 ? [...prev.education_level, value]
@@ -147,62 +75,8 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
         })
     }
 
-    useEffect(() => {
-        if (createState?.success && createState?.offerId && createState?.priceInfo && createState?.managementToken) {
-            setTempOfferData({
-                offerId: createState.offerId,
-                managementToken: createState.managementToken,
-                priceInfo: createState.priceInfo,
-                hasUsedFreeSlot: createState.hasUsedFreeSlot || false
-            })
-            setStep(2)
-        }
-    }, [createState])
-
-    const handlePaidActivation = async () => {
-        if (!tempOfferData) return
-
-        setIsRedirecting(true)
-        setPaymentError(null)
-
-        try {
-            const response = await fetch('/api/payments/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ad_id: tempOfferData.offerId,
-                    type: 'activation',
-                    management_token: tempOfferData.managementToken,
-                }),
-            })
-
-            const data = await response.json()
-
-            if (data.redirectUrl) {
-                // Use window.location.href for external P24 redirects
-                window.location.href = data.redirectUrl
-            } else if (data.error) {
-                setPaymentError(data.error)
-                toast.error(data.error)
-                setIsRedirecting(false)
-            } else {
-                // Unexpected response - no redirectUrl and no error
-                const unexpectedError = 'Nieoczekiwana odpowiedź serwera. Spróbuj ponownie.'
-                setPaymentError(unexpectedError)
-                toast.error(unexpectedError)
-                setIsRedirecting(false)
-            }
-        } catch (err) {
-            console.error("Payment init failed", err)
-            const errorMsg = 'Wystąpił błąd podczas inicjowania płatności.'
-            setPaymentError(errorMsg)
-            toast.error(errorMsg)
-            setIsRedirecting(false)
-        }
-    }
-
-    const errors = step === 1 ? (type === 'offer' ? createState?.errors : searchState?.errors) : null
-    const message = step === 1 ? (type === 'offer' ? createState?.message : searchState?.message) : activateState?.message
+    const errors = state?.errors
+    const message = state?.message
 
     const placeholders = {
         offer: {
@@ -220,7 +94,6 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
     return (
         <form className="space-y-6" onReset={(e) => e.preventDefault()} noValidate>
             <input type="hidden" name="type" value={type} />
-            <input type="hidden" name="offerId" value={tempOfferData?.offerId || ''} />
             {/* subjects hidden inputs */}
             {selectedSubjects.map((s) => {
                 if (s === 'Inne') return null;
@@ -230,9 +103,7 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                 <input type="hidden" name="subjects" value={customSubject.trim()} />
             )}
             {formData.education_level.map((level) => {
-                // Skip 'Inne' if custom text is provided (custom text will be added separately)
                 if (level === 'Inne' && otherLevelText.trim()) return null;
-                // For other levels, use as-is
                 return (
                     <input
                         key={level}
@@ -242,7 +113,6 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                     />
                 );
             })}
-            {/* Add custom level text as separate entry if provided */}
             {otherLevelText.trim() && (
                 <input
                     type="hidden"
@@ -251,8 +121,7 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                 />
             )}
 
-            {/* Step 1: Data Entry */}
-            <div className={cn("space-y-6", step === 2 && "hidden")}>
+            <div className="space-y-6">
                 {/* Basic Info */}
                 <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
                     <h2 className="text-lg font-semibold text-slate-900">Podstawowe informacje</h2>
@@ -280,7 +149,6 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                                         key={s}
                                         type="button"
                                         onClick={() => {
-                                            if (step !== 1) return
                                             setSelectedSubjects(prev =>
                                                 prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]
                                             )
@@ -467,26 +335,7 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                                 placeholder="123 456 789"
                                 required
                             />
-                            <p className="text-xs text-slate-500">Numer zostanie zweryfikowany w następnym kroku.</p>
                             {errors?.phone_contact && <p className="text-sm text-red-500">{errors.phone_contact}</p>}
-                            {type === 'offer' && isCheckingPrice && (
-                                <p className="text-sm text-slate-500 flex items-center gap-1">
-                                    <Loader2 className="size-3 animate-spin" />
-                                    Sprawdzanie ceny...
-                                </p>
-                            )}
-                            {type === 'offer' && pricePreview && !isCheckingPrice && (
-                                <div className={cn(
-                                    "text-sm font-medium p-2 rounded-md",
-                                    pricePreview.isFree
-                                        ? "text-green-700 bg-green-50 border border-green-200"
-                                        : "text-slate-600 bg-slate-50 border border-slate-200"
-                                )}>
-                                    {pricePreview.isFree
-                                        ? '🎉 Pierwsze ogłoszenie - DARMOWE!'
-                                        : `Cena aktywacji: ${pricePreview.price} PLN`}
-                                </div>
-                            )}
                         </div>
                     </div>
 
@@ -514,142 +363,26 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                 </div>
             </div>
 
-            {/* Step 2: Summary & Payment Info */}
-            {step === 2 && tempOfferData && (
-                <div className="space-y-6">
-                    <div className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
-                        <div className="mb-6 flex items-center justify-center">
-                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
-                                <CheckCircle2 className="h-7 w-7 text-emerald-600" />
-                            </div>
-                        </div>
-
-                        <div className="text-center space-y-2 mb-6">
-                            <h2 className="text-xl font-bold text-slate-900">Ogłoszenie utworzone</h2>
-                            <p className="text-slate-600">Dokonaj aktywacji, aby stało się widoczne.</p>
-                        </div>
-
-                        <div className="rounded-lg bg-slate-50 border border-slate-200 p-5">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <h3 className="font-semibold text-slate-900">{tempOfferData.priceInfo.label}</h3>
-                                    <p className="text-sm text-slate-500 mt-1">{tempOfferData.priceInfo.description}</p>
-
-                                    {tempOfferData.hasUsedFreeSlot ? (
-                                        <div className="flex items-center gap-2 mt-3 text-amber-600 text-sm font-medium">
-                                            <AlertCircle className="h-4 w-4" />
-                                            Znaleziono aktywny numer w bazie
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center gap-2 mt-3 text-emerald-600 text-sm font-medium">
-                                            <CheckCircle2 className="h-4 w-4" />
-                                            Nowy numer - stawka promocyjna
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-2xl font-bold text-slate-900">
-                                        {tempOfferData.priceInfo.amount.toFixed(2)} zł
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-6">
-                            <input type="hidden" name="offerId" value={tempOfferData.offerId} />
-
-                            {(activateState?.message || paymentError) && (
-                                <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-4 text-red-600">
-                                    {activateState?.message || paymentError}
-                                </div>
-                            )}
-
-                            {tempOfferData.priceInfo.amount > 0 ? (
-                                <Button
-                                    type="button"
-                                    onClick={handlePaidActivation}
-                                    className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-base font-semibold"
-                                    disabled={isRedirecting}
-                                >
-                                    {isRedirecting ? (
-                                        <>
-                                            <Loader2 className="mr-2 size-5 animate-spin" />
-                                            Przekierowywanie do płatności...
-                                        </>
-                                    ) : (
-                                        'Przejdź do płatności'
-                                    )}
-                                </Button>
-                            ) : (
-                                <Button
-                                    type="submit"
-                                    formAction={activateAction}
-                                    className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-base font-semibold"
-                                    disabled={isActivating}
-                                >
-                                    {isActivating ? (
-                                        <>
-                                            <Loader2 className="mr-2 size-5 animate-spin" />
-                                            Aktywowanie...
-                                        </>
-                                    ) : (
-                                        'Potwierdź i Aktywuj'
-                                    )}
-                                </Button>
-                            )}
-
-                            <button
-                                type="button"
-                                onClick={() => setStep(1)}
-                                className="mt-3 w-full text-sm text-slate-500 hover:text-slate-700"
-                                disabled={isActivating || isRedirecting}
-                            >
-                                Wróć do edycji
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {message && !step && (
+            {message && (
                 <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-red-600">
                     {message}
                 </div>
             )}
 
-            {step === 1 && (
-                type === 'offer' ? (
-                    <Button
-                        formAction={createAction}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-base font-semibold"
-                        disabled={isCreating || !acceptedTerms}
-                    >
-                        {isCreating ? (
-                            <>
-                                <Loader2 className="mr-2 size-5 animate-spin" />
-                                Tworzenie...
-                            </>
-                        ) : (
-                            'Dalej'
-                        )}
-                    </Button>
+            <Button
+                formAction={formAction}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-base font-semibold"
+                disabled={isPending || !acceptedTerms}
+            >
+                {isPending ? (
+                    <>
+                        <Loader2 className="mr-2 size-5 animate-spin" />
+                        Tworzenie...
+                    </>
                 ) : (
-                    <Button
-                        formAction={searchAction}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-base font-semibold"
-                        disabled={isSearching || !acceptedTerms}
-                    >
-                        {isSearching ? (
-                            <>
-                                <Loader2 className="mr-2 size-5 animate-spin" />
-                                Tworzenie...
-                            </>
-                        ) : (
-                            'Dodaj ogłoszenie'
-                        )}
-                    </Button>
-                )
-            )}
+                    'Dodaj ogłoszenie'
+                )}
+            </Button>
         </form>
     )
 }

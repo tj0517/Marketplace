@@ -3,13 +3,10 @@
 import { resend } from '@/lib/resend';
 import { EMAIL_CONFIG } from '@/lib/config';
 import { WelcomeEmail } from '@/emails/welcome-email'
-import { ExpiredAdEmail } from '@/emails/expired-ad-email'
-import { ExpiringSoonEmail } from '@/emails/expiring-soon-email'
-import { PaymentExtendEmail } from '@/emails/payment-extend-email'
 import { PaymentBumpEmail } from '@/emails/payment-bump-email'
 import { RecoveryLinkEmail } from '@/emails/recovery-link-email'
 
-type EmailType = 'welcome' | 'expired' | 'expiring_soon' | 'payment_extend' | 'payment_bump' | 'magic_link';
+type EmailType = 'welcome' | 'payment_bump' | 'magic_link';
 
 interface SendEmailParams {
     to: string;
@@ -30,18 +27,6 @@ export async function sendEmail({
             case 'welcome':
                 subject = 'Twoje ogłoszenie zostało utworzone! 🚀';
                 component = WelcomeEmail(props);
-                break;
-            case 'expired':
-                subject = 'Twoje ogłoszenie wygasło';
-                component = ExpiredAdEmail(props);
-                break;
-            case 'expiring_soon':
-                subject = 'Twoje ogłoszenie wkrótce wygaśnie!';
-                component = ExpiringSoonEmail(props);
-                break;
-            case 'payment_extend':
-                subject = 'Płatność potwierdzona - ogłoszenie przedłużone ✅';
-                component = PaymentExtendEmail(props);
                 break;
             case 'payment_bump':
                 subject = 'Płatność potwierdzona - ogłoszenie podbite 🚀';

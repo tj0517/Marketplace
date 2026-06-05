@@ -15,7 +15,7 @@ export async function deleteAd(token: string) {
 
     const { data: ad, error: fetchError } = await supabase
         .from('ads')
-        .select('id')
+        .select('id, phone_hash')
         .eq('management_token', token)
         .single()
 
@@ -37,6 +37,16 @@ export async function deleteAd(token: string) {
             success: false,
             message: 'Błąd bazy danych: Nie udało się usunąć ogłoszenia.',
         }
+    }
+
+    // Record deletion timestamp for cooldown enforcement
+    if (ad.phone_hash) {
+        await supabase
+            .from('phone_hashes')
+            .upsert(
+                { phone_hash: ad.phone_hash, deleted_at: new Date().toISOString() },
+                { onConflict: 'phone_hash' }
+            )
     }
 
     revalidatePath('/offers')

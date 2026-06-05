@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getBaseUrl } from '@/lib/config';
 import crypto from 'crypto';
 
 const P24_CRC = process.env.P24_CRC;
@@ -91,48 +90,6 @@ export async function POST(request: NextRequest) {
         if (alreadyProcessed) {
             console.log('[P24 Webhook] Duplicate webhook ignored for session:', sessionId);
             return NextResponse.json({ status: 'ok' });
-        }
-
-        const tx = existingTx;
-
-        if (tx?.type === 'activation') {
-            const { data: ad } = await supabase
-                .from('ads')
-                .select('email, title, management_token, id, phone_contact')
-                .eq('id', tx.ad_id)
-                .single();
-
-            if (ad) {
-                if (ad.phone_contact) {
-                    try {
-                        const { normalizeAndHashPhone } = await import('@/actions/user/hash_phone');
-                        const { hash } = normalizeAndHashPhone(ad.phone_contact);
-
-                        await supabase
-                            .from('ads')
-                            .update({ phone_hash: hash })
-                            .eq('id', ad.id);
-                    } catch (hashError) {
-                        console.error('[P24 Webhook] Failed to update phone_hash:', hashError);
-                    }
-                }
-                try {
-                    const { sendEmail } = await import('@/actions/emails');
-                    const baseUrl = getBaseUrl();
-                    await sendEmail({
-                        to: ad.email,
-                        type: 'welcome',
-                        props: {
-                            adTitle: ad.title,
-                            manageLink: `${baseUrl}/offers/manage/${ad.management_token}`,
-                            publicLink: `${baseUrl}/offers/${ad.id}`
-                        }
-                    });
-
-                } catch (emailError) {
-                    console.error('[P24 Webhook] Failed to send welcome email:', emailError);
-                }
-            }
         }
 
         return NextResponse.json({ status: 'ok' });

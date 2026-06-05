@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { EMAIL_CONFIG, APP_CONFIG } from '@/lib/config';
 
 type BulkEmailParams = {
-    segment: 'active' | 'expired' | 'expiring_soon';
+    segment: 'active';
     subject: string;
     content: string;
 };
@@ -17,24 +17,11 @@ export async function sendBulkEmail({ segment, subject, content }: BulkEmailPara
 
     const supabase = createAdminClient();
 
-    const now = new Date();
-    const sevenDaysFromNow = new Date();
-    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-
     let query = supabase.from('ads').select('email, title').eq('type', 'offer');
 
     switch (segment) {
         case 'active':
             query = query.eq('status', 'active');
-            break;
-        case 'expired':
-            query = query.eq('status', 'expired');
-            break;
-        case 'expiring_soon':
-            query = query
-                .eq('status', 'active')
-                .gte('expires_at', now.toISOString())
-                .lte('expires_at', sevenDaysFromNow.toISOString());
             break;
     }
 

@@ -72,7 +72,7 @@ export default function AdminPage() {
         loadData();
     }, [loadData]);
 
-    const handleAdStatusChange = async (adId: string, status: 'active' | 'expired' | 'banned') => {
+    const handleAdStatusChange = async (adId: string, status: 'active' | 'banned') => {
         setActionError(null);
         try {
             await updateAdStatus(adId, status);
@@ -96,8 +96,6 @@ export default function AdminPage() {
     const handleSendEmail = async () => {
         const segmentLabels: Record<string, string> = {
             active: 'Aktywne ogłoszenia',
-            expired: 'Wygasłe ogłoszenia',
-            expiring_soon: 'Wygasające w ciągu 7 dni',
         };
 
         if (!window.confirm(`Czy na pewno chcesz wysłać e-mail do segmentu "${segmentLabels[emailSegment]}"?`)) return;
@@ -106,7 +104,7 @@ export default function AdminPage() {
         setEmailResult(null);
         try {
             const result = await sendBulkEmail({
-                segment: emailSegment as 'active' | 'expired' | 'expiring_soon',
+                segment: emailSegment as 'active',
                 subject: emailSubject,
                 content: emailContent,
             });
@@ -266,7 +264,6 @@ export default function AdminPage() {
                                             <TableHead>Tytuł</TableHead>
                                             <TableHead>E-mail</TableHead>
                                             <TableHead>Dodano</TableHead>
-                                            <TableHead>Wygasa</TableHead>
                                             <TableHead>Wyświetlenia</TableHead>
                                             <TableHead>Kontakty</TableHead>
                                             <TableHead className="text-right">Akcje</TableHead>
@@ -275,13 +272,13 @@ export default function AdminPage() {
                                     <TableBody>
                                         {loading ? (
                                             <TableRow>
-                                                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                                                     Ładowanie...
                                                 </TableCell>
                                             </TableRow>
                                         ) : filteredAds.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                                                     Brak ogłoszeń typu „{adTypeFilter === 'offer' ? 'Oferuję' : 'Szukam'}"
                                                 </TableCell>
                                             </TableRow>
@@ -304,7 +301,6 @@ export default function AdminPage() {
                                                     </TableCell>
                                                     <TableCell className="text-sm">{ad.email}</TableCell>
                                                     <TableCell className="text-sm">{new Date(ad.created_at).toLocaleDateString('pl-PL')}</TableCell>
-                                                    <TableCell className="text-sm">{ad.expires_at ? new Date(ad.expires_at).toLocaleDateString('pl-PL') : '—'}</TableCell>
                                                     <TableCell>{ad.views_count ?? 0}</TableCell>
                                                     <TableCell>{ad.contact_count ?? 0}</TableCell>
                                                     <TableCell className="text-right">
@@ -497,8 +493,6 @@ export default function AdminPage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="active">Aktywne ogłoszenia</SelectItem>
-                                        <SelectItem value="expired">Wygasłe ogłoszenia</SelectItem>
-                                        <SelectItem value="expiring_soon">Wygasające w ciągu 7 dni</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

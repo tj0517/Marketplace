@@ -10,7 +10,7 @@ export async function getAdminAds() {
 
     const { data: ads, error } = await supabase
         .from('ads')
-        .select('id, title, email, status, type, created_at, expires_at, views_count, contact_count')
+        .select('id, title, email, status, type, created_at, views_count, contact_count')
         .neq('status', 'deleted')
         .order('created_at', { ascending: false });
 
@@ -22,7 +22,7 @@ export async function getAdminAds() {
     return ads;
 }
 
-export async function updateAdStatus(adId: string, status: 'active' | 'expired' | 'banned') {
+export async function updateAdStatus(adId: string, status: 'active' | 'banned') {
     if (!adId || !UUID_REGEX.test(adId)) {
         throw new Error('Invalid ad ID');
     }

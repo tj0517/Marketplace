@@ -12,7 +12,7 @@ const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 export type PublicAd = Pick<Ad,
     'id' | 'type' | 'title' | 'description' | 'subject' | 'subjects' | 'location' |
     'education_level' | 'price_amount' | 'price_unit' | 'created_at' |
-    'expires_at' | 'views_count' | 'tutor_gender' | 'visible_at' | 'is_featured'
+    'views_count' | 'tutor_gender' | 'visible_at' | 'is_featured'
 >;
 
 const fetchAllAds = unstable_cache(
@@ -23,7 +23,7 @@ const fetchAllAds = unstable_cache(
 
         const { data, error } = await supabase
             .from('ads')
-            .select('id, type, title, description, subject, subjects, location, education_level, price_amount, price_unit, created_at, expires_at, views_count, tutor_gender, visible_at, is_featured')
+            .select('id, type, title, description, subject, subjects, location, education_level, price_amount, price_unit, created_at, views_count, tutor_gender, visible_at, is_featured')
             .eq('status', 'active')
             .order('visible_at', { ascending: false });
 
@@ -84,7 +84,7 @@ export const getAdPublic = async (id: string): Promise<PublicAd | null> => {
 
     const { data, error } = await supabase
         .from('ads')
-        .select('id, type, title, description, subject, subjects, location, education_level, price_amount, price_unit, created_at, expires_at, views_count, tutor_gender, visible_at, is_featured')
+        .select('id, type, title, description, subject, subjects, location, education_level, price_amount, price_unit, created_at, views_count, tutor_gender, visible_at, is_featured')
         .eq('id', id)
         .neq('status', 'deleted')
         .single();
@@ -111,7 +111,7 @@ export const searchAdsNative = async (params: {
 
     let queryBuilder = supabase
         .from('ads')
-        .select('id, type, title, description, subject, location, education_level, price_amount, price_unit, created_at, expires_at, views_count, tutor_gender, visible_at, is_featured', { count: 'exact' })
+        .select('id, type, title, description, subject, location, education_level, price_amount, price_unit, created_at, views_count, tutor_gender, visible_at, is_featured', { count: 'exact' })
         .eq('status', 'active')
         .eq('type', type);
 
