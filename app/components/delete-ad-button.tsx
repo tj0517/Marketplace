@@ -56,8 +56,9 @@ export function DeleteAdButton({ token }: DeleteAdButtonProps) {
                         <AlertTriangle className="size-5" />
                         Czy na pewno chcesz usunąć to ogłoszenie?
                     </AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Tej operacji nie można cofnąć. Twoje ogłoszenie zostanie trwale usunięte z naszej bazy danych.
+                    <AlertDialogDescription className="space-y-2">
+                        <span className="block">Tej operacji nie można cofnąć. Twoje ogłoszenie zostanie trwale usunięte z naszej bazy danych.</span>
+                        <span className="block font-medium text-red-600">Po usunięciu nowe ogłoszenie będzie można dodać dopiero po 14 dniach.</span>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
