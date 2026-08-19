@@ -5,7 +5,8 @@ import {
     getPrice,
     PAYMENT_CONFIG,
     APP_CONFIG,
-    isP24Enabled
+    isP24Enabled,
+    isPromotionsEnabled
 } from '@/lib/config';
 import crypto from 'crypto';
 
@@ -33,6 +34,10 @@ interface Transaction {
 
 export async function POST(request: NextRequest) {
     try {
+        if (!isPromotionsEnabled()) {
+            return NextResponse.json({ error: 'Płatne promocje są tymczasowo niedostępne.' }, { status: 503 });
+        }
+
         const { ad_id, type, management_token } = await request.json();
 
         if (type !== 'bump') {

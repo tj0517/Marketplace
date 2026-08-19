@@ -96,6 +96,15 @@ export function isP24Enabled(): boolean {
         process.env.P24_API_KEY);
 }
 
+/**
+ * Feature flag for paid promotions (bump/podbicie) and the payment checkout flow.
+ * Set PROMOTIONS_ENABLED=true in the hosting environment to turn paid promotions
+ * back on (e.g. once the business activity is reinstated) — no code change needed.
+ */
+export function isPromotionsEnabled(): boolean {
+    return process.env.PROMOTIONS_ENABLED === 'true';
+}
+
 // =============================================================================
 // BUSINESS LOGIC CONFIGURATION
 // =============================================================================

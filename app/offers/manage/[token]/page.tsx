@@ -9,6 +9,7 @@ import { Badge } from "@/app/components/ui/badge";
 import { Eye, Calendar, ExternalLink, ArrowUpCircle, MessageCircle } from "lucide-react";
 import { DeleteAdButton } from "@/app/components/delete-ad-button";
 import { PromoteAdButton } from "@/app/components/promote-ad-button";
+import { isPromotionsEnabled } from "@/lib/config";
 
 function formatDate(dateString: string | null): string {
     if (!dateString) return "Brak daty";
@@ -138,7 +139,7 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
 
                     {/* Sidebar */}
                     <div className="space-y-6">
-                        {ad.type !== 'search' && (
+                        {ad.type !== 'search' && isPromotionsEnabled() && (
                             <Card className="bg-indigo-600 text-white border-0">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 text-white">

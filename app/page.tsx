@@ -56,6 +56,7 @@ export default async function Home({
             <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 sm:gap-6 text-sm text-slate-400 mb-6 w-full">
               <Link href="/regulamin" className="hover:text-white transition-colors">Regulamin</Link>
               <Link href="/polityka-prywatnosci" className="hover:text-white transition-colors">Polityka prywatności</Link>
+              <Link href="/zasady-ogloszen" className="hover:text-white transition-colors">Zasady działania ogłoszeń</Link>
               <Link href="/recover-magic-link" className="hover:text-white transition-colors">Odzyskaj link zarządzania</Link>
               <Link href="/kontakt" className="hover:text-white transition-colors">Kontakt</Link>
             </div>

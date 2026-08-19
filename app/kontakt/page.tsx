@@ -80,6 +80,9 @@ export default function KontaktPage() {
           <a href="/polityka-prywatnosci" className="hover:text-indigo-600 hover:underline">
             Polityka prywatności
           </a>
+          <a href="/zasady-ogloszen" className="hover:text-indigo-600 hover:underline">
+            Zasady działania ogłoszeń
+          </a>
         </nav>
       </div>
     </main>
