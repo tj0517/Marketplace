@@ -1,7 +1,7 @@
 'use server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import crypto from 'crypto';
 
 export type CreateFeaturedAdInput = {
@@ -53,6 +53,7 @@ export async function createFeaturedAd(input: CreateFeaturedAdInput) {
         throw new Error('Nie udało się dodać ogłoszenia.');
     }
 
+    updateTag('ads');
     revalidatePath('/');
     revalidatePath('/admin');
 
@@ -82,6 +83,7 @@ export async function toggleFeaturedAd(adId: string, featured: boolean) {
         throw new Error('Nie udało się zmienić statusu promowania.');
     }
 
+    updateTag('ads');
     revalidatePath('/');
     revalidatePath('/admin');
 }

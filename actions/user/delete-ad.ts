@@ -1,6 +1,6 @@
 'use server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 export async function deleteAd(token: string) {
@@ -49,6 +49,7 @@ export async function deleteAd(token: string) {
             )
     }
 
-    revalidatePath('/offers')
+    updateTag('ads')
+    revalidatePath('/')
     redirect('/')
 }

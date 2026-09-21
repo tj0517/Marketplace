@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeAndHashPhone } from './hash_phone'
@@ -142,7 +142,8 @@ export async function createOffer(prevState: any, formData: FormData) {
         console.error('Failed to send confirmation email', emailError)
     }
 
-    revalidatePath('/offers')
+    updateTag('ads')
+    revalidatePath('/')
     revalidatePath(`/offers/${data!.id}`)
     redirect(`/offers/${data!.id}`)
 }

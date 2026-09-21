@@ -1,7 +1,7 @@
 'use server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -39,6 +39,8 @@ export async function updateAdStatus(adId: string, status: 'active' | 'banned') 
         throw new Error('Failed to update ad status');
     }
 
+    updateTag('ads');
+    revalidatePath('/');
     revalidatePath('/admin');
 }
 
@@ -59,5 +61,7 @@ export async function deleteAd(adId: string) {
         throw new Error('Failed to delete ad');
     }
 
+    updateTag('ads');
+    revalidatePath('/');
     revalidatePath('/admin');
 }

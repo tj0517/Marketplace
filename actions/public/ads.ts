@@ -2,6 +2,7 @@
 import { unstable_cache } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/supabase';
+import { matchesQuery } from '@/lib/search';
 
 type Ad = Database['public']['Tables']['ads']['Row'];
 
@@ -42,22 +43,8 @@ const fetchAllAds = unstable_cache(
 );
 
 export const filterAds = (ads: PublicAd[], query: string | undefined, type: 'offer' | 'search' = 'offer'): PublicAd[] => {
-    let filteredResults = ads.filter(ad => ad.type === type);
-
-    if (!query) {
-        return filteredResults;
-    }
-    const searchTerm = query.toLowerCase().trim();
-    return filteredResults.filter(ad => {
-        const titleMatch = ad.title?.toLowerCase().includes(searchTerm) ?? false;
-        const descriptionMatch = ad.description?.toLowerCase().includes(searchTerm) ?? false;
-        const subjectMatch = ad.subject?.toLowerCase().includes(searchTerm) ?? false;
-        const subjectsMatch = ad.subjects?.some(s => s.toLowerCase().includes(searchTerm)) ?? false;
-        const locationMatch = ad.location?.toLowerCase().includes(searchTerm) ?? false;
-        const levelMatch = ad.education_level?.some(level => level.toLowerCase().includes(searchTerm)) ?? false;
-
-        return titleMatch || descriptionMatch || subjectMatch || subjectsMatch || locationMatch || levelMatch;
-    });
+    // Shared by getAds and getAdsCount so page contents and total count always agree.
+    return ads.filter(ad => ad.type === type && matchesQuery(ad, query));
 };
 
 export const getAdsCount = async (params?: { query?: string, type?: 'offer' | 'search' }): Promise<number> => {

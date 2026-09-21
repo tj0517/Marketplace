@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeAndHashPhone } from './hash_phone'
 import { adSchema } from '@/lib/ad-validation'
@@ -87,6 +87,8 @@ export async function updateAd(
         }
     }
 
+    updateTag('ads')
+    revalidatePath('/')
     revalidatePath(`/offers/manage/${token}`)
     revalidatePath(`/offers/${(result as any).id}`)
 

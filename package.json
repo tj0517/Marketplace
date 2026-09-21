@@ -9,6 +9,7 @@
     "lint": "eslint",
     "db:types": "supabase gen types typescript --project-id ruxcswtcfaofvyzfvspn > types/supabase.ts",
     "test": "playwright test",
+    "test:unit": "playwright test lib/",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug"

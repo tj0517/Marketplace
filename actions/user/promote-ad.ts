@@ -1,7 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { getBaseUrl, getPriceInCurrency } from '@/lib/config'
 
 export type PromoteAdResult = {
@@ -95,7 +95,8 @@ export async function promoteAd(token: string): Promise<PromoteAdResult> {
         console.error('Failed to send bump confirmation email:', emailError)
     }
 
-    revalidatePath('/offers')
+    updateTag('ads')
+    revalidatePath('/')
     revalidatePath(`/offers/${ad.id}`)
     revalidatePath(`/offers/manage/${token}`)
 
