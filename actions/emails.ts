@@ -40,12 +40,20 @@ export async function sendEmail({
                 throw new Error(`Unknown email type: ${type}`);
         }
 
-        await resend.emails.send({
+        // The Resend SDK resolves to { data, error } rather than throwing, so the
+        // error field has to be checked explicitly — otherwise a rejected send
+        // (suppressed recipient, rate limit, bad address) is reported as success.
+        const { error } = await resend.emails.send({
             from: EMAIL_CONFIG.from,
             to,
             subject,
             react: component
         });
+
+        if (error) {
+            console.error('Email rejected by Resend:', { type, error });
+            return { success: false, error };
+        }
 
         return { success: true };
     } catch (error) {

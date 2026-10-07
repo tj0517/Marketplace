@@ -108,7 +108,21 @@ export default function AdminPage() {
                 subject: emailSubject,
                 content: emailContent,
             });
-            setEmailResult(`✅ Wysłano ${result.sentCount} e-maili.`);
+            if (result.error) {
+                setEmailResult(`❌ ${result.error}`);
+                return;
+            }
+
+            if (result.failedCount > 0) {
+                const reasons = result.failures?.length ? ` Powód: ${result.failures.join('; ')}` : '';
+                setEmailResult(
+                    `⚠️ Wysłano ${result.sentCount} z ${result.recipientCount} e-maili. ` +
+                    `Nie udało się: ${result.failedCount}.${reasons}`
+                );
+            } else {
+                setEmailResult(`✅ Wysłano ${result.sentCount} z ${result.recipientCount} e-maili.`);
+            }
+
             setEmailSubject('');
             setEmailContent('');
             setEmailSegment('');
