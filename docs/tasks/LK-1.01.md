@@ -35,7 +35,7 @@ hasła panelu odmawia i nic nie robi, a panel z poprawnym hasłem działa jak dz
 
 - każda eksportowana funkcja w `actions/admin/` zaczyna się od sprawdzenia uprawnień — **jak sprawdzić:** `grep -nE '^export async function' actions/admin/*.ts` i dla każdej pierwsza instrukcja ciała to wywołanie funkcji sprawdzającej (lista w raporcie)
 - red proof: test jednostkowy pokazuje odmowę przy braku nagłówka, złym haśle, złym loginie i złym formacie, a zgodę przy poprawnych danych — **jak sprawdzić:** nazwa testu i wynik uruchomienia `npm run test:unit` (wycinek)
-- red proof end-to-end: na lokalnym serwerze produkcyjnym (`next build && next start`) wywołanie akcji `getAdminAds` przez `POST /` z nagłówkiem `Next-Action: <id z .next/server/server-reference-manifest.json>` bez hasła nie zwraca danych ogłoszeń — **jak sprawdzić:** wklejona komenda `curl` i odpowiedź (bez danych osobowych)
+- bez hasła panelu wywołanie akcji admina nie zwraca danych — dowód: curl POST / z Next-Action getAdminAds bez hasła zwraca `{}` (przed i po zmianie). Uwaga: Next 16.1.1 przekazuje akcję do /admin (action-handler.js:120-194), więc ten test nie odróżnia nowej blokady od middleware; samodzielne działanie requireAdmin nie zostało pokazane end-to-end (decyzja tj, wariant A).
 - panel z poprawnym hasłem działa: lista ogłoszeń się ładuje, a zmiana statusu działa — **jak sprawdzić:** zrzut Playwright z `/admin` po zalogowaniu (`.playwright-mcp/`) i opis kroku
 - `npm run lint` i `npx tsc --noEmit` bez nowych błędów względem `main` — **jak sprawdzić:** wynik obu komend przed i po (liczba błędów)
 
@@ -63,3 +63,5 @@ hasła panelu odmawia i nic nie robi, a panel z poprawnym hasłem działa jak dz
 
 - 2026-11-02 tj: wersja minimalna (to samo hasło panelu co middleware), bez przejścia na konta Supabase (D1 w wf-plan).
 - 2026-11-03 tj: najpierw LK-1.04, żeby panel dało się sprawdzić lokalnie.
+- 2026-11-03 tj: kryterium e2e zastąpione (wariant A, bez strony-sondy); dowodem blokady jest test jednostkowy checkAdminAuth i odczyt diffu.
+- 2026-11-03 tj: build przy presji pamięci 2 za zgodą tj (wyjątek od limitu =1).
