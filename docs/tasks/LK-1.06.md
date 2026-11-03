@@ -1,7 +1,7 @@
 ---
 id: LK-1.06
 title: Zamknięcie complete_payment dla anon (pierwsza migracja na baseline)
-status: todo
+status: in_progress
 difficulty: S
 model: null
 model_approved: null
