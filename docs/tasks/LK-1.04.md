@@ -1,7 +1,7 @@
 ---
 id: LK-1.04
 title: Lokalna baza, seed, .env.example i bezpiecznik testów
-status: in_progress
+status: review
 difficulty: M
 model: null
 model_approved: null

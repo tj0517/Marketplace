@@ -74,3 +74,4 @@ audit-deploy.md
 !.env.example
 !.env.p24.example
 .env*
+!.env.example
