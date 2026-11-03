@@ -1,12 +1,12 @@
 ---
 id: LK-1.01
 title: Akcje admina same sprawdzają uprawnienia
-status: todo
+status: in_progress
 difficulty: M
 model: null
 model_approved: null
 effort: null
-branch: null
+branch: fix/lk-1.01-admin-actions-auth
 due: null
 depends_on: [LK-1.04]
 blocked_by_questions: []
