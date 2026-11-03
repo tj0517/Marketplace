@@ -1,7 +1,7 @@
 ---
 id: LK-1.01
 title: Akcje admina same sprawdzają uprawnienia
-status: in_progress
+status: review
 difficulty: M
 model: null
 model_approved: null
@@ -12,7 +12,7 @@ depends_on: [LK-1.04]
 blocked_by_questions: []
 touches_db: false
 touches_prod: false
-pr: null
+pr: 6
 ---
 
 ## Cel
