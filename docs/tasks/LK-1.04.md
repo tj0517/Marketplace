@@ -1,12 +1,12 @@
 ---
 id: LK-1.04
 title: Lokalna baza, seed, .env.example i bezpiecznik testów
-status: todo
+status: in_progress
 difficulty: M
 model: null
 model_approved: null
 effort: null
-branch: null
+branch: chore/lk-1.04-local-db
 due: null
 depends_on: [LK-1.02]
 blocked_by_questions: []
