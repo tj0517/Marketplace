@@ -56,8 +56,8 @@ yarn-error.log*
 supabase/.temp/
 
 # AI/Dev tools
-CLAUDE.md
-.claude/
+.claude/settings.local.json
+.playwright-mcp/
 .agent/
 .gemini/
 
