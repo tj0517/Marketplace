@@ -9,7 +9,7 @@ effort: null
 branch: null
 due: null
 depends_on: []
-blocked_by_questions: [O-01]
+blocked_by_questions: []
 touches_db: false
 touches_prod: false
 pr: null
@@ -29,7 +29,8 @@ jednostkowych i skan sekretów.
 - [ ] `server-only` w `lib/supabase/admin.ts` (nowa zależność: paczka `server-only` od Next.js)
 - [ ] skrypt `typecheck` w `package.json`
 - [ ] usunięcie drugiego lockfile'a zgodnie z O-01 i odświeżenie właściwego
-- [ ] workflow `.github/workflows/ci.yml` na PR do `main`: instalacja z lockfile'a, typecheck, lint, `test:unit`, skan sekretów (gitleaks)
+- [ ] workflow `.github/workflows/ci.yml` na PR do `main`: instalacja z lockfile'a (pnpm), typecheck, lint **tylko plików zmienionych w PR** (`.ts`/`.tsx` z diffu względem bazy), `test:unit`, skan sekretów (gitleaks)
+- [ ] README: `pnpm install` zamiast `npm install`
 
 ## Gotowe, gdy
 
@@ -38,6 +39,7 @@ jednostkowych i skan sekretów.
 - w repo jest jeden lockfile zgodny z O-01 — **jak sprawdzić:** `ls package-lock.json pnpm-lock.yaml`
 - CI przechodzi na PR-ze tego zadania — **jak sprawdzić:** link do zielonego runu i lista kroków (typecheck, lint, test:unit, gitleaks)
 - red proof skanu sekretów: gitleaks wykrywa fałszywy klucz — **jak sprawdzić:** wynik lokalnego `gitleaks detect` (albo runu CI na tymczasowym commicie) na pliku z fałszywym kluczem, wycinek w raporcie; plik nie zostaje w gałęzi
+- red proof lintu: plik zmieniony w PR z celowym błędem lintu wywala krok lint, a nieruszony stary plik z błędami go nie wywala — **jak sprawdzić:** wycinek z lokalnego uruchomienia kroku albo z runu CI na tymczasowym commicie; celowy błąd nie zostaje w gałęzi
 - CI nie ma `continue-on-error` ani pomijania kroków — **jak sprawdzić:** `grep -n continue-on-error .github/workflows/ci.yml` puste
 
 ## Poza zakresem
@@ -49,7 +51,7 @@ jednostkowych i skan sekretów.
 
 ## Bramki STOP
 
-- jeśli na `main` lint lub typecheck mają błędy: stop z ich liczbą i listą plików, bez masowych poprawek; tj decyduje (naprawa w tym zadaniu, osobne zadanie albo tymczasowy wyjątek)
+- jeśli na `main` typecheck ma błędy: stop z ich liczbą i listą plików (2026-11-03: 0); lint ma 52 błędy — rozstrzygnięte: CI lintuje tylko pliki zmienione w PR (decyzja tj 2026-11-03), bez masowych poprawek
 - przed usunięciem lockfile'a pokaż, który i dlaczego (odpowiedź z O-01)
 - nowa zależność: tylko `server-only`; każda inna to decyzja tj
 
@@ -61,3 +63,5 @@ jednostkowych i skan sekretów.
 - `docs/04-open-questions.md` — O-01
 
 ## Notatki z realizacji
+
+- 2026-11-03 tj: O-01 → pnpm (log Vercela). Lint w CI tylko na plikach zmienionych w PR (wariant A); stare błędy lintu (52) zostają jako dług.
