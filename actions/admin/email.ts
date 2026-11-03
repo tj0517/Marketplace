@@ -1,5 +1,6 @@
 'use server';
 
+import { requireAdmin } from '@/lib/admin-guard';
 import { resend } from '@/lib/resend';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { EMAIL_CONFIG, APP_CONFIG } from '@/lib/config';
@@ -40,6 +41,8 @@ const isRateLimited = (error: { name?: string; message?: string } | null) =>
     /rate limit|too many requests/i.test(error?.message ?? '');
 
 export async function sendBulkEmail({ segment, subject, content }: BulkEmailParams): Promise<BulkEmailResult> {
+    await requireAdmin();
+
     const empty = { sentCount: 0, failedCount: 0, recipientCount: 0 };
 
     if (!segment || !subject || !content) {
@@ -165,6 +168,8 @@ export async function sendAdminEmail(params: {
     subject: string;
     content: string;
 }) {
+    await requireAdmin();
+
     const { to, subject, content } = params;
 
     if (!to || !subject || !content) {

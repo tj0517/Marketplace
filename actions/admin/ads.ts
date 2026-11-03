@@ -1,11 +1,14 @@
 'use server';
 
+import { requireAdmin } from '@/lib/admin-guard';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath, updateTag } from 'next/cache';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function getAdminAds() {
+    await requireAdmin();
+
     const supabase = createAdminClient();
 
     const { data: ads, error } = await supabase
@@ -23,6 +26,8 @@ export async function getAdminAds() {
 }
 
 export async function updateAdStatus(adId: string, status: 'active' | 'banned') {
+    await requireAdmin();
+
     if (!adId || !UUID_REGEX.test(adId)) {
         throw new Error('Invalid ad ID');
     }
@@ -45,6 +50,8 @@ export async function updateAdStatus(adId: string, status: 'active' | 'banned') 
 }
 
 export async function deleteAd(adId: string) {
+    await requireAdmin();
+
     if (!adId || !UUID_REGEX.test(adId)) {
         throw new Error('Invalid ad ID');
     }

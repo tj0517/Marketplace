@@ -1,8 +1,11 @@
 'use server';
 
+import { requireAdmin } from '@/lib/admin-guard';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function getAdminTransactions() {
+    await requireAdmin();
+
     const supabase = await createAdminClient();
 
     const { data: transactions, error } = await supabase
