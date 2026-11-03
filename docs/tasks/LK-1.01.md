@@ -1,7 +1,7 @@
 ---
 id: LK-1.01
 title: Akcje admina same sprawdzają uprawnienia
-status: review
+status: done
 difficulty: M
 model: null
 model_approved: null
@@ -65,3 +65,4 @@ hasła panelu odmawia i nic nie robi, a panel z poprawnym hasłem działa jak dz
 - 2026-11-03 tj: najpierw LK-1.04, żeby panel dało się sprawdzić lokalnie.
 - 2026-11-03 tj: kryterium e2e zastąpione (wariant A, bez strony-sondy); dowodem blokady jest test jednostkowy checkAdminAuth i odczyt diffu.
 - 2026-11-03 tj: build przy presji pamięci 2 za zgodą tj (wyjątek od limitu =1).
+- 2026-11-03 odbiór (wf-review, PR #6): requireAdmin pierwszą instrukcją w 10 akcjach (diff), checkAdminAuth 7/7 (33 passed), panel z hasłem działa (zrzut + odczyt bazy), lint 52/12 vs 52/13, tsc 0/0; e2e wg kryterium z wariantu A, requireAdmin bez osobnego dowodu end-to-end.
