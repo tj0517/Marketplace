@@ -1,18 +1,18 @@
 ---
 id: LK-1.06
 title: Zamknięcie complete_payment dla anon (pierwsza migracja na baseline)
-status: in_progress
+status: review
 difficulty: S
 model: null
 model_approved: null
 effort: null
-branch: null
+branch: fix/lk-1.06-lock-complete-payment
 due: null
 depends_on: [LK-1.02]
 blocked_by_questions: []
 touches_db: true
 touches_prod: true
-pr: null
+pr: 4
 ---
 
 ## Cel
