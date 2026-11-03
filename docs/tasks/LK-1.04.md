@@ -3,9 +3,9 @@ id: LK-1.04
 title: Lokalna baza, seed, .env.example i bezpiecznik testów
 status: review
 difficulty: M
-model: sonnet
+model: null
 model_approved: null
-effort: medium
+effort: null
 branch: chore/lk-1.04-local-db
 due: null
 depends_on: [LK-1.02]
