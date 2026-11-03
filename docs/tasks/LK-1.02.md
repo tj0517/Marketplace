@@ -1,7 +1,7 @@
 ---
 id: LK-1.02
 title: Schemat produkcji do repo (baseline)
-status: review
+status: done
 difficulty: M
 model: null
 model_approved: null
@@ -74,3 +74,4 @@ wdrażać normalnie.
 - 2026-11-03 odczyt zrzutu: `anon` i `authenticated` miały `GRANT ALL` na `ad_campaigns` bez RLS (tabela otwarta przez API); wcześniejszy wniosek „brak grantów” był błędny (`information_schema.role_table_grants` nie pokazuje cudzych ról), skorygowany w deferred.
 - 2026-11-03 tj: `REVOKE ALL ON public.ad_campaigns FROM anon, authenticated` przez SQL Editor, poza migracjami z decyzji (tabela nie należy do tego repo). Sprawdzone przez `supabase-prod`: `has_table_privilege` = false dla SELECT/INSERT/UPDATE/DELETE obu ról.
 - 2026-11-03 tj: wykonane `supabase migration repair --status reverted 20260813135218 20260813135657 20260813140128` i `--status applied 002`; `list_migrations` po zmianie = `002 baseline`, `003 optimize_schema`.
+- 2026-11-03 tj: review zaakceptowane („accepted — close it”), PR #2.
