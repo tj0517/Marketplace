@@ -1,5 +1,6 @@
 'use server';
 
+import { requireAdmin } from '@/lib/admin-guard';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath, updateTag } from 'next/cache';
 import crypto from 'crypto';
@@ -18,6 +19,8 @@ export type CreateFeaturedAdInput = {
 };
 
 export async function createFeaturedAd(input: CreateFeaturedAdInput) {
+    await requireAdmin();
+
     const supabase = createAdminClient();
 
     const managementToken = crypto.randomUUID();
@@ -61,6 +64,8 @@ export async function createFeaturedAd(input: CreateFeaturedAdInput) {
 }
 
 export async function toggleFeaturedAd(adId: string, featured: boolean) {
+    await requireAdmin();
+
     const supabase = createAdminClient();
 
     const updateData: Record<string, unknown> = { is_featured: featured };
@@ -89,6 +94,8 @@ export async function toggleFeaturedAd(adId: string, featured: boolean) {
 }
 
 export async function extendFeaturedAd(adId: string) {
+    await requireAdmin();
+
     const supabase = createAdminClient();
 
     const { error } = await supabase

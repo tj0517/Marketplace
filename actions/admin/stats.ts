@@ -1,8 +1,11 @@
 'use server';
 
+import { requireAdmin } from '@/lib/admin-guard';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function getAdminStats() {
+    await requireAdmin();
+
     const supabase = await createAdminClient();
 
     // Get total ads count
