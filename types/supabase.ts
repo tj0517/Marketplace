@@ -21,13 +21,15 @@ export type Database = {
           description: string
           education_level: string[] | null
           email: string
+          expires_at: string | null
+          expiring_warning_sent_at: string | null
           fts: unknown
           id: string
           is_featured: boolean
           location: string
           management_token: string | null
           phone_contact: string
-          phone_hash: string
+          phone_hash: string | null
           price_amount: number | null
           price_unit: string | null
           status: Database["public"]["Enums"]["ad_status"]
@@ -45,13 +47,15 @@ export type Database = {
           description: string
           education_level?: string[] | null
           email: string
+          expires_at?: string | null
+          expiring_warning_sent_at?: string | null
           fts?: unknown
           id?: string
           is_featured?: boolean
           location: string
           management_token?: string | null
           phone_contact: string
-          phone_hash: string
+          phone_hash?: string | null
           price_amount?: number | null
           price_unit?: string | null
           status?: Database["public"]["Enums"]["ad_status"]
@@ -69,13 +73,15 @@ export type Database = {
           description?: string
           education_level?: string[] | null
           email?: string
+          expires_at?: string | null
+          expiring_warning_sent_at?: string | null
           fts?: unknown
           id?: string
           is_featured?: boolean
           location?: string
           management_token?: string | null
           phone_contact?: string
-          phone_hash?: string
+          phone_hash?: string | null
           price_amount?: number | null
           price_unit?: string | null
           status?: Database["public"]["Enums"]["ad_status"]
@@ -87,15 +93,7 @@ export type Database = {
           views_count?: number | null
           visible_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_ads_phone_hash"
-            columns: ["phone_hash"]
-            isOneToOne: false
-            referencedRelation: "phone_hashes"
-            referencedColumns: ["phone_hash"]
-          },
-        ]
+        Relationships: []
       }
       phone_hashes: {
         Row: {
@@ -178,13 +176,14 @@ export type Database = {
     Enums: {
       ad_status:
       | "active"
+      | "expired"
       | "banned"
       | "inactive"
       | "archived"
       | "deleted"
       ad_type: "offer" | "search"
       transaction_status: "pending" | "completed" | "failed"
-      transaction_type: "bump"
+      transaction_type: "activation" | "extension" | "bump"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -314,6 +313,7 @@ export const Constants = {
     Enums: {
       ad_status: [
         "active",
+        "expired",
         "banned",
         "inactive",
         "archived",
@@ -321,7 +321,7 @@ export const Constants = {
       ],
       ad_type: ["offer", "search"],
       transaction_status: ["pending", "completed", "failed"],
-      transaction_type: ["bump"],
+      transaction_type: ["activation", "extension", "bump"],
     },
   },
 } as const

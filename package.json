@@ -7,12 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:types": "supabase gen types typescript --project-id ruxcswtcfaofvyzfvspn > types/supabase.ts",
+    "db:types": "supabase gen types typescript --local > types/supabase.ts",
     "test": "playwright test",
     "test:unit": "playwright test lib/",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug"
+    "test:debug": "playwright test --debug",
+    "db:start": "supabase start -x gotrue,realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor",
+    "db:reset": "supabase db reset --local",
+    "db:stop": "supabase stop"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

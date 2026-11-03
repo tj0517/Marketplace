@@ -8,7 +8,7 @@ model_approved: null
 effort: null
 branch: null
 due: null
-depends_on: []
+depends_on: [LK-1.04]
 blocked_by_questions: []
 touches_db: false
 touches_prod: false
@@ -62,3 +62,4 @@ hasła panelu odmawia i nic nie robi, a panel z poprawnym hasłem działa jak dz
 ## Notatki z realizacji
 
 - 2026-11-02 tj: wersja minimalna (to samo hasło panelu co middleware), bez przejścia na konta Supabase (D1 w wf-plan).
+- 2026-11-03 tj: najpierw LK-1.04, żeby panel dało się sprawdzić lokalnie.

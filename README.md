@@ -15,7 +15,7 @@ Platforma ogłoszeniowa łącząca uczniów z korepetytorami. Zbudowana na Next.
 
 ```bash
 npm install
-cp .env.p24.example .env.local   # uzupełnij zmienne środowiskowe
+cp .env.example .env.local   # uzupełnij zmienne środowiskowe
 npm run dev
 ```
 

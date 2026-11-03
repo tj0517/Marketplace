@@ -1,18 +1,18 @@
 ---
 id: LK-1.04
 title: Lokalna baza, seed, .env.example i bezpiecznik testów
-status: todo
+status: done
 difficulty: M
 model: null
 model_approved: null
 effort: null
-branch: null
+branch: chore/lk-1.04-local-db
 due: null
 depends_on: [LK-1.02]
 blocked_by_questions: []
 touches_db: true
 touches_prod: false
-pr: null
+pr: 5
 ---
 
 ## Cel
@@ -62,3 +62,6 @@ i syntetycznego seeda, a testy przerywają się, zanim dotkną bazy, która nie 
 ## Notatki z realizacji
 
 - 2026-11-02 tj: lokalny stack w wersji odchudzonej (`supabase start -x …`) z limitem pamięci (O-03).
+- 2026-11-03 tj: accepted. Run with Opus 5.5 instead of the recommended Sonnet. Started at memory pressure 2 with tj's consent. `db:types` now generates from the local stack, not prod.
+- 2026-11-03 tj decision on the test guard: option A, keep fail-closed. A missing `NEXT_PUBLIC_SUPABASE_URL` aborts tests; CI sets it explicitly in LK-1.03.
+- 2026-11-03 tj: before LK-1.01: `.env.local` points to prod, so local app runs must override the Supabase env with the local stack values.
