@@ -1,18 +1,18 @@
 ---
 id: LK-1.06
 title: Zamknięcie complete_payment dla anon (pierwsza migracja na baseline)
-status: todo
+status: done
 difficulty: S
 model: null
 model_approved: null
 effort: null
-branch: null
+branch: fix/lk-1.06-lock-complete-payment
 due: null
 depends_on: [LK-1.02]
 blocked_by_questions: []
 touches_db: true
 touches_prod: true
-pr: null
+pr: 4
 ---
 
 ## Cel
@@ -63,3 +63,4 @@ pierwsza migracja na baseline z LK-1.02, co przy okazji sprawdza całą ścieżk
 ## Notatki z realizacji
 
 - 2026-11-03 tj: zamknąć teraz małym zadaniem z migracją, a nie przez SQL Editor (prod ma się zgadzać z repo) ani dopiero w LK-2.02.
+- 2026-11-03 tj: zamknąć (odbiór po raporcie, PR #4). Wynik dry-run i `db push` nie został wklejony do sesji; wdrożenie potwierdzone odczytem `list_migrations` (002, 003, 20261103124549) i uprawnień na prod.
