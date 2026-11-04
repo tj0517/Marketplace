@@ -146,9 +146,10 @@ export async function createOffer(_prevState: unknown, formData: FormData) {
         }
     }
 
-    // Dobrowolna zgoda marketingowa (LK-2.01): niezależna od maila z magic linkiem i od dodania ogłoszenia
+    // Dobrowolna zgoda marketingowa (LK-2.01): niezależna od maila z magic linkiem i od dodania ogłoszenia.
+    // Tylko ogłoszenia korepetytorów (decyzja tj 2026-11-04); dla 'search' pole z klienta jest ignorowane.
     const recordConsent = async () => {
-        if (!isConsentChecked(formData.get('marketing_consent'))) return
+        if (!isOffer || !isConsentChecked(formData.get('marketing_consent'))) return
         try {
             await recordMarketingConsent(validatedFields.data.email, 'form')
         } catch (consentError) {

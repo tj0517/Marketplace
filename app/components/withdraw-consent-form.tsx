@@ -3,7 +3,7 @@
 import { useActionState } from 'react'
 import { withdrawMarketingConsent } from '@/actions/public/marketing-consent'
 import { Button } from '@/app/components/ui/button'
-import { CheckCircle2, Loader2 } from 'lucide-react'
+import { CheckCircle2, CircleAlert, Loader2 } from 'lucide-react'
 
 export function WithdrawConsentForm({ token }: { token: string }) {
     const [state, formAction, isPending] = useActionState(withdrawMarketingConsent, null)
@@ -15,6 +15,17 @@ export function WithdrawConsentForm({ token }: { token: string }) {
                     <CheckCircle2 className="h-10 w-10 text-green-600" />
                 </div>
                 <p className="font-medium text-green-800">{state.message}</p>
+            </div>
+        )
+    }
+
+    if (state?.status === 'invalid') {
+        return (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center">
+                <div className="mb-3 flex justify-center">
+                    <CircleAlert className="h-10 w-10 text-amber-600" />
+                </div>
+                <p className="font-medium text-amber-900">{state.message}</p>
             </div>
         )
     }

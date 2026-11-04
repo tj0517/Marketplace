@@ -7,7 +7,7 @@ import { recordMarketingConsent } from '@/lib/marketing-consent-server'
 import { CONSENT_MESSAGES, consentPageSchema, withdrawalSchema } from '@/lib/marketing-consent'
 
 export type ConsentActionState = {
-    status: 'success' | 'error'
+    status: 'success' | 'error' | 'invalid'
     message: string
     errors?: { email?: string[]; consent?: string[] }
 } | null
@@ -63,20 +63,26 @@ export async function withdrawMarketingConsent(_prevState: ConsentActionState, f
     }
 
     const validated = withdrawalSchema.safeParse({ token: formData.get('token') })
+    if (!validated.success) {
+        return { status: 'invalid', message: CONSENT_MESSAGES.withdrawalInvalid }
+    }
 
-    // Zły lub nieznany token daje ten sam komunikat co prawidłowy — nic nie zdradza.
-    if (validated.success) {
-        const supabase = createAdminClient()
-        const { error } = await supabase
-            .from('marketing_consents')
-            .update({ status: 'withdrawn', withdrawn_at: new Date().toISOString() })
-            .eq('withdrawal_token', validated.data.token)
-            .eq('status', 'active')
+    const supabase = createAdminClient()
+    const { data, error } = await supabase
+        .from('marketing_consents')
+        .update({ status: 'withdrawn', withdrawn_at: new Date().toISOString() })
+        .eq('withdrawal_token', validated.data.token)
+        .eq('status', 'active')
+        .select('id')
 
-        if (error) {
-            console.error('Marketing consent: withdrawal failed', { code: error.code })
-            return { status: 'error', message: CONSENT_MESSAGES.error }
-        }
+    if (error) {
+        console.error('Marketing consent: withdrawal failed', { code: error.code })
+        return { status: 'error', message: CONSENT_MESSAGES.error }
+    }
+
+    // Nieznany token albo zgoda już wycofana: żaden aktywny wiersz nie został zmieniony.
+    if (!data || data.length === 0) {
+        return { status: 'invalid', message: CONSENT_MESSAGES.withdrawalInvalid }
     }
 
     return { status: 'success', message: CONSENT_MESSAGES.withdrawn }

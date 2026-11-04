@@ -78,6 +78,7 @@ AS $$
     SELECT EXISTS (
         SELECT 1 FROM public.ads
         WHERE lower(btrim(email)) = lower(btrim(p_email))
+          AND type = 'offer'
           AND status IN ('active', 'expired')
     );
 $$;

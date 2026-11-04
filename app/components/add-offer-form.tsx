@@ -362,18 +362,20 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                         </div>
                     </div>
 
-                    {/* Optional marketing consent (LK-2.01) */}
-                    <div className="flex items-start space-x-3">
-                        <Checkbox id="marketing_consent" name="marketing_consent" defaultChecked={false} />
-                        <div className="grid gap-1.5 leading-none">
-                            <Label htmlFor="marketing_consent" className="text-sm font-normal cursor-pointer">
-                                {MARKETING_CONSENT.text}
-                            </Label>
-                            <p className="text-xs text-slate-500">
-                                Opcjonalnie. W podziękowaniu jednorazowe podbicie ogłoszenia za 1 zł.
-                            </p>
+                    {/* Optional marketing consent (LK-2.01) — only tutor ads qualify */}
+                    {type === 'offer' && (
+                        <div className="flex items-start space-x-3">
+                            <Checkbox id="marketing_consent" name="marketing_consent" defaultChecked={false} />
+                            <div className="grid gap-1.5 leading-none">
+                                <Label htmlFor="marketing_consent" className="text-sm font-normal cursor-pointer">
+                                    {MARKETING_CONSENT.text}
+                                </Label>
+                                <p className="text-xs text-slate-500">
+                                    Opcjonalnie. W podziękowaniu jednorazowe podbicie ogłoszenia za 1 zł.
+                                </p>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
 

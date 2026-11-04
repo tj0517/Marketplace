@@ -13,7 +13,7 @@ export const MARKETING_CONSENT = {
 } as const
 
 // =============================================================================
-// STRONA /zgoda-marketingowa — PROPOZYCJA AGENTA, CZEKA NA ZATWIERDZENIE tj (LK-2.01)
+// STRONA /zgoda-marketingowa — tekst zatwierdzony przez tj 2026-11-04 (LK-2.01)
 // =============================================================================
 
 export const CONSENT_PAGE_COPY = {
@@ -32,6 +32,7 @@ export const CONSENT_MESSAGES = {
     invalid: 'Sprawdź formularz i spróbuj ponownie.',
     error: 'Nie udało się zapisać zgody. Spróbuj ponownie później.',
     withdrawn: 'Gotowe. Jeśli ten link dotyczył aktywnej zgody, została ona wycofana i nie wyślemy już na ten adres wiadomości marketingowych.',
+    withdrawalInvalid: 'Link jest nieprawidłowy albo zgoda była już wycofana. Jeśli nadal dostajesz wiadomości, napisz do nas.',
 } as const
 
 export type ConsentSource = 'form' | 'consent_page'
