@@ -78,3 +78,6 @@ zgodę. Samo naliczanie 1 zł i płatność to LK-2.02.
 - 2026-11-02 tj: zgoda z formularza też przyznaje uprawnienie (O-05); wycofanie zgody nie odbiera uprawnienia (O-06).
 - 2026-11-02 tj: strona zgody bez potwierdzania adresu i z komunikatem „nie znaleziono…” zgodnie z briefem klienta; skutki (zapis cudzego adresu, sprawdzanie, czy adres ma ogłoszenie) przedstawione w wf-plan.
 - 2026-11-04 tj: brak briefu z nagłówkiem i opisem strony /zgoda-marketingowa — tekst proponuje agent, tj zatwierdza w review; do tego czasu bez wdrożenia na prod.
+- 2026-11-04 tj: link wycofania (decyzja 1, wariant B) otwiera stronę z przyciskiem „Wycofaj zgodę”; status `withdrawn` zmienia dopiero POST przycisku (server action), nigdy GET. Red proof: zwykły GET linku (jak skaner poczty) nie zmienia wiersza zgody.
+- 2026-11-04 tj: ponowny zapis adresu z aktywną zgodą (decyzja 2, wariant A): bez nowego wiersza zgody i bez maila, użytkownik widzi zwykły komunikat sukcesu; w bazie częściowy indeks unikalny (najwyżej jedna zgoda `active` na znormalizowany adres). Po wycofaniu nowy zapis działa: nowy wiersz `active` + mail, ale bez drugiego uprawnienia.
+- 2026-11-04 tj: „ogłoszenie powiązane z adresem” na stronie zgody (decyzja 3) = status `active` lub `expired`; `banned`, `archived`, `inactive`, `deleted` się nie liczą. Porównanie adresu bez rozróżniania wielkości liter.
