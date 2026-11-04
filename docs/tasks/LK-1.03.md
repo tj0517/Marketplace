@@ -1,7 +1,7 @@
 ---
 id: LK-1.03
 title: server-only dla klucza admina i CI na PR-ach
-status: in_progress
+status: review
 difficulty: M
 model: null
 model_approved: null
@@ -12,7 +12,7 @@ depends_on: []
 blocked_by_questions: []
 touches_db: false
 touches_prod: false
-pr: null
+pr: 7
 ---
 
 ## Cel
@@ -66,3 +66,15 @@ jednostkowych i skan sekretów.
 
 - 2026-11-03 tj: O-01 → pnpm (log Vercela). Lint w CI tylko na plikach zmienionych w PR (wariant A); stare błędy lintu (52) zostają jako dług.
 - 2026-11-04 tj: gitleaks znalazł w historii `CRON_SECRET` (`6b8013f`, `test-przed-oddaniem.md:182`, reguła `curl-auth-header`) → wariant A: pełny skan historii w CI, w `.gitleaksignore` tylko ten jeden fingerprint z komentarzem; gitleaks z oficjalnego obrazu kontenera przypiętego wersją i digestem, bez tokenu. Rotacja `CRON_SECRET` w Vercelu po stronie tj (zapisane w `docs/deferred-tasks.md`).
+- 2026-11-04 tj: red proof `server-only` przez build preview na Vercelu (lokalnie presja pamięci 2, bez `next build` w CI). Tymczasowy commit `6648fa1` (komponent `'use client'` w `app/lk-probe/` importujący `createAdminClient`), wycofany commitem revert bez force-pusha. Build `6648fa1` (deployment `dpl_Dpw8JGgkzFTBHUfrHAC9KFKw4uHB`, odczyt tj `vercel inspect --logs`) padł:
+  ```
+  Error: Turbopack build failed with 2 errors:
+  ./lib/supabase/admin.ts:1:1
+  > 1 | import 'server-only';
+  ./lib/supabase/admin.ts [Client Component Browser]
+  ./app/lk-probe/probe.tsx [Client Component Browser]
+  ./app/lk-probe/page.tsx [Server Component]
+  'server-only' cannot be imported from a Client Component module. It should only be used from a Server Component.
+  Error: [BUILD_UTILS_SPAWN_1] Command "pnpm run build" exited with 1
+  ```
+  Kontrola: poprzedni commit `028f28f` zbudował się na Vercelu („Deployment has completed”).
