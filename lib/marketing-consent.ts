@@ -1,15 +1,15 @@
 import { z } from 'zod'
 
 // =============================================================================
-// TREŚĆ ZGODY (O-04: placeholder do czasu treści od tj/klienta — bez wdrożenia na prod)
+// TREŚĆ ZGODY (O-04 rozstrzygnięte 2026-11-04, docs/04-open-questions.md)
 // =============================================================================
 
 export const MARKETING_CONSENT = {
     /** Wersja treści zapisywana przy każdej zgodzie; zmień razem z tekstem */
-    version: 'placeholder-2026-11-04',
+    version: 'v1-2026-11-04',
 
     /** Treść zgody przy checkboxie (formularz i strona zgody) */
-    text: '[PLACEHOLDER O-04] Wyrażam zgodę na otrzymywanie od Lekcjo.pl informacji marketingowych na podany adres e-mail. Zgodę mogę wycofać w każdej chwili.',
+    text: 'Wyrażam zgodę na otrzymywanie od RybusOne Bartłomiej Rybus, właściciela serwisu Lekcjo.pl, informacji marketingowych (newsletter i oferty Lekcjo.pl) na podany adres e-mail. Zgodę mogę wycofać w każdej chwili, pisząc na lekcjo.pl@gmail.com lub korzystając z linku w otrzymanej wiadomości. Szczegóły w Polityce prywatności.',
 } as const
 
 // =============================================================================
