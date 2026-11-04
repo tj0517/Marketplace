@@ -9,7 +9,7 @@ import { getBaseUrl, AD_CONFIG } from '@/lib/config'
 import { isConsentChecked } from '@/lib/marketing-consent'
 import { recordMarketingConsent } from '@/lib/marketing-consent-server'
 
-export async function createOffer(prevState: any, formData: FormData) {
+export async function createOffer(_prevState: unknown, formData: FormData) {
     const educationLevels = formData.getAll('education_level')
     const subjects = formData.getAll('subjects') as string[]
 
