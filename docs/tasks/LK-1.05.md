@@ -1,18 +1,18 @@
 ---
 id: LK-1.05
 title: Krótki CLAUDE.md z mapą repo i zakazami
-status: in_progress
+status: review
 difficulty: S
 model: null
 model_approved: null
 effort: null
-branch: null
+branch: docs/lk-1.05-claude-md
 due: null
 depends_on: []
 blocked_by_questions: []
 touches_db: false
 touches_prod: false
-pr: null
+pr: 8
 ---
 
 ## Cel
