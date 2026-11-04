@@ -1,12 +1,12 @@
 ---
 id: LK-2.02
 title: Podbicie za 1 zł — kwota z serwera, rezerwacja, webhook z kontrolą kwoty i verify
-status: todo
+status: in_progress
 difficulty: L
-model: null
+model: opus
 model_approved: null
-effort: null
-branch: null
+effort: high
+branch: feat/lk-2.02-bump-1zl
 due: null
 depends_on: [LK-2.01]
 blocked_by_questions: []
@@ -40,7 +40,10 @@ produkcji.
 - red proof webhooka: powiadomienie z poprawnym podpisem, ale złą kwotą albo nieznanym `sessionId` nie wywołuje verify, nie kończy płatności i nie zmienia uprawnienia — **jak sprawdzić:** test z wynikiem i wklejonym stanem uprawnienia
 - nieudana rejestracja i transakcja wygaszona przez cron zwalniają rezerwację — **jak sprawdzić:** test albo wklejony stan uprawnienia przed i po obu scenariuszach na lokalnej bazie
 - sandbox P24: płatność 1 zł od rejestracji przez verify do `used` — **jak sprawdzić:** wklejone odpowiedzi register i verify (bez kluczy), stan transakcji i uprawnienia; jeśli P24 odrzuci 1 zł → stop i raport z komunikatem
-- produkcja: jedna płatność 1 zł przeprowadzona przez tj kończy się `used` i podbiciem — **jak sprawdzić:** wklejony przez agenta SELECT stanu transakcji i uprawnienia po płatności tj (bez danych osobowych)
+- produkcja: przeniesione do zadania follow-up (tj, 2026-11-04)
+- fallback: gdy w bazie nie ma tabeli/funkcji uprawnień, rejestracja nalicza 1000 gr i nie zwraca błędu; webhook i cron pomijają kroki uprawnień — **jak sprawdzić:** test z zamockowanym błędem „relation does not exist”
+- spóźniona płatność: poprawne powiadomienie dla transakcji wygaszonej przez cron jest weryfikowane i kończy płatność, a wolne uprawnienie przechodzi `granted` → `used` (zajęte przez inną transakcję albo `used` zostaje bez zmian) — **jak sprawdzić:** test i wklejony stan
+- przycisk podbicia pokazuje 1 zł dla adresu z uprawnieniem i 10 zł bez — **jak sprawdzić:** zrzuty ekranu z Playwrighta obu wariantów
 
 ## Poza zakresem
 
@@ -70,3 +73,7 @@ produkcji.
 ## Notatki z realizacji
 
 - 2026-11-02 wf-plan: webhook nie wywołuje `verify` ani nie sprawdza kwoty; płatne podbicia są wyłączone flagą `PROMOTIONS_ENABLED`.
+- 2026-11-04 tj: kryterium płatności produkcyjnej przeniesione do zadania follow-up (tj je założy), razem z wdrożeniem migracji LK-2.01/LK-2.02 na prod.
+- 2026-11-04 tj: gdy w bazie nie ma tabeli/funkcji uprawnień, rejestracja nalicza standardowe 1000 gr zamiast błędu (merge przed migracją nie psuje podbić na prod); ta sama tolerancja w webhooku i cronie.
+- 2026-11-04 tj: dowód w sandboxie P24 przez tunel ngrok (P24 sam woła webhook).
+- 2026-11-04 tj: spóźniona płatność dla transakcji wygaszonej przez cron jest weryfikowana i kończona; zużywa uprawnienie, jeśli jest wolne (`granted` → `used`); jeśli zarezerwowane przez inną transakcję albo `used` — bez zmian.
