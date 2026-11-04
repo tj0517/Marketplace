@@ -6,6 +6,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeAndHashPhone } from './hash_phone'
 import { adSchema } from '@/lib/ad-validation'
 import { getBaseUrl, AD_CONFIG } from '@/lib/config'
+import { isConsentChecked } from '@/lib/marketing-consent'
+import { recordMarketingConsent } from '@/lib/marketing-consent-server'
 
 export async function createOffer(prevState: any, formData: FormData) {
     const educationLevels = formData.getAll('education_level')
@@ -123,24 +125,38 @@ export async function createOffer(prevState: any, formData: FormData) {
         .eq('id', data!.id)
         .single()
 
-    try {
-        const { sendEmail } = await import('@/actions/emails')
-        const baseUrl = getBaseUrl()
-        const magicLink = `${baseUrl}/offers/manage/${ad.management_token}`
-        const publicLink = `${baseUrl}/offers/${ad.id}`
+    const sendWelcomeEmail = async () => {
+        try {
+            const { sendEmail } = await import('@/actions/emails')
+            const baseUrl = getBaseUrl()
+            const magicLink = `${baseUrl}/offers/manage/${ad.management_token}`
+            const publicLink = `${baseUrl}/offers/${ad.id}`
 
-        await sendEmail({
-            to: ad.email,
-            type: 'welcome',
-            props: {
-                adTitle: ad.title,
-                manageLink: magicLink,
-                publicLink: publicLink
-            }
-        })
-    } catch (emailError) {
-        console.error('Failed to send confirmation email', emailError)
+            await sendEmail({
+                to: ad.email,
+                type: 'welcome',
+                props: {
+                    adTitle: ad.title,
+                    manageLink: magicLink,
+                    publicLink: publicLink
+                }
+            })
+        } catch (emailError) {
+            console.error('Failed to send confirmation email', emailError)
+        }
     }
+
+    // Dobrowolna zgoda marketingowa (LK-2.01): niezależna od maila z magic linkiem i od dodania ogłoszenia
+    const recordConsent = async () => {
+        if (!isConsentChecked(formData.get('marketing_consent'))) return
+        try {
+            await recordMarketingConsent(validatedFields.data.email, 'form')
+        } catch (consentError) {
+            console.error('Failed to record marketing consent', (consentError as Error).message)
+        }
+    }
+
+    await Promise.allSettled([sendWelcomeEmail(), recordConsent()])
 
     updateTag('ads')
     revalidatePath('/')

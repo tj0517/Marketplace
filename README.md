@@ -34,6 +34,8 @@ pnpm dev
 | `P24_SANDBOX` | `true` dla środowiska testowego |
 | `RESEND_API_KEY` | Klucz API Resend |
 | `RESEND_FROM_EMAIL` | Adres nadawcy emaili |
+| `RESEND_MARKETING_FROM_EMAIL` | Adres nadawcy maili marketingowych (osobny od transakcyjnego; domena zweryfikowana w Resend) |
+| `RESEND_MARKETING_FROM_NAME` | Nazwa nadawcy maili marketingowych (opcjonalna, domyślnie `Lekcjo.pl`) |
 | `CRON_SECRET` | Token autoryzacji dla `/api/cron` |
 | `ADMIN_USER` | Login do panelu `/admin` |
 | `ADMIN_PASS` | Hasło do panelu `/admin` |

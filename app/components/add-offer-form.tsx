@@ -16,6 +16,7 @@ import {
 } from '@/app/components/ui/select'
 import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { MARKETING_CONSENT } from '@/lib/marketing-consent'
 
 const subjects = [
     "Matematyka", "Język Angielski", "Język Niemiecki", "Język Hiszpański",
@@ -358,6 +359,19 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                                     politykę prywatności
                                 </a>
                             </Label>
+                        </div>
+                    </div>
+
+                    {/* Optional marketing consent (LK-2.01) */}
+                    <div className="flex items-start space-x-3">
+                        <Checkbox id="marketing_consent" name="marketing_consent" defaultChecked={false} />
+                        <div className="grid gap-1.5 leading-none">
+                            <Label htmlFor="marketing_consent" className="text-sm font-normal cursor-pointer">
+                                {MARKETING_CONSENT.text}
+                            </Label>
+                            <p className="text-xs text-slate-500">
+                                Opcjonalnie. W podziękowaniu jednorazowe podbicie ogłoszenia za 1 zł.
+                            </p>
                         </div>
                     </div>
                 </div>
