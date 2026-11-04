@@ -1,18 +1,18 @@
 ---
 id: LK-1.05
 title: Krótki CLAUDE.md z mapą repo i zakazami
-status: todo
+status: done
 difficulty: S
 model: null
 model_approved: null
 effort: null
-branch: null
+branch: docs/lk-1.05-claude-md
 due: null
 depends_on: []
 blocked_by_questions: []
 touches_db: false
 touches_prod: false
-pr: null
+pr: 8
 ---
 
 ## Cel
@@ -51,3 +51,5 @@ plik poniżej ~8 000 znaków, zgodny z `package.json` i śledzony przez git.
 ## Notatki z realizacji
 
 - 2026-11-02 tj: zadanie dodane w wf-plan (D2).
+- 2026-11-04 tj: zakres wariant B — CLAUDE.md zawiera też reguły pnpm only (O-01), limit presji pamięci (O-03) i lint tylko zmienionych plików.
+- 2026-11-04 tj: odbiór PR #8 — przyjęte; udowodnione: CLAUDE.md śledzony, 3171 znaków, 14/14 komend zgodnych z package.json, 38 ścieżek istnieje, reguły wariantu B obecne; CI zielone.
