@@ -6,7 +6,7 @@ import { Navbar } from "@/app/components/navbar";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
-import { Eye, Calendar, ExternalLink, ArrowUpCircle, MessageCircle } from "lucide-react";
+import { Eye, Calendar, ExternalLink, ArrowUpCircle, MessageCircle, Gift } from "lucide-react";
 import { DeleteAdButton } from "@/app/components/delete-ad-button";
 import { PromoteAdButton } from "@/app/components/promote-ad-button";
 import { isPromotionsEnabled } from "@/lib/config";
@@ -122,6 +122,20 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
                         </Card>
                     )}
                 </div>
+
+                {ad.type !== 'search' && (
+                    <div className="mb-6 flex flex-col gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-start gap-3">
+                            <Gift className="mt-0.5 size-5 shrink-0 text-indigo-600" />
+                            <p className="text-sm text-indigo-900">
+                                Zapisz się na newsletter Lekcjo.pl i odbierz jednorazowe podbicie ogłoszenia za 1 zł.
+                            </p>
+                        </div>
+                        <Button asChild size="sm" className="bg-indigo-600 hover:bg-indigo-700 shrink-0">
+                            <Link href="/zgoda-marketingowa">Odbierz podbicie</Link>
+                        </Button>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Edit Form */}

@@ -48,6 +48,17 @@ export const EMAIL_CONFIG = {
     get noreplyFrom() {
         return `${this.noreplyName} <${this.noreplyEmail}>`;
     },
+
+    /** Sender email for marketing emails (separate from transactional) */
+    marketingEmail: process.env.RESEND_MARKETING_FROM_EMAIL || 'marketing@resend.dev',
+
+    /** Sender name for marketing emails */
+    marketingName: process.env.RESEND_MARKETING_FROM_NAME || 'Lekcjo.pl',
+
+    /** Full "from" address for marketing emails */
+    get marketingFrom() {
+        return `${this.marketingName} <${this.marketingEmail}>`;
+    },
 } as const;
 
 // =============================================================================

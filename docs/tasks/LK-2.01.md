@@ -1,18 +1,18 @@
 ---
 id: LK-2.01
 title: Zgody marketingowe i uprawnienie do podbicia za 1 zł
-status: todo
+status: done
 difficulty: L
-model: null
+model: opus
 model_approved: null
-effort: null
-branch: null
+effort: high
+branch: feat/lk-2.01-marketing-consent
 due: null
 depends_on: [LK-1.02, LK-1.04]
 blocked_by_questions: []
 touches_db: true
 touches_prod: true
-pr: null
+pr: 9
 ---
 
 ## Cel
@@ -77,3 +77,17 @@ zgodę. Samo naliczanie 1 zł i płatność to LK-2.02.
 
 - 2026-11-02 tj: zgoda z formularza też przyznaje uprawnienie (O-05); wycofanie zgody nie odbiera uprawnienia (O-06).
 - 2026-11-02 tj: strona zgody bez potwierdzania adresu i z komunikatem „nie znaleziono…” zgodnie z briefem klienta; skutki (zapis cudzego adresu, sprawdzanie, czy adres ma ogłoszenie) przedstawione w wf-plan.
+- 2026-11-04 tj: brak briefu z nagłówkiem i opisem strony /zgoda-marketingowa — tekst proponuje agent, tj zatwierdza w review; do tego czasu bez wdrożenia na prod.
+- 2026-11-04 tj: link wycofania (decyzja 1, wariant B) otwiera stronę z przyciskiem „Wycofaj zgodę”; status `withdrawn` zmienia dopiero POST przycisku (server action), nigdy GET. Red proof: zwykły GET linku (jak skaner poczty) nie zmienia wiersza zgody.
+- 2026-11-04 tj: ponowny zapis adresu z aktywną zgodą (decyzja 2, wariant A): bez nowego wiersza zgody i bez maila, użytkownik widzi zwykły komunikat sukcesu; w bazie częściowy indeks unikalny (najwyżej jedna zgoda `active` na znormalizowany adres). Po wycofaniu nowy zapis działa: nowy wiersz `active` + mail, ale bez drugiego uprawnienia.
+- 2026-11-04 tj: „ogłoszenie powiązane z adresem” na stronie zgody (decyzja 3) = status `active` lub `expired`; `banned`, `archived`, `inactive`, `deleted` się nie liczą. Porównanie adresu bez rozróżniania wielkości liter.
+- 2026-11-04 agent: naruszenie reguły O-03 — lokalny stack wystartował (`pnpm db:start`) przy `kern.memorystatus_vm_pressure_level` = 2 (sprawdzenie i start w jednym poleceniu bez przerwania). Po starcie poziom 1. Od tej pory sprawdzenie osobnym poleceniem przed każdym krokiem; przy wartości ≠ 1 pauza i raport do tj, bez restartów.
+- 2026-11-04 tj: jednorazowy wyjątek od O-03 — testy (kroki 1–7) przy `memorystatus_vm_pressure_level` = 2, tylko na już działającym stacku i serwerze dev. Bez `next build` i bez (re)startu stacku przy poziomie ≠ 1; sprawdzenie przed każdym krokiem, przy poziomie 4 natychmiastowy stop i raport; jeśli stack lub serwer dev padnie — bez restartu, raport.
+- 2026-11-04 tj: krok 2 (celowo nieudany mail marketingowy) — restart samego serwera dev z `FAIL_MARKETING_EMAIL=1`, stack nietknięty; po teście restart bez flagi, za każdym razem kontrola hosta.
+- 2026-11-04 tj: komunikat sukcesu na stronie zgody jeden dla każdego przypadku (nowa zgoda i ponowny zapis), bez obietnicy maila i bez zdradzania, czy adres był już zapisany: „Dziękujemy! Twoja zgoda jest zapisana.”
+- 2026-11-04 tj (review PR #9): nagłówek i opis strony `/zgoda-marketingowa` (`CONSENT_PAGE_COPY`) zatwierdzone w wersji zaproponowanej. Treść samej zgody nadal placeholderem O-04 — wdrożenie na prod nadal zablokowane na O-04.
+- 2026-11-04 tj: uprawnienie do podbicia tylko dla ogłoszeń korepetytorów (`ads.type = 'offer'`); ogłoszenia uczniów (`search`) się nie kwalifikują — `has_ad_for_email` z `type = 'offer'`, checkbox w formularzu tylko dla `offer`, `createOffer` ignoruje `marketing_consent` dla `search` (bez ufania klientowi).
+- 2026-11-04 tj: edycja niezastosowanej migracji `20261104120000_marketing_consents.sql` dozwolona (prod jej nie widział — zweryfikowane przez tj); żadnego innego pliku migracji nie ruszać.
+- 2026-11-04 tj: strona wycofania przy złym formacie tokenu, nieznanym tokenie albo zgodzie już wycofanej (żaden aktywny wiersz niezmieniony) pokazuje osobny komunikat: „Link jest nieprawidłowy albo zgoda była już wycofana. Jeśli nadal dostajesz wiadomości, napisz do nas.”; prawdziwe wycofanie zostaje przy dotychczasowym potwierdzeniu.
+- 2026-11-04 tj: drugi jednorazowy wyjątek od O-03 — runda poprawek z review przy `memorystatus_vm_pressure_level` = 2: dozwolone `pnpm db:reset`, `pnpm db:types` (tylko lokalnie), testy i zrzuty dla poprawek 1–2, `pnpm test:unit`. Bez `next build`, bez stop/start stacku, bez uruchamiania czegokolwiek nowego; restart serwera dev tylko gdy konieczny (wtedy kontrola hosta 127.0.0.1:54321 przed wysłaniem formularza). Sprawdzenie poziomu przed każdym krokiem; przy poziomie 4 albo padnięciu kontenera / serwera dev natychmiastowy stop i raport.
+- 2026-11-04 tj: odbiór w wf-review, PR #9 — wszystkie kryteria udowodnione (lokalne SELECT-y, red proofs: anon, równoczesne zapisy, GET linku wycofania, zły token, ogłoszenie ucznia z wstrzykniętą zgodą; prod nietknięty: 0 nowych tabel/funkcji). Tekst strony zgody zatwierdzony. Merge dopiero z gotowym LK-2.02; przed wdrożeniem: O-04, migracja przez tj, zmienne nadawcy marketingowego w Vercelu.
