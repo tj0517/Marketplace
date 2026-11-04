@@ -21,12 +21,22 @@ export const LEVELS = [
     'Studia', 'Dorośli',
 ] as const;
 
+export type Subject = (typeof SUBJECTS)[number];
+export type Level = (typeof LEVELS)[number];
+
+/**
+ * Older, broader stored levels that also count for a newer, narrower filter
+ * value (decision D1, tj 2026-11-04). Only these; anything else is tj's call.
+ */
+export const LEVEL_EQUIVALENTS: Readonly<Partial<Record<Level, readonly string[]>>> = {
+    'Matura podstawowa': ['Matura'],
+    'Matura rozszerzona': ['Matura'],
+    'Liceum / Technikum': ['Liceum'],
+};
+
 /** What the forms render: the list plus "Inne" at the end. */
 export const SUBJECT_FORM_OPTIONS: readonly string[] = [...SUBJECTS, OTHER_OPTION];
 export const LEVEL_FORM_OPTIONS: readonly string[] = [...LEVELS, OTHER_OPTION];
-
-export type Subject = (typeof SUBJECTS)[number];
-export type Level = (typeof LEVELS)[number];
 
 /** Whitelist for untrusted input (URL params): an exact list value or undefined. */
 export function parseSubject(value: unknown): Subject | undefined {

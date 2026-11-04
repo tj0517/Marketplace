@@ -348,3 +348,39 @@ test.describe('LK-2.03 – shared lists and URL whitelist', () => {
         expect(parseLevel('Inne')).toBeUndefined();
     });
 });
+
+test.describe('LK-2.03 D3 – the city filter keeps stop words', () => {
+    test('city "Online" does not match a "Lublin" ad, but matches an "Online" ad', () => {
+        expect(matchesFilters(mathLublin, { city: 'Online' })).toBe(false);
+        expect(matchesFilters({ ...mathLublin, location: 'Online' }, { city: 'Online' })).toBe(true);
+        expect(matchesFilters({ ...mathLublin, location: 'Lublin, Zdalnie' }, { city: 'zdalnie' })).toBe(true);
+    });
+});
+
+test.describe('LK-2.03 D1 – older broad levels count for the new narrow filter values', () => {
+    const withLevels = (...education_level: string[]): SearchableAd => ({ ...mathLublin, education_level });
+
+    test('"Matura" matches both "Matura podstawowa" and "Matura rozszerzona"', () => {
+        expect(matchesFilters(withLevels('Matura'), { level: 'Matura podstawowa' })).toBe(true);
+        expect(matchesFilters(withLevels('Matura'), { level: 'Matura rozszerzona' })).toBe(true);
+        expect(matchesFilters(withLevels('matura.'), { level: 'Matura rozszerzona' })).toBe(true);
+    });
+
+    test('"Liceum" matches "Liceum / Technikum"', () => {
+        expect(matchesFilters(withLevels('Liceum'), { level: 'Liceum / Technikum' })).toBe(true);
+        expect(matchesFilters(withLevels('LICEUM'), { level: 'Liceum / Technikum' })).toBe(true);
+    });
+
+    test('a narrow value does NOT cross over to its sibling', () => {
+        expect(matchesFilters(withLevels('Matura podstawowa'), { level: 'Matura rozszerzona' })).toBe(false);
+        expect(matchesFilters(withLevels('Matura rozszerzona'), { level: 'Matura podstawowa' })).toBe(false);
+    });
+
+    test('only the listed equivalences: no others, and not the reverse', () => {
+        expect(matchesFilters(withLevels('Egzamin ósmoklasisty'), { level: 'E8' })).toBe(false);
+        expect(matchesFilters(withLevels('Technikum'), { level: 'Liceum / Technikum' })).toBe(false);
+        expect(matchesFilters(withLevels('Liceum'), { level: 'Matura rozszerzona' })).toBe(false);
+        expect(matchesFilters(withLevels('Matura'), { level: 'Liceum / Technikum' })).toBe(false);
+        expect(matchesFilters(withLevels('Matura z angielskiego'), { level: 'Matura rozszerzona' })).toBe(false);
+    });
+});

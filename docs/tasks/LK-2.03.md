@@ -36,7 +36,7 @@ typowe zapytania dają trafne wyniki, a stare ogłoszenia działają bez migracj
 - „Język polski” jest trzeci w obu formularzach, a nowe poziomy są do wyboru — **jak sprawdzić:** zrzuty Playwright obu formularzy (desktop i mobile)
 - stare ogłoszenie z przedmiotem spoza listy albo bez nowych poziomów wyświetla się i daje edytować bez utraty danych — **jak sprawdzić:** na lokalnej bazie ogłoszenie z „Muzyka” i „Liceum / Technikum”; zrzut strony ogłoszenia i wklejony wiersz po zapisie edycji bez zmian
 - wyszukiwarka nie dopasowuje opisu — **jak sprawdzić:** test w `lib/search.test.ts`: ogłoszenie z „matematyka” tylko w opisie nie pasuje do zapytania „matematyka”
-- trafne wyniki dla zapytań z briefu — **jak sprawdzić:** testy w `lib/search.test.ts` dla: matematyka + matura rozszerzona, matematyka + Lublin, język polski (z polskimi znakami i bez); wynik `npm run test:unit`
+- trafne wyniki dla zapytań z briefu — **jak sprawdzić:** testy w `lib/search.test.ts` dla: matematyka + matura rozszerzona, matematyka + Lublin, język polski (z polskimi znakami i bez); wynik `pnpm test:unit`
 - listy wyboru łączą się z polem i miastem, a URL odtwarza wyszukiwanie — **jak sprawdzić:** zrzut wyników dla przedmiot = Matematyka, poziom = Matura rozszerzona, miasto = Lublin i ten sam URL otwarty ponownie
 - panel admina pokazuje trzy nowe kolumny, a „zgoda” zgadza się z bazą — **jak sprawdzić:** zrzut `/admin` na lokalnej bazie i wklejony SELECT zgód dla dwóch widocznych adresów (jeden TAK, jeden NIE)
 
@@ -51,7 +51,7 @@ typowe zapytania dają trafne wyniki, a stare ogłoszenia działają bez migracj
 ## Bramki STOP
 
 - jeśli „Język polski” nie mieści się w układzie: zrzut i pytanie do tj, czy usunąć z formularza „Muzykę”, czy „Informatykę”; agent nie wybiera sam
-- `npm run build` tylko przy presji pamięci = 1 i zatrzymanym stacku Supabase
+- `pnpm build` tylko przy presji pamięci = 1 i zatrzymanym stacku Supabase
 
 ## Kontekst
 
@@ -65,3 +65,8 @@ typowe zapytania dają trafne wyniki, a stare ogłoszenia działają bez migracj
 
 - 2026-11-02 tj: wyszukiwarka = pole tekstowe (tylko przedmiot, poziom, miasto) + listy wyboru „Przedmiot” i „Poziom” (D1).
 - 2026-11-02 tj: zależność od LK-1.01: telefony w panelu dopiero po zamknięciu akcji admina (D2).
+- 2026-11-04 tj: D1 = B (szeroko). W filtrze „Poziom” stary ogólny poziom pasuje do nowych odmian — wyłącznie: „Matura” → „Matura podstawowa” i „Matura rozszerzona”; „Liceum” → „Liceum / Technikum”. Dopasowanie per zapisana wartość, znormalizowane. Inne odpowiedniki (np. „egzamin ósmoklasisty” → E8) to pytanie do tj.
+- 2026-11-04 tj: D2 = A. Zostaje „Matura podstawowa” / „Matura rozszerzona” (jak w briefie). Odczyt tj na prod: 27 aktywnych ogłoszeń ma dokładnie „Matura rozszerzona” (wpisane przez „Inne”), żadne nie ma samego „Matura” ani „Liceum”.
+- 2026-11-04 tj: D3 (znalezisko tj). Filtr miasta nie pomija słów pospolitych — miasto „Online” nie może pasować do każdego ogłoszenia.
+- 2026-11-04 tj: jednorazowy wyjątek od O-03, tylko w tej rundzie: przy presji pamięci 2 wolno `pnpm db:reset`, dev server na lokalnym Supabase, zrzuty Playwright, lokalne SELECT-y i `pnpm test:unit`. Nie wolno: `pnpm build`, zatrzymywać ani restartować stacku, uruchamiać niczego innego. Poziom sprawdzany osobną komendą przed każdym krokiem; przy 4 albo śmierci kontenera/dev servera — stop i raport.
+- 2026-11-04 tj: w tym pliku `npm run test:unit` → `pnpm test:unit`, `npm run build` → `pnpm build` (O-01).

@@ -22,6 +22,8 @@
  *   Polish inflection ("matematyki" → "matematyka", "Lublinie" → "Lublin").
  */
 
+import { LEVEL_EQUIVALENTS, type Level } from './ad-options';
+
 /**
  * The subset of an ad that takes part in search. Title and description are
  * accepted so whole ads can be passed in, but they are never matched.
@@ -103,10 +105,10 @@ function isStopWord(token: string): boolean {
  * and generic stop words (see `STOP_WORDS`) are dropped, so they do not have
  * to appear in the ad. If nothing is left, the query counts as empty.
  */
-export function tokenize(query: string): string[] {
+export function tokenize(query: string, { keepStopWords = false } = {}): string[] {
     return splitWords(normalizeText(query))
         .filter(isMeaningfulToken)
-        .filter(token => !isStopWord(token));
+        .filter(token => keepStopWords || !isStopWord(token));
 }
 
 /**
@@ -149,8 +151,12 @@ function collectWords(ad: SearchableAd): string[] {
  * Per value, so "Matura podstawowa" does not match an ad tagged
  * "Szkoła Podstawowa" + "Matura rozszerzona".
  */
-function someValueMatches(values: Array<string | null | undefined>, wanted: string): boolean {
-    const stems = tokenize(wanted).map(stemToken);
+function someValueMatches(
+    values: Array<string | null | undefined>,
+    wanted: string,
+    options: { keepStopWords?: boolean } = {},
+): boolean {
+    const stems = tokenize(wanted, options).map(stemToken);
     if (stems.length === 0) {
         return true;
     }
@@ -199,6 +205,24 @@ export type SearchFilters = {
 export function matchesFilters(ad: SearchableAd, filters: SearchFilters): boolean {
     return matchesQuery(ad, filters.query)
         && (!filters.subject || someValueMatches(subjectValues(ad), filters.subject))
-        && (!filters.level || someValueMatches(ad.education_level ?? [], filters.level))
-        && (!filters.city || someValueMatches([ad.location], filters.city));
+        && (!filters.level || matchesLevel(ad.education_level ?? [], filters.level))
+        // A city is a place name, not a query: "Online" must not be dropped as a stop word (D3).
+        && (!filters.city || someValueMatches([ad.location], filters.city, { keepStopWords: true }));
+}
+
+/** Same words, ignoring case, diacritics and punctuation: "Matura" = "matura." */
+function sameValue(a: string, b: string): boolean {
+    return splitWords(normalizeText(a)).join(' ') === splitWords(normalizeText(b)).join(' ');
+}
+
+/**
+ * The level filter, plus the broader older levels from `LEVEL_EQUIVALENTS`:
+ * a stored "Matura" counts for both maturas, "Liceum" for "Liceum / Technikum".
+ * Per stored value, and the whole value must equal the older level, so a
+ * stored "Matura podstawowa" never counts for "Matura rozszerzona".
+ */
+function matchesLevel(levels: string[], level: string): boolean {
+    const equivalents = LEVEL_EQUIVALENTS[level as Level] ?? [];
+    return someValueMatches(levels, level)
+        || levels.some(stored => equivalents.some(older => sameValue(stored, older)));
 }
