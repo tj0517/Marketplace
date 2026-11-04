@@ -170,6 +170,7 @@ export type Database = {
           id: string
           reserved_at: string | null
           status: string
+          transaction_id: string | null
           used_at: string | null
         }
         Insert: {
@@ -178,6 +179,7 @@ export type Database = {
           id?: string
           reserved_at?: string | null
           status?: string
+          transaction_id?: string | null
           used_at?: string | null
         }
         Update: {
@@ -186,15 +188,27 @@ export type Database = {
           id?: string
           reserved_at?: string | null
           status?: string
+          transaction_id?: string | null
           used_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "promotion_entitlements_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
           ad_id: string | null
           amount: number
+          amount_grosze: number | null
           created_at: string | null
+          currency: string | null
+          entitlement_id: string | null
           error_message: string | null
           id: string
           payment_id: string | null
@@ -207,7 +221,10 @@ export type Database = {
         Insert: {
           ad_id?: string | null
           amount: number
+          amount_grosze?: number | null
           created_at?: string | null
+          currency?: string | null
+          entitlement_id?: string | null
           error_message?: string | null
           id?: string
           payment_id?: string | null
@@ -220,7 +237,10 @@ export type Database = {
         Update: {
           ad_id?: string | null
           amount?: number
+          amount_grosze?: number | null
           created_at?: string | null
+          currency?: string | null
+          entitlement_id?: string | null
           error_message?: string | null
           id?: string
           payment_id?: string | null
@@ -238,6 +258,13 @@ export type Database = {
             referencedRelation: "ads"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "transactions_entitlement_id_fkey"
+            columns: ["entitlement_id"]
+            isOneToOne: false
+            referencedRelation: "promotion_entitlements"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -246,6 +273,14 @@ export type Database = {
     }
     Functions: {
       complete_payment: {
+        Args: { p_payment_id?: string; p_transaction_id: string }
+        Returns: boolean
+      }
+      expire_stale_bump_reservation: {
+        Args: { p_email: string; p_stale_before: string }
+        Returns: boolean
+      }
+      finalize_bump_payment: {
         Args: { p_payment_id?: string; p_transaction_id: string }
         Returns: boolean
       }
@@ -260,6 +295,33 @@ export type Database = {
       has_ad_for_email: { Args: { p_email: string }; Returns: boolean }
       increment_ad_view: { Args: { ad_id: string }; Returns: undefined }
       increment_contact_count: { Args: { ad_id: string }; Returns: undefined }
+      quote_bump_amount: {
+        Args: {
+          p_ad_id: string
+          p_entitled_amount: number
+          p_stale_before: string
+          p_standard_amount: number
+        }
+        Returns: number
+      }
+      register_bump_transaction: {
+        Args: {
+          p_ad_id: string
+          p_currency: string
+          p_entitled_amount: number
+          p_stale_before: string
+          p_standard_amount: number
+        }
+        Returns: {
+          amount_grosze: number
+          entitled: boolean
+          transaction_id: string
+        }[]
+      }
+      release_bump_reservations: {
+        Args: { p_transaction_id?: string }
+        Returns: number
+      }
       unaccent: { Args: { "": string }; Returns: string }
     }
     Enums: {

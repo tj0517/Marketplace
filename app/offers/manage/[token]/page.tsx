@@ -10,6 +10,7 @@ import { Eye, Calendar, ExternalLink, ArrowUpCircle, MessageCircle, Gift } from 
 import { DeleteAdButton } from "@/app/components/delete-ad-button";
 import { PromoteAdButton } from "@/app/components/promote-ad-button";
 import { isPromotionsEnabled } from "@/lib/config";
+import { quoteBumpAmount } from "@/lib/bump-payment";
 
 function formatDate(dateString: string | null): string {
     if (!dateString) return "Brak daty";
@@ -49,6 +50,10 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
     if (!ad || ad.status === 'deleted') {
         return notFound();
     }
+
+    // Kwotę podbicia liczy serwer tą samą regułą co rejestracja płatności (LK-2.02).
+    const showPromotion = ad.type !== 'search' && isPromotionsEnabled();
+    const bumpAmountGrosze = showPromotion ? await quoteBumpAmount(supabase, ad.id) : null;
 
     return (
         <main className="min-h-screen bg-slate-50 pb-20">
@@ -153,7 +158,7 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
 
                     {/* Sidebar */}
                     <div className="space-y-6">
-                        {ad.type !== 'search' && isPromotionsEnabled() && (
+                        {showPromotion && bumpAmountGrosze !== null && (
                             <Card className="bg-indigo-600 text-white border-0">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 text-white">
@@ -165,7 +170,7 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                    <PromoteAdButton token={token} adId={ad.id} />
+                                    <PromoteAdButton token={token} adId={ad.id} amountGrosze={bumpAmountGrosze} />
                                     <p className="text-xs text-indigo-200 text-center">
                                         Ogłoszenie trafi na górę listy.
                                     </p>

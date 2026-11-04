@@ -78,6 +78,8 @@ export const PAYMENT_CONFIG = {
     /** Prices in groszy (1 PLN = 100 groszy) */
     prices: {
         bump: parseInt(process.env.PRICE_BUMP || '1000', 10),
+        /** Podbicie z uprawnieniem z LK-2.01 (zgoda marketingowa), LK-2.02 */
+        bumpEntitled: 100,
     },
 
     /** P24 sandbox mode */

@@ -20,9 +20,16 @@ import {
 interface PromoteAdButtonProps {
     token: string
     adId: string
+    /** Kwota policzona na serwerze (LK-2.02); przycisk tylko ją wyświetla */
+    amountGrosze: number
 }
 
-export function PromoteAdButton({ token, adId }: PromoteAdButtonProps) {
+function formatPrice(grosze: number): string {
+    return `${(grosze / 100).toLocaleString('pl-PL', { maximumFractionDigits: 2 })} zł`
+}
+
+export function PromoteAdButton({ token, adId, amountGrosze }: PromoteAdButtonProps) {
+    const price = formatPrice(amountGrosze)
     const router = useRouter()
     const [isProcessing, setIsProcessing] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -86,7 +93,7 @@ export function PromoteAdButton({ token, adId }: PromoteAdButtonProps) {
                     ) : (
                         <>
                             <ArrowUpCircle className="mr-2 size-4" />
-                            Podbij ogłoszenie (10 zł)
+                            Podbij ogłoszenie ({price})
                         </>
                     )}
                 </Button>
@@ -98,7 +105,7 @@ export function PromoteAdButton({ token, adId }: PromoteAdButtonProps) {
                         Promuj ogłoszenie
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                        Twoje ogłoszenie zostanie wyświetlone na górze listy. Koszt: 10 zł.
+                        Twoje ogłoszenie zostanie wyświetlone na górze listy. Koszt: {price}.
                         Zostaniesz przekierowany do płatności.
                         {error && (
                             <span className="block mt-2 text-red-600">{error}</span>
