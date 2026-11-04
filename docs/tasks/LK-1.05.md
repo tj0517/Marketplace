@@ -1,7 +1,7 @@
 ---
 id: LK-1.05
 title: Krótki CLAUDE.md z mapą repo i zakazami
-status: todo
+status: in_progress
 difficulty: S
 model: null
 model_approved: null
