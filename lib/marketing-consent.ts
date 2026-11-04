@@ -26,7 +26,7 @@ export const CONSENT_PAGE_COPY = {
 } as const
 
 export const CONSENT_MESSAGES = {
-    success: 'Dziękujemy! Zapisaliśmy Twoją zgodę. Szczegóły podbicia za 1 zł wysłaliśmy na podany adres.',
+    success: 'Dziękujemy! Twoja zgoda jest zapisana.',
     noAd: 'Nie znaleziono ogłoszenia powiązanego z tym adresem.',
     rateLimited: 'Zbyt wiele prób. Spróbuj ponownie za minutę.',
     invalid: 'Sprawdź formularz i spróbuj ponownie.',
