@@ -1,7 +1,7 @@
 ---
 id: LK-2.02
 title: Podbicie za 1 zł — kwota z serwera, rezerwacja, webhook z kontrolą kwoty i verify
-status: in_progress
+status: review
 difficulty: L
 model: opus
 model_approved: null
@@ -12,7 +12,7 @@ depends_on: [LK-2.01]
 blocked_by_questions: []
 touches_db: true
 touches_prod: true
-pr: null
+pr: 10
 ---
 
 ## Cel
