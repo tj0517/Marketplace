@@ -1,99 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import crypto from 'crypto';
+import { handleP24Notification } from '@/lib/bump-payment';
+import { getP24Credentials } from '@/lib/p24-server';
 
-const P24_CRC = process.env.P24_CRC;
-
-function p24JsonStringify(obj: Record<string, unknown>): string {
-    return JSON.stringify(obj)
-        .replace(/\\u[\dA-F]{4}/gi, function (match) {
-            return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
-        })
-        .replace(/\\\//g, '/');
-}
-
+// Podpis → schemat → merchant/pos → transakcja, kwota, waluta → verify → zapis (lib/bump-payment.ts).
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json();
-
-        const {
-            merchantId,
-            posId,
-            sessionId,
-            amount,
-            originAmount,
-            currency,
-            orderId,
-            methodId,
-            statement,
-            sign
-        } = body;
-
-        if (!sessionId || !merchantId || !amount || !sign) {
-            console.error('[P24 Webhook] Missing required fields');
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-        }
-
-        if (!P24_CRC) {
-            console.error('[P24 Webhook] P24_CRC not configured');
-            return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
-        }
-
-        const signData = {
-            merchantId,
-            posId,
-            sessionId,
-            amount,
-            originAmount,
-            currency,
-            orderId,
-            methodId,
-            statement,
-            crc: P24_CRC
-        };
-        const expectedSign = crypto
-            .createHash('sha384')
-            .update(p24JsonStringify(signData))
-            .digest('hex');
-
-        if (sign !== expectedSign) {
-            console.error('[P24 Webhook] Invalid signature for session:', sessionId);
-            return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-        }
-
-        const supabase = createAdminClient();
-
-        // Check idempotency — if webhook was already processed, skip email
-        const { data: existingTx } = await supabase
-            .from('transactions')
-            .select('webhook_received_at, type, ad_id')
-            .eq('id', sessionId)
-            .single();
-
-        const alreadyProcessed = !!existingTx?.webhook_received_at;
-
-        const { error } = await supabase.rpc('complete_payment', {
-            p_transaction_id: sessionId,
-            p_payment_id: orderId?.toString() || null,
-        });
-
-        if (error) {
-            console.error('[P24 Webhook] RPC error:', error);
-            return NextResponse.json({ error: 'Database error' }, { status: 500 });
-        }
-
-        await supabase
-            .from('transactions')
-            .update({ webhook_received_at: new Date().toISOString() })
-            .eq('id', sessionId);
-
-        if (alreadyProcessed) {
-            console.log('[P24 Webhook] Duplicate webhook ignored for session:', sessionId);
-            return NextResponse.json({ status: 'ok' });
-        }
-
-        return NextResponse.json({ status: 'ok' });
-
+        const body = await request.json().catch(() => null);
+        const result = await handleP24Notification(createAdminClient(), body, { p24: getP24Credentials() });
+        return NextResponse.json(result.body, { status: result.status });
     } catch (error) {
         console.error('[P24 Webhook] Unexpected error:', error);
         return NextResponse.json({ error: 'Internal error' }, { status: 500 });
