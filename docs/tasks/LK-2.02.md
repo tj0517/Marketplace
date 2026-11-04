@@ -39,7 +39,7 @@ produkcji.
 - red proof rezerwacji: dwie równoczesne rejestracje dla tego samego adresu z uprawnieniem → tylko jedna dostaje 100 gr — **jak sprawdzić:** skrypt i wklejone dwie kwoty
 - red proof webhooka: powiadomienie z poprawnym podpisem, ale złą kwotą albo nieznanym `sessionId` nie wywołuje verify, nie kończy płatności i nie zmienia uprawnienia — **jak sprawdzić:** test z wynikiem i wklejonym stanem uprawnienia
 - nieudana rejestracja i transakcja wygaszona przez cron zwalniają rezerwację — **jak sprawdzić:** test albo wklejony stan uprawnienia przed i po obu scenariuszach na lokalnej bazie
-- sandbox P24: płatność 1 zł od rejestracji przez verify do `used` — **jak sprawdzić:** wklejone odpowiedzi register i verify (bez kluczy), stan transakcji i uprawnienia; jeśli P24 odrzuci 1 zł → stop i raport z komunikatem
+- sandbox P24: przeniesione do zadania LK-2.04 (tj, 2026-11-04 — dane sandboxa P24 zwracają 401 na `testAccess`)
 - produkcja: przeniesione do zadania follow-up (tj, 2026-11-04)
 - fallback: gdy w bazie nie ma tabeli/funkcji uprawnień, rejestracja nalicza 1000 gr i nie zwraca błędu; webhook i cron pomijają kroki uprawnień — **jak sprawdzić:** test z zamockowanym błędem „relation does not exist”
 - spóźniona płatność: poprawne powiadomienie dla transakcji wygaszonej przez cron jest weryfikowane i kończy płatność, a wolne uprawnienie przechodzi `granted` → `used` (zajęte przez inną transakcję albo `used` zostaje bez zmian) — **jak sprawdzić:** test i wklejony stan
@@ -85,3 +85,6 @@ produkcji.
 - 2026-11-04 tj: dodatkowe funkcje `expire_stale_bump_reservation` i `quote_bump_amount` przyjęte jako realizacja decyzji 2.
 - 2026-11-04 tj: ngrok zatwierdzony z góry tylko na test sandboxa: `NEXT_PUBLIC_APP_URL` nadpisany w powłoce, nigdy w pliku; aplikacja na lokalnej bazie; tunel tylko na czas testu; raport potwierdza zamknięcie (brak procesu).
 - 2026-11-04 tj (reguła): `.env.local` wskazuje na prod, więc przed każdym żądaniem do aplikacji (curl, Playwright, powiadomienie P24) pokazać, że działający serwer używa `http://127.0.0.1:54321` (env procesu albo log); host nielokalny → natychmiastowy stop.
+- 2026-11-04 agent: sandbox niedostępny — `GET https://sandbox.przelewy24.pl/api/v1/testAccess` z `P24_POS_ID:P24_API_KEY` z `.env.local` → `401 {"error":"Incorrect authentication","code":401}` (format wartości poprawny; bez obejść, ngrok nieuruchamiany).
+- 2026-11-04 tj: kryterium sandboxa P24 i luka powtórnego verify przeniesione do zadania LK-2.04; bez czekania na dane i bez ngrok.
+- OTWARTE (→ LK-2.04), luka powtórnego verify: gdy po udanym verify nie zapisał się `webhook_received_at`, ponowione powiadomienie woła verify drugi raz, a jeśli P24 odpowie błędem, webhook zwraca 502 bez żadnego zapisu — transakcja już dokończona zostaje `completed`, a niedokończona (błąd `finalize_bump_payment`) zostaje `pending` i cron ją potem wygasza mimo opłaconej płatności; odpowiedzi P24 na powtórne verify nie ustalono.
