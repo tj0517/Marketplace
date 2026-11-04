@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AD_CONFIG } from '@/lib/config';
+import { releaseBumpReservations } from '@/lib/bump-payment';
 import { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -46,8 +47,13 @@ export async function GET(request: NextRequest) {
         }
     }
 
+    // LK-2.02: rezerwacje uprawnień trzymane przez transakcje failed wracają do granted.
+    // Bez migracji (brak funkcji) krok jest pomijany.
+    const releasedReservations = await releaseBumpReservations(supabase);
+
     return Response.json({
         message: 'Cron job completed',
-        abandonedTransactionsMarked: abandonedTxCount
+        abandonedTransactionsMarked: abandonedTxCount,
+        releasedReservations,
     }, { status: 200 });
 }
