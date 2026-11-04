@@ -1,7 +1,7 @@
 ---
 id: LK-2.02
 title: Podbicie za 1 zł — kwota z serwera, rezerwacja, webhook z kontrolą kwoty i verify
-status: review
+status: done
 difficulty: L
 model: opus
 model_approved: null
@@ -88,3 +88,4 @@ produkcji.
 - 2026-11-04 agent: sandbox niedostępny — `GET https://sandbox.przelewy24.pl/api/v1/testAccess` z `P24_POS_ID:P24_API_KEY` z `.env.local` → `401 {"error":"Incorrect authentication","code":401}` (format wartości poprawny; bez obejść, ngrok nieuruchamiany).
 - 2026-11-04 tj: kryterium sandboxa P24 i luka powtórnego verify przeniesione do zadania LK-2.04; bez czekania na dane i bez ngrok.
 - OTWARTE (→ LK-2.04), luka powtórnego verify: gdy po udanym verify nie zapisał się `webhook_received_at`, ponowione powiadomienie woła verify drugi raz, a jeśli P24 odpowie błędem, webhook zwraca 502 bez żadnego zapisu — transakcja już dokończona zostaje `completed`, a niedokończona (błąd `finalize_bump_payment`) zostaje `pending` i cron ją potem wygasza mimo opłaconej płatności; odpowiedzi P24 na powtórne verify nie ustalono.
+- 2026-11-04 tj: accepted in wf-review, PR #10. All in-scope criteria proven: server-side amount (injected `amount: 1` → 1000 gr to P24), concurrent reservations (100/1000 in SQL and over HTTP), webhook mismatches W1–W4 with 0 verify calls, release on 3 registration failures and in the cron, `search` ad at 1000 gr, stale-reservation expiry, late payment, 10 zł fallback on the prod-shaped schema, button 1 zł / 10 zł (screenshots), guard-removal red proofs. Prod untouched (3 migrations, no new objects). Not proven against real P24: `transaction/verify`, repeated verify, `originAmount == amount` → LK-2.04, before merge. PR stays open with DO NOT MERGE; tj merges in LK-2.04 after the sandbox verify and the prod migrations.
