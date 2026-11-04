@@ -51,3 +51,4 @@ plik poniżej ~8 000 znaków, zgodny z `package.json` i śledzony przez git.
 ## Notatki z realizacji
 
 - 2026-11-02 tj: zadanie dodane w wf-plan (D2).
+- 2026-11-04 tj: zakres wariant B — CLAUDE.md zawiera też reguły pnpm only (O-01), limit presji pamięci (O-03) i lint tylko zmienionych plików.
