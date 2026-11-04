@@ -1,7 +1,7 @@
 ---
 id: LK-2.03
 title: Przedmioty i poziomy w formularzach, wyszukiwarka, kolumny w panelu admina
-status: review
+status: done
 difficulty: M
 model: opus
 model_approved: 2026-11-04 tj
@@ -72,3 +72,4 @@ typowe zapytania dają trafne wyniki, a stare ogłoszenia działają bez migracj
 - 2026-11-04 tj: w tym pliku `npm run test:unit` → `pnpm test:unit`, `npm run build` → `pnpm build` (O-01).
 - 2026-11-04 tj: rozszerzenie wyjątku O-03 z tej rundy — jednorazowo `pnpm db:start` przy presji 2 (poziom sprawdzony osobną komendą tuż przed startem: 2). Dalej w ramach istniejącego wyjątku: bez buildu, bez zatrzymywania i restartu stacku.
 - 2026-11-04 tj: D4 = C. Numery z seeda (`+48 000 000 0xx`) nie przechodzą `isValidPhoneNumber(…, 'PL')`, więc zapisu edycji nie dało się wykonać. Jednorazowy `UPDATE` `phone_contact` ogłoszenia `…0007` tylko na lokalnej bazie, numer poza repo (nie w seedzie). Po zapisie bez zmian `subject`, `subjects`, `education_level` identyczne; zmiana formatu telefonu oczekiwana (wpis w deferred).
+- 2026-11-04 tj: accepted in wf-review, PR #11. All criteria proven on the local DB: both forms with "Język Polski" third and the new levels (desktop and mobile); the "Muzyka" ad row SELECTed before and after a no-change edit save, with subjects and education_level identical; search tests (62 passed, including red proofs for description-only, city "Online" and the D1 equivalences); the same URL reopened restores the search; /admin shows TAK/NIE matching the consents SELECT; unknown URL params ignored. Merge only after the LK-2.01 migration (marketing_consents) is applied on prod: getAdminAds reads that table and throws without it.
