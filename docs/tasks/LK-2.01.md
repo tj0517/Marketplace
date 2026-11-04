@@ -1,7 +1,7 @@
 ---
 id: LK-2.01
 title: Zgody marketingowe i uprawnienie do podbicia za 1 zł
-status: in_progress
+status: review
 difficulty: L
 model: opus
 model_approved: null
@@ -12,7 +12,7 @@ depends_on: [LK-1.02, LK-1.04]
 blocked_by_questions: []
 touches_db: true
 touches_prod: true
-pr: null
+pr: 9
 ---
 
 ## Cel
