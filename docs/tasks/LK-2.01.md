@@ -1,7 +1,7 @@
 ---
 id: LK-2.01
 title: Zgody marketingowe i uprawnienie do podbicia za 1 zł
-status: review
+status: done
 difficulty: L
 model: opus
 model_approved: null
@@ -90,3 +90,4 @@ zgodę. Samo naliczanie 1 zł i płatność to LK-2.02.
 - 2026-11-04 tj: edycja niezastosowanej migracji `20261104120000_marketing_consents.sql` dozwolona (prod jej nie widział — zweryfikowane przez tj); żadnego innego pliku migracji nie ruszać.
 - 2026-11-04 tj: strona wycofania przy złym formacie tokenu, nieznanym tokenie albo zgodzie już wycofanej (żaden aktywny wiersz niezmieniony) pokazuje osobny komunikat: „Link jest nieprawidłowy albo zgoda była już wycofana. Jeśli nadal dostajesz wiadomości, napisz do nas.”; prawdziwe wycofanie zostaje przy dotychczasowym potwierdzeniu.
 - 2026-11-04 tj: drugi jednorazowy wyjątek od O-03 — runda poprawek z review przy `memorystatus_vm_pressure_level` = 2: dozwolone `pnpm db:reset`, `pnpm db:types` (tylko lokalnie), testy i zrzuty dla poprawek 1–2, `pnpm test:unit`. Bez `next build`, bez stop/start stacku, bez uruchamiania czegokolwiek nowego; restart serwera dev tylko gdy konieczny (wtedy kontrola hosta 127.0.0.1:54321 przed wysłaniem formularza). Sprawdzenie poziomu przed każdym krokiem; przy poziomie 4 albo padnięciu kontenera / serwera dev natychmiastowy stop i raport.
+- 2026-11-04 tj: odbiór w wf-review, PR #9 — wszystkie kryteria udowodnione (lokalne SELECT-y, red proofs: anon, równoczesne zapisy, GET linku wycofania, zły token, ogłoszenie ucznia z wstrzykniętą zgodą; prod nietknięty: 0 nowych tabel/funkcji). Tekst strony zgody zatwierdzony. Merge dopiero z gotowym LK-2.02; przed wdrożeniem: O-04, migracja przez tj, zmienne nadawcy marketingowego w Vercelu.
