@@ -65,3 +65,4 @@ jednostkowych i skan sekretów.
 ## Notatki z realizacji
 
 - 2026-11-03 tj: O-01 → pnpm (log Vercela). Lint w CI tylko na plikach zmienionych w PR (wariant A); stare błędy lintu (52) zostają jako dług.
+- 2026-11-04 tj: gitleaks znalazł w historii `CRON_SECRET` (`6b8013f`, `test-przed-oddaniem.md:182`, reguła `curl-auth-header`) → wariant A: pełny skan historii w CI, w `.gitleaksignore` tylko ten jeden fingerprint z komentarzem; gitleaks z oficjalnego obrazu kontenera przypiętego wersją i digestem, bez tokenu. Rotacja `CRON_SECRET` w Vercelu po stronie tj (zapisane w `docs/deferred-tasks.md`).
