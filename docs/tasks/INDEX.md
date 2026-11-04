@@ -8,7 +8,7 @@ Widok dla ludzi. Przy rozbieżności rozstrzyga frontmatter pliku zadania.
 |---|---|---|---|---|---|---|
 | LK-1.01 | Akcje admina same sprawdzają uprawnienia | done | M | LK-1.04 | — | — |
 | LK-1.02 | Schemat produkcji do repo (baseline) | done | M | — | — | — |
-| LK-1.03 | server-only dla klucza admina i CI na PR-ach | review | M | — | — | — |
+| LK-1.03 | server-only dla klucza admina i CI na PR-ach | done | M | — | — | — |
 | LK-1.04 | Lokalna baza, seed, .env.example i bezpiecznik testów | done | M | LK-1.02 | — | — |
 | LK-1.05 | Krótki CLAUDE.md z mapą repo i zakazami | todo | S | — | — | — |
 | LK-1.06 | Zamknięcie complete_payment dla anon (pierwsza migracja na baseline) | done | S | LK-1.02 | — | — |

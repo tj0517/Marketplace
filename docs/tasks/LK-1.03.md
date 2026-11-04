@@ -1,7 +1,7 @@
 ---
 id: LK-1.03
 title: server-only dla klucza admina i CI na PR-ach
-status: review
+status: done
 difficulty: M
 model: null
 model_approved: null
@@ -78,3 +78,4 @@ jednostkowych i skan sekretów.
   Error: [BUILD_UTILS_SPAWN_1] Command "pnpm run build" exited with 1
   ```
   Kontrola: poprzedni commit `028f28f` zbudował się na Vercelu („Deployment has completed”).
+- 2026-11-04 tj: odbiór PR #7 — przyjęte; udowodnione: server-only (build preview Vercel padł na imporcie w komponencie klienckim, kontrola zielona), jeden lockfile (pnpm), CI zielone (typecheck, lint zmienionych plików, test:unit, gitleaks pełna historia), red proofy gitleaks i lintu.
