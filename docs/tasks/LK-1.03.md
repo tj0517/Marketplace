@@ -1,12 +1,12 @@
 ---
 id: LK-1.03
 title: server-only dla klucza admina i CI na PR-ach
-status: todo
+status: in_progress
 difficulty: M
 model: null
 model_approved: null
 effort: null
-branch: null
+branch: chore/lk-1.03-server-only-ci
 due: null
 depends_on: []
 blocked_by_questions: []
