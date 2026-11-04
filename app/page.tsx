@@ -6,6 +6,9 @@ import { Pagination } from "./components/pagination"
 import { BookOpen, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { APP_CONFIG } from "@/lib/config"
+import { parseLevel, parseSubject } from "@/lib/ad-options"
+
+const MAX_CITY_LENGTH = 50
 
 
 export default async function Home({
@@ -13,14 +16,19 @@ export default async function Home({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const { query: rawQuery, page: rawPage, type: rawType } = await searchParams
+  const { query: rawQuery, page: rawPage, type: rawType, subject: rawSubject, level: rawLevel, city: rawCity } = await searchParams
   const query = typeof rawQuery === 'string' ? rawQuery : undefined
-  const type = (typeof rawType === 'string' && (rawType === 'offer' || rawType === 'search')) ? rawType : 'offer'
+  const type: 'offer' | 'search' = (typeof rawType === 'string' && (rawType === 'offer' || rawType === 'search')) ? rawType : 'offer'
+  // URL params are untrusted: subject/level must be exact list values, anything else is ignored.
+  const subject = parseSubject(rawSubject)
+  const level = parseLevel(rawLevel)
+  const city = typeof rawCity === 'string' ? rawCity.slice(0, MAX_CITY_LENGTH) : undefined
+  const filters = { query, type, subject, level, city }
 
-  const adsCount = await getAdsCount({ query, type })
+  const adsCount = await getAdsCount(filters)
   const page = Number(rawPage) || 1
   const limit = 9
-  const ads = await getAds({ query, page, limit, type })
+  const ads = await getAds({ ...filters, page, limit })
 
 
   return (

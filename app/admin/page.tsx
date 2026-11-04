@@ -277,6 +277,8 @@ export default function AdminPage() {
                                             <TableHead>Status</TableHead>
                                             <TableHead>Tytuł</TableHead>
                                             <TableHead>E-mail</TableHead>
+                                            <TableHead>Telefon</TableHead>
+                                            <TableHead>Zgoda</TableHead>
                                             <TableHead>Dodano</TableHead>
                                             <TableHead>Wyświetlenia</TableHead>
                                             <TableHead>Kontakty</TableHead>
@@ -286,13 +288,13 @@ export default function AdminPage() {
                                     <TableBody>
                                         {loading ? (
                                             <TableRow>
-                                                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                                                     Ładowanie...
                                                 </TableCell>
                                             </TableRow>
                                         ) : filteredAds.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                                                     Brak ogłoszeń typu „{adTypeFilter === 'offer' ? 'Oferuję' : 'Szukam'}"
                                                 </TableCell>
                                             </TableRow>
@@ -314,7 +316,15 @@ export default function AdminPage() {
                                                         </Link>
                                                     </TableCell>
                                                     <TableCell className="text-sm">{ad.email}</TableCell>
-                                                    <TableCell className="text-sm">{new Date(ad.created_at).toLocaleDateString('pl-PL')}</TableCell>
+                                                    <TableCell className="text-sm whitespace-nowrap">{ad.phone_contact || '—'}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={ad.has_marketing_consent ? 'default' : 'secondary'}>
+                                                            {ad.has_marketing_consent ? 'TAK' : 'NIE'}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-sm whitespace-nowrap">
+                                                        {new Date(ad.created_at).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Warsaw' })}
+                                                    </TableCell>
                                                     <TableCell>{ad.views_count ?? 0}</TableCell>
                                                     <TableCell>{ad.contact_count ?? 0}</TableCell>
                                                     <TableCell className="text-right">

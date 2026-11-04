@@ -1,12 +1,12 @@
 ---
 id: LK-2.03
 title: Przedmioty i poziomy w formularzach, wyszukiwarka, kolumny w panelu admina
-status: todo
+status: in_progress
 difficulty: M
-model: null
-model_approved: null
-effort: null
-branch: null
+model: opus
+model_approved: 2026-11-04 tj
+effort: high
+branch: feat/lk-2.03-subjects-search-admin
 due: null
 depends_on: [LK-1.01, LK-2.01]
 blocked_by_questions: []
