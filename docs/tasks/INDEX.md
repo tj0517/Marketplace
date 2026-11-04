@@ -20,4 +20,4 @@ Widok dla ludzi. Przy rozbieżności rozstrzyga frontmatter pliku zadania.
 | LK-2.01 | Zgody marketingowe i uprawnienie do podbicia za 1 zł | done | L | LK-1.02, LK-1.04 | — | — |
 | LK-2.03 | Przedmioty i poziomy w formularzach, wyszukiwarka, kolumny w panelu admina | done | M | LK-1.01, LK-2.01 | — | — |
 | LK-2.02 | Podbicie za 1 zł — kwota z serwera, rezerwacja, webhook z kontrolą kwoty i verify | done | L | LK-2.01 | — | — |
-
+| LK-2.04 | Wdrożenie zgód i podbicia za 1 zł na produkcję — migracje, merge, płatność 1 zł | todo | S | LK-2.01, LK-2.02 | — | — |
