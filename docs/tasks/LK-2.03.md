@@ -1,7 +1,7 @@
 ---
 id: LK-2.03
 title: Przedmioty i poziomy w formularzach, wyszukiwarka, kolumny w panelu admina
-status: in_progress
+status: review
 difficulty: M
 model: opus
 model_approved: 2026-11-04 tj
@@ -12,7 +12,7 @@ depends_on: [LK-1.01, LK-2.01]
 blocked_by_questions: []
 touches_db: false
 touches_prod: false
-pr: null
+pr: 11
 ---
 
 ## Cel

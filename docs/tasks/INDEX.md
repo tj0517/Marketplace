@@ -19,4 +19,4 @@ Widok dla ludzi. Przy rozbieżności rozstrzyga frontmatter pliku zadania.
 |---|---|---|---|---|---|---|
 | LK-2.01 | Zgody marketingowe i uprawnienie do podbicia za 1 zł | done | L | LK-1.02, LK-1.04 | — | — |
 | LK-2.02 | Podbicie za 1 zł — kwota z serwera, rezerwacja, webhook z kontrolą kwoty i verify | todo | L | LK-2.01 | — | — |
-| LK-2.03 | Przedmioty i poziomy w formularzach, wyszukiwarka, kolumny w panelu admina | in_progress | M | LK-1.01, LK-2.01 | — | — |
+| LK-2.03 | Przedmioty i poziomy w formularzach, wyszukiwarka, kolumny w panelu admina | review | M | LK-1.01, LK-2.01 | — | — |
