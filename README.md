@@ -14,9 +14,9 @@ Platforma ogłoszeniowa łącząca uczniów z korepetytorami. Zbudowana na Next.
 ## Uruchomienie lokalne
 
 ```bash
-npm install
+pnpm install
 cp .env.example .env.local   # uzupełnij zmienne środowiskowe
-npm run dev
+pnpm dev
 ```
 
 ## Zmienne środowiskowe
