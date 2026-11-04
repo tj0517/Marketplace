@@ -17,13 +17,10 @@ import {
 import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { MARKETING_CONSENT } from '@/lib/marketing-consent'
+import { LEVEL_FORM_OPTIONS, SUBJECT_FORM_OPTIONS } from '@/lib/ad-options'
 
-const subjects = [
-    "Matematyka", "Język Angielski", "Język Niemiecki", "Język Hiszpański",
-    "Fizyka", "Chemia", "Biologia", "Geografia", "Historia", "Informatyka", "Muzyka", "Inne"
-]
-
-const levels = ["Szkoła Podstawowa", "Liceum / Technikum", "Studia", "Dorośli", "Inne"]
+const subjects = SUBJECT_FORM_OPTIONS
+const levels = LEVEL_FORM_OPTIONS
 
 const units = [
     { value: '60 min', label: '60 min' },

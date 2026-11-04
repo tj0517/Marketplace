@@ -1,22 +1,39 @@
 "use client"
 
 import { useState, Suspense } from "react"
-import { Search, Users, Sparkles } from "lucide-react"
+import { Search, Users, Sparkles, MapPin } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/components/ui/select"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect } from "react"
+import { LEVELS, SUBJECTS, parseLevel, parseSubject } from "@/lib/ad-options"
 
 const quickFilters = ["Matematyka", "Angielski", "Fizyka", "Matura"]
+
+// Radix Select cannot hold an empty value, so "no filter" has its own item.
+const ANY = "__any"
 
 function HeroSearchContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<"offer" | "search">("offer")
   const [searchQuery, setSearchQuery] = useState(searchParams.get("query") || "")
+  const [subject, setSubject] = useState<string>(parseSubject(searchParams.get("subject")) ?? ANY)
+  const [level, setLevel] = useState<string>(parseLevel(searchParams.get("level")) ?? ANY)
+  const [city, setCity] = useState(searchParams.get("city") || "")
 
   useEffect(() => {
     setSearchQuery(searchParams.get("query") || "")
+    setSubject(parseSubject(searchParams.get("subject")) ?? ANY)
+    setLevel(parseLevel(searchParams.get("level")) ?? ANY)
+    setCity(searchParams.get("city") || "")
     const type = searchParams.get("type") as "offer" | "search" | null
     if (type) {
       setActiveTab(type)
@@ -39,11 +56,17 @@ function HeroSearchContent() {
 
   const handleSearch = () => {
     const params = new URLSearchParams(searchParams)
-    if (searchQuery) {
-      params.set("query", searchQuery)
-    } else {
-      params.delete("query")
+    const setOrDelete = (key: string, value: string) => {
+      if (value && value !== ANY) {
+        params.set(key, value)
+      } else {
+        params.delete(key)
+      }
     }
+    setOrDelete("query", searchQuery.trim())
+    setOrDelete("subject", subject)
+    setOrDelete("level", level)
+    setOrDelete("city", city.trim())
     params.set("type", activeTab)
     params.delete("page")
     router.push(`/?${params.toString()}`, { scroll: false })
@@ -112,7 +135,7 @@ function HeroSearchContent() {
               </div>
               <Input
                 type="text"
-                placeholder={activeTab === "offer" ? "Czego chcesz się nauczyć?" : "Jakiego przedmiotu uczysz?"}
+                placeholder="Przedmiot, poziom lub miasto"
                 className="h-12 border-none bg-transparent text-base text-slate-900 placeholder:text-slate-400 focus-visible:ring-0 shadow-none w-full"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -129,6 +152,49 @@ function HeroSearchContent() {
             >
               Szukaj
             </Button>
+          </div>
+
+          {/* Filters: combined with the text field (AND) */}
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-left">
+            <Select value={subject} onValueChange={setSubject}>
+              <SelectTrigger aria-label="Przedmiot" className="h-11 data-[size=default]:h-11 w-full bg-white rounded-xl">
+                <SelectValue placeholder="Przedmiot" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ANY}>Wszystkie przedmioty</SelectItem>
+                {SUBJECTS.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={level} onValueChange={setLevel}>
+              <SelectTrigger aria-label="Poziom" className="h-11 data-[size=default]:h-11 w-full bg-white rounded-xl">
+                <SelectValue placeholder="Poziom" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ANY}>Wszystkie poziomy</SelectItem>
+                {LEVELS.map((l) => (
+                  <SelectItem key={l} value={l}>{l}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
+              <Input
+                type="text"
+                aria-label="Miasto"
+                placeholder="Miasto"
+                maxLength={50}
+                className="h-11 pl-9 bg-white rounded-xl"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch()
+                  }
+                }}
+              />
+            </div>
           </div>
         </div>
 

@@ -2,7 +2,7 @@
 import { unstable_cache } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/supabase';
-import { matchesQuery } from '@/lib/search';
+import { matchesFilters, type SearchFilters } from '@/lib/search';
 
 type Ad = Database['public']['Tables']['ads']['Row'];
 
@@ -42,20 +42,23 @@ const fetchAllAds = unstable_cache(
     }
 );
 
-export const filterAds = (ads: PublicAd[], query: string | undefined, type: 'offer' | 'search' = 'offer'): PublicAd[] => {
+export type AdsFilters = SearchFilters & { type?: 'offer' | 'search' };
+
+export const filterAds = (ads: PublicAd[], filters: AdsFilters = {}): PublicAd[] => {
     // Shared by getAds and getAdsCount so page contents and total count always agree.
-    return ads.filter(ad => ad.type === type && matchesQuery(ad, query));
+    const type = filters.type ?? 'offer';
+    return ads.filter(ad => ad.type === type && matchesFilters(ad, filters));
 };
 
-export const getAdsCount = async (params?: { query?: string, type?: 'offer' | 'search' }): Promise<number> => {
+export const getAdsCount = async (params?: AdsFilters): Promise<number> => {
     const allAds = await fetchAllAds();
-    const filteredAds = filterAds(allAds, params?.query, params?.type);
+    const filteredAds = filterAds(allAds, params);
     return filteredAds.length;
 };
 
-export const getAds = async (params?: { query?: string, page?: number, limit?: number, type?: 'offer' | 'search' }): Promise<PublicAd[]> => {
+export const getAds = async (params?: AdsFilters & { page?: number, limit?: number }): Promise<PublicAd[]> => {
     const allAds = await fetchAllAds();
-    const filteredAds = filterAds(allAds, params?.query, params?.type);
+    const filteredAds = filterAds(allAds, params);
 
     const page = params?.page || 1;
     const limit = params?.limit || 10;

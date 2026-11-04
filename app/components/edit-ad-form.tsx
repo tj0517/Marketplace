@@ -18,15 +18,10 @@ import {
 import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Database } from '@/types/supabase'
+import { LEVEL_FORM_OPTIONS, OTHER_OPTION, SUBJECT_FORM_OPTIONS } from '@/lib/ad-options'
 
 type Ad = Database['public']['Tables']['ads']['Row']
 
-const subjects = [
-    "Matematyka", "Język Angielski", "Język Niemiecki", "Język Hiszpański",
-    "Fizyka", "Chemia", "Biologia", "Geografia", "Historia", "Informatyka", "Muzyka", "Inne"
-]
-
-const levels = ["Szkoła Podstawowa", "Liceum / Technikum", "Studia", "Dorośli", "Inne"]
 
 const units = [
     { value: '60 min', label: '60 min' },
@@ -41,15 +36,21 @@ interface EditAdFormProps {
 export function EditAdForm({ ad }: EditAdFormProps) {
     const updateAdWithToken = updateAd.bind(null, ad.management_token!)
     const [state, action, isPending] = useActionState(updateAdWithToken, null)
-    const [selectedLevels, setSelectedLevels] = useState<string[]>(ad.education_level || [])
+    const initialLevels = ad.education_level || []
+    const [selectedLevels, setSelectedLevels] = useState<string[]>(initialLevels)
 
     const initialSubjects = (ad.subjects && ad.subjects.length > 0) ? ad.subjects : (ad.subject ? [ad.subject] : [])
-    const [selectedSubjects, setSelectedSubjects] = useState<string[]>(() => {
-        return initialSubjects.map(s => subjects.includes(s) ? s : 'Inne')
-    })
-    const [customSubject, setCustomSubject] = useState(() => {
-        return initialSubjects.find(s => !subjects.includes(s)) || ''
-    })
+    const [selectedSubjects, setSelectedSubjects] = useState<string[]>(initialSubjects)
+    const [customSubject, setCustomSubject] = useState('')
+
+    // Stored values outside the current lists (older form versions, "Inne" text) get their own
+    // chips, pre-selected and in stored order, so saving without changes keeps them as they are.
+    const legacySubjects = initialSubjects.filter(s => !SUBJECT_FORM_OPTIONS.includes(s))
+    const subjects = [...SUBJECT_FORM_OPTIONS.filter(s => s !== OTHER_OPTION), ...legacySubjects, OTHER_OPTION]
+    const legacyLevels = initialLevels.filter(l => !LEVEL_FORM_OPTIONS.includes(l))
+    const levels = [...LEVEL_FORM_OPTIONS.filter(l => l !== OTHER_OPTION), ...legacyLevels, OTHER_OPTION]
+    // An older ad may hold the literal "Inne"; keep it when no custom text is typed.
+    const storedOtherSubject = initialSubjects.includes(OTHER_OPTION)
 
     const toggleLevel = (level: string) => {
         setSelectedLevels(prev =>
@@ -144,12 +145,12 @@ export function EditAdForm({ ad }: EditAdFormProps) {
                         )}
                         {/* Hidden inputs for subjects */}
                         {selectedSubjects.map((s) => {
-                            if (s === 'Inne') return null;
+                            if (s === OTHER_OPTION) {
+                                const value = customSubject.trim() || (storedOtherSubject ? OTHER_OPTION : '')
+                                return value ? <input key={s} type="hidden" name="subjects" value={value} /> : null;
+                            }
                             return <input key={s} type="hidden" name="subjects" value={s} />;
                         })}
-                        {selectedSubjects.includes('Inne') && customSubject.trim() && (
-                            <input type="hidden" name="subjects" value={customSubject.trim()} />
-                        )}
                         {state?.errors?.subjects && <p className="text-sm text-red-500">{state.errors.subjects}</p>}
                     </div>
                 </div>
@@ -188,13 +189,13 @@ export function EditAdForm({ ad }: EditAdFormProps) {
                                 </button>
                             ))}
                         </div>
-                        {/* Hidden inputs for form submission */}
-                        {selectedLevels.map(level => (
-                            <input key={level} type="hidden" name="education_level" value={level} />
-                        ))}
                         {state?.errors?.education_level && <p className="text-sm text-red-500">{state.errors.education_level}</p>}
                     </div>
                 )}
+                {/* Hidden inputs for form submission; also for 'search' ads, whose levels are not shown, so they are not wiped */}
+                {selectedLevels.map(level => (
+                    <input key={level} type="hidden" name="education_level" value={level} />
+                ))}
             </div>
 
             {/* Details: Price & Location */}

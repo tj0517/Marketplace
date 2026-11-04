@@ -19,3 +19,16 @@ values
   ('22222222-2222-4222-8222-000000000001', '11111111-1111-4111-8111-000000000001', 'seed-pay-1', 10,   'completed', 'activation', 'p24', 'seed-session-1'),
   ('22222222-2222-4222-8222-000000000002', '11111111-1111-4111-8111-000000000001', null,         10,   'pending',   'bump',       'p24', 'seed-session-2'),
   ('22222222-2222-4222-8222-000000000003', '11111111-1111-4111-8111-000000000002', null,         10,   'failed',    'extension',  'p24', 'seed-session-3');
+
+-- LK-2.03: ogłoszenie „po staremu” (przedmiot i poziom ze starej wersji formularza, sprzed E8/matur),
+-- do sprawdzenia wyświetlania i edycji bez utraty danych. Znany token do strony zarządzania.
+insert into public.ads (id, type, status, management_token, email, phone_contact, title, description, subject, subjects, location, education_level, price_amount, expires_at)
+values
+  ('11111111-1111-4111-8111-000000000007', 'offer', 'active', '00000000-0000-4000-8000-0000000c0de7', 'muzyka@seed.test', '+48000000007', 'Lekcje gry na pianinie', 'Nauka gry na pianinie od podstaw, teoria muzyki.', 'Muzyka', '{Muzyka}', 'Lublin', '{"Liceum / Technikum"}', 75.00, now() + interval '30 days');
+
+-- LK-2.03: zgody marketingowe do kolumny „Zgoda” w /admin. active@seed.test → TAK (aktywna zgoda);
+-- expired@seed.test → NIE (zgoda wycofana, więc nie liczy się jako aktywna).
+insert into public.marketing_consents (email, status, withdrawn_at, source, content_version)
+values
+  ('active@seed.test',  'active',    null,  'form', 'seed'),
+  ('expired@seed.test', 'withdrawn', now(), 'form', 'seed');
