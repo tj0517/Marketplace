@@ -1,12 +1,12 @@
 ---
 id: LK-2.01
 title: Zgody marketingowe i uprawnienie do podbicia za 1 zł
-status: todo
+status: in_progress
 difficulty: L
-model: null
+model: opus
 model_approved: null
-effort: null
-branch: null
+effort: high
+branch: feat/lk-2.01-marketing-consent
 due: null
 depends_on: [LK-1.02, LK-1.04]
 blocked_by_questions: []
@@ -77,3 +77,4 @@ zgodę. Samo naliczanie 1 zł i płatność to LK-2.02.
 
 - 2026-11-02 tj: zgoda z formularza też przyznaje uprawnienie (O-05); wycofanie zgody nie odbiera uprawnienia (O-06).
 - 2026-11-02 tj: strona zgody bez potwierdzania adresu i z komunikatem „nie znaleziono…” zgodnie z briefem klienta; skutki (zapis cudzego adresu, sprawdzanie, czy adres ma ogłoszenie) przedstawione w wf-plan.
+- 2026-11-04 tj: brak briefu z nagłówkiem i opisem strony /zgoda-marketingowa — tekst proponuje agent, tj zatwierdza w review; do tego czasu bez wdrożenia na prod.
