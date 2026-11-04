@@ -1,18 +1,18 @@
 ---
 id: LK-1.03
 title: server-only dla klucza admina i CI na PR-ach
-status: todo
+status: done
 difficulty: M
 model: null
 model_approved: null
 effort: null
-branch: null
+branch: chore/lk-1.03-server-only-ci
 due: null
 depends_on: []
-blocked_by_questions: [O-01]
+blocked_by_questions: []
 touches_db: false
 touches_prod: false
-pr: null
+pr: 7
 ---
 
 ## Cel
@@ -29,7 +29,8 @@ jednostkowych i skan sekretów.
 - [ ] `server-only` w `lib/supabase/admin.ts` (nowa zależność: paczka `server-only` od Next.js)
 - [ ] skrypt `typecheck` w `package.json`
 - [ ] usunięcie drugiego lockfile'a zgodnie z O-01 i odświeżenie właściwego
-- [ ] workflow `.github/workflows/ci.yml` na PR do `main`: instalacja z lockfile'a, typecheck, lint, `test:unit`, skan sekretów (gitleaks)
+- [ ] workflow `.github/workflows/ci.yml` na PR do `main`: instalacja z lockfile'a (pnpm), typecheck, lint **tylko plików zmienionych w PR** (`.ts`/`.tsx` z diffu względem bazy), `test:unit`, skan sekretów (gitleaks)
+- [ ] README: `pnpm install` zamiast `npm install`
 
 ## Gotowe, gdy
 
@@ -38,6 +39,7 @@ jednostkowych i skan sekretów.
 - w repo jest jeden lockfile zgodny z O-01 — **jak sprawdzić:** `ls package-lock.json pnpm-lock.yaml`
 - CI przechodzi na PR-ze tego zadania — **jak sprawdzić:** link do zielonego runu i lista kroków (typecheck, lint, test:unit, gitleaks)
 - red proof skanu sekretów: gitleaks wykrywa fałszywy klucz — **jak sprawdzić:** wynik lokalnego `gitleaks detect` (albo runu CI na tymczasowym commicie) na pliku z fałszywym kluczem, wycinek w raporcie; plik nie zostaje w gałęzi
+- red proof lintu: plik zmieniony w PR z celowym błędem lintu wywala krok lint, a nieruszony stary plik z błędami go nie wywala — **jak sprawdzić:** wycinek z lokalnego uruchomienia kroku albo z runu CI na tymczasowym commicie; celowy błąd nie zostaje w gałęzi
 - CI nie ma `continue-on-error` ani pomijania kroków — **jak sprawdzić:** `grep -n continue-on-error .github/workflows/ci.yml` puste
 
 ## Poza zakresem
@@ -49,7 +51,7 @@ jednostkowych i skan sekretów.
 
 ## Bramki STOP
 
-- jeśli na `main` lint lub typecheck mają błędy: stop z ich liczbą i listą plików, bez masowych poprawek; tj decyduje (naprawa w tym zadaniu, osobne zadanie albo tymczasowy wyjątek)
+- jeśli na `main` typecheck ma błędy: stop z ich liczbą i listą plików (2026-11-03: 0); lint ma 52 błędy — rozstrzygnięte: CI lintuje tylko pliki zmienione w PR (decyzja tj 2026-11-03), bez masowych poprawek
 - przed usunięciem lockfile'a pokaż, który i dlaczego (odpowiedź z O-01)
 - nowa zależność: tylko `server-only`; każda inna to decyzja tj
 
@@ -61,3 +63,19 @@ jednostkowych i skan sekretów.
 - `docs/04-open-questions.md` — O-01
 
 ## Notatki z realizacji
+
+- 2026-11-03 tj: O-01 → pnpm (log Vercela). Lint w CI tylko na plikach zmienionych w PR (wariant A); stare błędy lintu (52) zostają jako dług.
+- 2026-11-04 tj: gitleaks znalazł w historii `CRON_SECRET` (`6b8013f`, `test-przed-oddaniem.md:182`, reguła `curl-auth-header`) → wariant A: pełny skan historii w CI, w `.gitleaksignore` tylko ten jeden fingerprint z komentarzem; gitleaks z oficjalnego obrazu kontenera przypiętego wersją i digestem, bez tokenu. Rotacja `CRON_SECRET` w Vercelu po stronie tj (zapisane w `docs/deferred-tasks.md`).
+- 2026-11-04 tj: red proof `server-only` przez build preview na Vercelu (lokalnie presja pamięci 2, bez `next build` w CI). Tymczasowy commit `6648fa1` (komponent `'use client'` w `app/lk-probe/` importujący `createAdminClient`), wycofany commitem revert bez force-pusha. Build `6648fa1` (deployment `dpl_Dpw8JGgkzFTBHUfrHAC9KFKw4uHB`, odczyt tj `vercel inspect --logs`) padł:
+  ```
+  Error: Turbopack build failed with 2 errors:
+  ./lib/supabase/admin.ts:1:1
+  > 1 | import 'server-only';
+  ./lib/supabase/admin.ts [Client Component Browser]
+  ./app/lk-probe/probe.tsx [Client Component Browser]
+  ./app/lk-probe/page.tsx [Server Component]
+  'server-only' cannot be imported from a Client Component module. It should only be used from a Server Component.
+  Error: [BUILD_UTILS_SPAWN_1] Command "pnpm run build" exited with 1
+  ```
+  Kontrola: poprzedni commit `028f28f` zbudował się na Vercelu („Deployment has completed”).
+- 2026-11-04 tj: odbiór PR #7 — przyjęte; udowodnione: server-only (build preview Vercel padł na imporcie w komponencie klienckim, kontrola zielona), jeden lockfile (pnpm), CI zielone (typecheck, lint zmienionych plików, test:unit, gitleaks pełna historia), red proofy gitleaks i lintu.
