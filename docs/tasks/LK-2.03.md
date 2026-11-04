@@ -70,3 +70,4 @@ typowe zapytania dają trafne wyniki, a stare ogłoszenia działają bez migracj
 - 2026-11-04 tj: D3 (znalezisko tj). Filtr miasta nie pomija słów pospolitych — miasto „Online” nie może pasować do każdego ogłoszenia.
 - 2026-11-04 tj: jednorazowy wyjątek od O-03, tylko w tej rundzie: przy presji pamięci 2 wolno `pnpm db:reset`, dev server na lokalnym Supabase, zrzuty Playwright, lokalne SELECT-y i `pnpm test:unit`. Nie wolno: `pnpm build`, zatrzymywać ani restartować stacku, uruchamiać niczego innego. Poziom sprawdzany osobną komendą przed każdym krokiem; przy 4 albo śmierci kontenera/dev servera — stop i raport.
 - 2026-11-04 tj: w tym pliku `npm run test:unit` → `pnpm test:unit`, `npm run build` → `pnpm build` (O-01).
+- 2026-11-04 tj: rozszerzenie wyjątku O-03 z tej rundy — jednorazowo `pnpm db:start` przy presji 2 (poziom sprawdzony osobną komendą tuż przed startem: 2). Dalej w ramach istniejącego wyjątku: bez buildu, bez zatrzymywania i restartu stacku.

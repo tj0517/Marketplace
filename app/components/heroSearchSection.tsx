@@ -135,7 +135,7 @@ function HeroSearchContent() {
               </div>
               <Input
                 type="text"
-                placeholder="Przedmiot, poziom lub miasto, np. matematyka Lublin"
+                placeholder="Przedmiot, poziom lub miasto"
                 className="h-12 border-none bg-transparent text-base text-slate-900 placeholder:text-slate-400 focus-visible:ring-0 shadow-none w-full"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -157,7 +157,7 @@ function HeroSearchContent() {
           {/* Filters: combined with the text field (AND) */}
           <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-left">
             <Select value={subject} onValueChange={setSubject}>
-              <SelectTrigger aria-label="Przedmiot" className="h-11 w-full bg-white rounded-xl">
+              <SelectTrigger aria-label="Przedmiot" className="h-11 data-[size=default]:h-11 w-full bg-white rounded-xl">
                 <SelectValue placeholder="Przedmiot" />
               </SelectTrigger>
               <SelectContent>
@@ -168,7 +168,7 @@ function HeroSearchContent() {
               </SelectContent>
             </Select>
             <Select value={level} onValueChange={setLevel}>
-              <SelectTrigger aria-label="Poziom" className="h-11 w-full bg-white rounded-xl">
+              <SelectTrigger aria-label="Poziom" className="h-11 data-[size=default]:h-11 w-full bg-white rounded-xl">
                 <SelectValue placeholder="Poziom" />
               </SelectTrigger>
               <SelectContent>
