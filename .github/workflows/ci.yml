@@ -60,7 +60,16 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
         run: pnpm test:unit
 
+      # Ten sam uid co checkout (inaczej git w kontenerze odmawia: "dubious ownership", a gitleaks
+      # kończy się sukcesem po 0 commitach). Fail closed: 0 przeskanowanych commitów = błąd.
       - name: Secret scan (gitleaks, cała historia)
-        uses: docker://ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
-        with:
-          args: git --redact --no-banner --verbose .
+        env:
+          GITLEAKS_IMAGE: ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+        run: |
+          set -o pipefail
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo" -w /repo "$GITLEAKS_IMAGE" \
+            git --redact --no-banner --verbose --no-color . 2>&1 | tee "$RUNNER_TEMP/gitleaks.log"
+          if ! grep -Eq ' [1-9][0-9]* commits scanned' "$RUNNER_TEMP/gitleaks.log"; then
+            echo "::error::gitleaks nie przeskanował żadnego commita"
+            exit 1
+          fi
