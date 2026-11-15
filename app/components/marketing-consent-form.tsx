@@ -7,7 +7,8 @@ import { Input } from '@/app/components/ui/input'
 import { Checkbox } from '@/app/components/ui/checkbox'
 import { Label } from '@/app/components/ui/label'
 import { CheckCircle2, Loader2 } from 'lucide-react'
-import { CONSENT_PAGE_COPY, MARKETING_CONSENT } from '@/lib/marketing-consent'
+import { CONSENT_PAGE_COPY } from '@/lib/marketing-consent'
+import { MarketingConsentLabel } from '@/app/components/marketing-consent-label'
 
 export function MarketingConsentForm() {
     const [state, formAction, isPending] = useActionState(subscribeMarketingConsent, null)
@@ -26,6 +27,7 @@ export function MarketingConsentForm() {
     return (
         <form action={formAction} className="space-y-5">
             <div className="space-y-2">
+                <p className="text-xs text-slate-500">{CONSENT_PAGE_COPY.emailHelper}</p>
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" name="email" type="email" placeholder="twoj@email.com" required />
                 {state?.errors?.email && <p className="text-sm text-red-500">{state.errors.email}</p>}
@@ -33,10 +35,8 @@ export function MarketingConsentForm() {
 
             <div className="flex items-start space-x-3">
                 <Checkbox id="consent" name="consent" required />
-                <div className="grid gap-1.5 leading-none">
-                    <Label htmlFor="consent" className="text-sm font-normal cursor-pointer">
-                        {MARKETING_CONSENT.text}
-                    </Label>
+                <div className="grid gap-1.5">
+                    <MarketingConsentLabel htmlFor="consent" />
                     {state?.errors?.consent && <p className="text-sm text-red-500">{state.errors.consent}</p>}
                 </div>
             </div>
@@ -47,7 +47,7 @@ export function MarketingConsentForm() {
                 </div>
             )}
 
-            <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-base font-semibold" disabled={isPending}>
+            <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-auto min-h-12 py-3 whitespace-normal text-base font-semibold" disabled={isPending}>
                 {isPending ? <Loader2 className="size-5 animate-spin" /> : CONSENT_PAGE_COPY.button}
             </Button>
         </form>
