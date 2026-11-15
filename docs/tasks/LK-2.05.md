@@ -1,7 +1,7 @@
 ---
 id: LK-2.05
 title: Teksty promocji — zgoda v2, checkbox z linkiem, strona /podbicie-ogloszenia, nowy układ /zgoda-marketingowa
-status: in_progress
+status: review
 difficulty: M
 model: null
 model_approved: null
@@ -12,7 +12,7 @@ depends_on: []
 blocked_by_questions: []
 touches_db: false
 touches_prod: false
-pr: null
+pr: 16
 ---
 
 ## Cel
