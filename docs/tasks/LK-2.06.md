@@ -1,7 +1,7 @@
 ---
 id: LK-2.06
 title: Mail po zgodzie z linkiem do panelu i podbiciem za 1 zł, okno płatności z linku, baner znika po odebraniu promocji
-status: in_progress
+status: review
 difficulty: M
 model: null
 model_approved: null
@@ -12,7 +12,7 @@ depends_on: []
 blocked_by_questions: []
 touches_db: false
 touches_prod: false
-pr: null
+pr: 15
 ---
 
 ## Cel

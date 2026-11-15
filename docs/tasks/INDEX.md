@@ -22,4 +22,4 @@ Widok dla ludzi. Przy rozbieżności rozstrzyga frontmatter pliku zadania.
 | LK-2.02 | Podbicie za 1 zł — kwota z serwera, rezerwacja, webhook z kontrolą kwoty i verify | done | L | LK-2.01 | — | — |
 | LK-2.04 | Wdrożenie zgód i podbicia za 1 zł na produkcję — migracje, merge, płatność 1 zł | done | S | LK-2.01, LK-2.02 | — | — |
 | LK-2.05 | Teksty promocji — zgoda v2, checkbox z linkiem, /podbicie-ogloszenia, układ /zgoda-marketingowa | todo | M | — | — | — |
-| LK-2.06 | Mail po zgodzie z linkiem do panelu i podbiciem za 1 zł, baner znika po odebraniu | in_progress | M | — | — | — |
+| LK-2.06 | Mail po zgodzie z linkiem do panelu i podbiciem za 1 zł, baner znika po odebraniu | review | M | — | — | — |
