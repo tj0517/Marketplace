@@ -64,3 +64,5 @@ adres odebrał już promocję. Sukces: z maila dwa kliknięcia do P24 z kwotą 1
 ## Notatki z realizacji
 
 - 2026-11-15 tj: w mailu link do najnowszego aktywnego ogłoszenia `offer` adresu; link do panelu w mailu marketingowym zaakceptowany (to samo ryzyko co mail z magic linkiem).
+- 2026-11-15 tj: lokalny stack i dowody uruchamiane mimo `kern.memorystatus_vm_pressure_level` = 2 (wyjątek od O-03 na tę sesję, decyzja tj).
+- 2026-11-15 tj: etykieta linku w mailu „Przejdź do panelu ogłoszenia” zostaje do czasu tekstu klienta (O-09).
