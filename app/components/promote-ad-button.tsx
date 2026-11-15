@@ -22,13 +22,15 @@ interface PromoteAdButtonProps {
     adId: string
     /** Kwota policzona na serwerze (LK-2.02); przycisk tylko ją wyświetla */
     amountGrosze: number
+    /** LK-2.06: okno otwarte od razu (link z maila, `?podbij=1`); płatność i tak dopiero po kliknięciu */
+    defaultOpen?: boolean
 }
 
 function formatPrice(grosze: number): string {
     return `${(grosze / 100).toLocaleString('pl-PL', { maximumFractionDigits: 2 })} zł`
 }
 
-export function PromoteAdButton({ token, adId, amountGrosze }: PromoteAdButtonProps) {
+export function PromoteAdButton({ token, adId, amountGrosze, defaultOpen = false }: PromoteAdButtonProps) {
     const price = formatPrice(amountGrosze)
     const router = useRouter()
     const [isProcessing, setIsProcessing] = useState(false)
@@ -79,7 +81,7 @@ export function PromoteAdButton({ token, adId, amountGrosze }: PromoteAdButtonPr
     }
 
     return (
-        <AlertDialog>
+        <AlertDialog defaultOpen={defaultOpen}>
             <AlertDialogTrigger asChild>
                 <Button
                     className="w-full bg-white text-indigo-600 hover:bg-indigo-50 font-semibold"

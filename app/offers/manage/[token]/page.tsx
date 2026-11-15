@@ -11,6 +11,7 @@ import { DeleteAdButton } from "@/app/components/delete-ad-button";
 import { PromoteAdButton } from "@/app/components/promote-ad-button";
 import { isPromotionsEnabled } from "@/lib/config";
 import { quoteBumpAmount } from "@/lib/bump-payment";
+import { hasPromotionEntitlement } from "@/lib/consent-mail-links";
 
 function formatDate(dateString: string | null): string {
     if (!dateString) return "Brak daty";
@@ -37,8 +38,15 @@ function getStatusLabel(status: string) {
     }
 }
 
-export default async function ManageAdPage({ params }: { params: Promise<{ token: string }> }) {
+export default async function ManageAdPage({
+    params,
+    searchParams,
+}: {
+    params: Promise<{ token: string }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
     const { token } = await params;
+    const { podbij } = await searchParams;
     const supabase = createAdminClient();
 
     const { data: ad } = await supabase
@@ -54,6 +62,10 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
     // Kwotę podbicia liczy serwer tą samą regułą co rejestracja płatności (LK-2.02).
     const showPromotion = ad.type !== 'search' && isPromotionsEnabled();
     const bumpAmountGrosze = showPromotion ? await quoteBumpAmount(supabase, ad.id) : null;
+    // LK-2.06: ?podbij=1 (link z maila) tylko otwiera okno płatności; transakcję tworzy dopiero klik w oknie.
+    const openBumpDialog = podbij === '1';
+    // Baner newslettera znika, gdy adres ogłoszenia ma już uprawnienie (granted/reserved/used).
+    const showNewsletterBanner = ad.type !== 'search' && !(await hasPromotionEntitlement(supabase, ad.email));
 
     return (
         <main className="min-h-screen bg-slate-50 pb-20">
@@ -128,7 +140,7 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
                     )}
                 </div>
 
-                {ad.type !== 'search' && (
+                {showNewsletterBanner && (
                     <div className="mb-6 flex flex-col gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-start gap-3">
                             <Gift className="mt-0.5 size-5 shrink-0 text-indigo-600" />
@@ -170,7 +182,7 @@ export default async function ManageAdPage({ params }: { params: Promise<{ token
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                    <PromoteAdButton token={token} adId={ad.id} amountGrosze={bumpAmountGrosze} />
+                                    <PromoteAdButton token={token} adId={ad.id} amountGrosze={bumpAmountGrosze} defaultOpen={openBumpDialog} />
                                     <p className="text-xs text-indigo-200 text-center">
                                         Ogłoszenie trafi na górę listy.
                                     </p>

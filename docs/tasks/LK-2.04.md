@@ -1,7 +1,7 @@
 ---
 id: LK-2.04
 title: Wdrożenie zgód i podbicia za 1 zł na produkcję — migracje, merge, płatność 1 zł
-status: todo
+status: done
 difficulty: S
 model: null
 model_approved: null
@@ -67,3 +67,4 @@ uprawnieniem `used` i podbitym ogłoszeniem.
 - 2026-11-04 tj (wf-task LK-2.02): kryterium płatności 1 zł na produkcji wyniesione z LK-2.02 do tego zadania; LK-2.02 ma fallback 10 zł, gdy tabeli uprawnień nie ma.
 - 2026-11-04 tj: test w sandboksie P24 wyniesiony z LK-2.02 (401 na kluczach sandboksa); pierwsze prawdziwe verify i powtórzone verify sprawdzane tutaj, przed płatnością na prod.
 - 2026-11-04 tj: O-04 rozstrzygnięte — treść zgody i wersja `v1-2026-11-04` w `docs/04-open-questions.md`. Całość (treść, migracje, płatność) idzie przez to zadanie; migracji LK-2.01 nie wdrażać przed wejściem nowej treści na prod.
+- 2026-11-15 tj: odbiór na podstawie stanu prod (odczyt supabase-prod): migracje LK-2.01 i LK-2.02 zastosowane, 12 aktywnych zgód v1-2026-11-04, 4 transakcje 1 zł completed i 4 uprawnienia used. Nieudowodnione: test w sandboksie P24 i powtórne verify zapłaconej transakcji → docs/deferred-tasks.md.
