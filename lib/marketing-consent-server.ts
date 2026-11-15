@@ -4,6 +4,7 @@ import { resend } from '@/lib/resend'
 import { EMAIL_CONFIG, getBaseUrl } from '@/lib/config'
 import { MarketingConsentEmail } from '@/emails/marketing-consent-email'
 import { MARKETING_CONSENT, maskEmail, normalizeEmail, type ConsentSource } from '@/lib/marketing-consent'
+import { buildConsentMailLinks, findNewestActiveOfferToken } from '@/lib/consent-mail-links'
 
 // Poza plikiem 'use server', żeby nie dało się tego wywołać jako akcji z przeglądarki.
 
@@ -45,12 +46,17 @@ export async function recordMarketingConsent(email: string, source: ConsentSourc
 async function sendMarketingConsentEmail(to: string, withdrawalToken: string) {
     const baseUrl = getBaseUrl()
     try {
+        // LK-2.06: link do panelu najnowszego aktywnego ogłoszenia offer; bez niego (albo przy błędzie) /recover-magic-link
+        const managementToken = await findNewestActiveOfferToken(createAdminClient(), to)
+        const { bumpLink, panelLink, recoverLink } = buildConsentMailLinks(baseUrl, managementToken)
         const { error } = await resend.emails.send({
             from: EMAIL_CONFIG.marketingFrom,
             to,
             subject: 'Dziękujemy za zapis — podbicie ogłoszenia za 1 zł 🎁',
             react: MarketingConsentEmail({
-                recoverLink: `${baseUrl}/recover-magic-link`,
+                bumpLink,
+                panelLink,
+                recoverLink,
                 withdrawLink: `${baseUrl}/zgoda-marketingowa/wycofaj/${withdrawalToken}`,
             }),
         })

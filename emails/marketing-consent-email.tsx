@@ -3,11 +3,18 @@ import {
 } from '@react-email/components';
 
 interface MarketingConsentEmailProps {
+    /** LK-2.06: panel z otwartym oknem płatności; null, gdy adres nie ma aktywnego ogłoszenia offer */
+    bumpLink?: string | null;
+    panelLink?: string | null;
     recoverLink: string;
     withdrawLink: string;
 }
 
+const buttonStyle = { backgroundColor: '#000', color: '#fff', padding: '12px 24px', borderRadius: '5px', textDecoration: 'none', fontWeight: 'bold' };
+
 export const MarketingConsentEmail = ({
+    bumpLink,
+    panelLink,
     recoverLink,
     withdrawLink,
 }: MarketingConsentEmailProps) => (
@@ -22,17 +29,28 @@ export const MarketingConsentEmail = ({
                     podbić swoje ogłoszenie na górę listy za <strong>1 zł</strong>.
                 </Text>
 
-                <Section style={{ padding: '20px', backgroundColor: '#eef2ff', borderRadius: '8px' }}>
-                    <Text style={{ margin: '0 0 10px', fontWeight: 'bold' }}>Jak skorzystać z promocji:</Text>
-                    <Text style={{ margin: '0 0 6px' }}>1. Otwórz stronę zarządzania ogłoszeniem (link z maila potwierdzającego dodanie ogłoszenia).</Text>
-                    <Text style={{ margin: '0 0 15px' }}>2. W sekcji „Promocja” wybierz podbicie — zapłacisz 1 zł.</Text>
-                    <Button
-                        href={recoverLink}
-                        style={{ backgroundColor: '#000', color: '#fff', padding: '12px 24px', borderRadius: '5px', textDecoration: 'none', fontWeight: 'bold' }}
-                    >
-                        Nie mam linku do zarządzania
-                    </Button>
-                </Section>
+                {bumpLink && panelLink ? (
+                    <Section style={{ padding: '20px', backgroundColor: '#eef2ff', borderRadius: '8px' }}>
+                        <Button href={bumpLink} style={buttonStyle}>
+                            Podbij za 1 zł
+                        </Button>
+                        <Text style={{ margin: '15px 0 0' }}>
+                            <a href={panelLink} style={{ color: '#556cd6' }}>Przejdź do panelu ogłoszenia</a>
+                        </Text>
+                    </Section>
+                ) : (
+                    <Section style={{ padding: '20px', backgroundColor: '#eef2ff', borderRadius: '8px' }}>
+                        <Text style={{ margin: '0 0 10px', fontWeight: 'bold' }}>Jak skorzystać z promocji:</Text>
+                        <Text style={{ margin: '0 0 6px' }}>1. Otwórz stronę zarządzania ogłoszeniem (link z maila potwierdzającego dodanie ogłoszenia).</Text>
+                        <Text style={{ margin: '0 0 15px' }}>2. W sekcji „Promocja” wybierz podbicie — zapłacisz 1 zł.</Text>
+                        <Button
+                            href={recoverLink}
+                            style={buttonStyle}
+                        >
+                            Nie mam linku do zarządzania
+                        </Button>
+                    </Section>
+                )}
 
                 <Hr style={{ borderColor: '#e6ebf1', margin: '20px 0' }} />
 
