@@ -16,7 +16,7 @@ import {
 } from '@/app/components/ui/select'
 import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { MARKETING_CONSENT } from '@/lib/marketing-consent'
+import { MarketingConsentLabel } from '@/app/components/marketing-consent-label'
 import { LEVEL_FORM_OPTIONS, SUBJECT_FORM_OPTIONS } from '@/lib/ad-options'
 
 const subjects = SUBJECT_FORM_OPTIONS
@@ -363,13 +363,8 @@ export function AddOfferForm({ type }: { type: 'offer' | 'search' }) {
                     {type === 'offer' && (
                         <div className="flex items-start space-x-3">
                             <Checkbox id="marketing_consent" name="marketing_consent" defaultChecked={false} />
-                            <div className="grid gap-1.5 leading-none">
-                                <Label htmlFor="marketing_consent" className="text-sm font-normal cursor-pointer">
-                                    {MARKETING_CONSENT.text}
-                                </Label>
-                                <p className="text-xs text-slate-500">
-                                    Opcjonalnie. W podziękowaniu jednorazowe podbicie ogłoszenia za 1 zł.
-                                </p>
+                            <div className="grid gap-1.5">
+                                <MarketingConsentLabel htmlFor="marketing_consent" />
                             </div>
                         </div>
                     )}
