@@ -1,7 +1,7 @@
 ---
 id: LK-2.05
 title: Teksty promocji — zgoda v2, checkbox z linkiem, strona /podbicie-ogloszenia, nowy układ /zgoda-marketingowa
-status: review
+status: done
 difficulty: M
 model: null
 model_approved: null
@@ -129,3 +129,4 @@ Sukces: nowe zgody zapisują się z wersją v2, korzystający widzi, co dostaje,
   > [Zapisuje się i odbieram podbicie za 1zł]
 - 2026-11-15 tj: ortografia w tekście klienta poprawiona — przycisk „Zapisuję się i odbieram podbicie za 1 zł”, „trafiasz na czoło listy”; reszta dosłownie.
 - 2026-11-15 tj (wprost, na pytanie agenta): dowody LK-2.05 uruchamiane przy `kern.memorystatus_vm_pressure_level` = 2 — tylko w tej sesji, tylko dla tego zadania. Zajęte porty przez stack innego projektu → agent staje i pisze, tj zatrzymuje go sam.
+- 2026-11-15 tj: odbiór w review, PR #16 — wszystkie kryteria udowodnione (v2 w bazie, red proof bez consent, isChecked=false po kliknięciu linku w obu miejscach + kontrola etykiety, 11 zrzutów, prod nietknięty). Zmiany poza briefem przyjęte: etykieta „Email”, dolna nawigacja na /podbicie-ogloszenia, metadane z tekstu briefu.
