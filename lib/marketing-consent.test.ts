@@ -49,3 +49,17 @@ test('maskEmail keeps seed addresses, masks the rest', () => {
 test('consent version is set', () => {
     expect(MARKETING_CONSENT.version.length).toBeGreaterThan(0);
 });
+
+test('consent v2: version and client text verbatim (O-07)', () => {
+    expect(MARKETING_CONSENT.version).toBe('v2-2026-11-15');
+    expect(MARKETING_CONSENT.text).toBe(
+        '🎁 ZGARNIJ LIMITOWANE PODBICIE ZA 1 ZŁ! Dołącz do newslettera Lekcjo.pl i odbierz swoje pierwsze podbicie ogłoszenia za 1 zł. Korzystaj z promocji, nowości i wskazówek, jak zdobywać więcej uczniów.'
+    );
+});
+
+test('consent v2: parts rebuild the full text, link phrase is "podbicie ogłoszenia"', () => {
+    const { heading, bodyBeforeLink, linkText, bodyAfterLink, linkHref } = MARKETING_CONSENT;
+    expect(`${heading} ${bodyBeforeLink}${linkText}${bodyAfterLink}`).toBe(MARKETING_CONSENT.text);
+    expect(linkText).toBe('podbicie ogłoszenia');
+    expect(linkHref).toBe('/podbicie-ogloszenia');
+});
