@@ -47,7 +47,7 @@ export function MarketingConsentForm() {
                 </div>
             )}
 
-            <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-base font-semibold" disabled={isPending}>
+            <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-auto min-h-12 py-3 whitespace-normal text-base font-semibold" disabled={isPending}>
                 {isPending ? <Loader2 className="size-5 animate-spin" /> : CONSENT_PAGE_COPY.button}
             </Button>
         </form>
