@@ -10,4 +10,4 @@
 | O-06 | Czy wycofanie zgody odbiera niewykorzystane uprawnienie? | rozstrzygnięte 2026-11-02 | — | nie odbiera |
 | O-07 | Treść zgody v2 przy checkboxie. | rozstrzygnięte 2026-11-15 | — | dosłownie tekst klienta („🎁 ZGARNIJ LIMITOWANE PODBICIE ZA 1 ZŁ! Dołącz do newslettera Lekcjo.pl i odbierz swoje pierwsze podbicie ogłoszenia za 1 zł. Korzystaj z promocji, nowości i wskazówek, jak zdobywać więcej uczniów.”), wersja `v2-2026-11-15`; świadomie bez danych administratora w treści zgody (tj) |
 | O-08 | Teksty o „pierwszym miejscu” przy podbiciu (pozycja spada przy nowych ogłoszeniach). | rozstrzygnięte 2026-11-15 | — | dosłownie jak klient, bez dopisku (tj) |
-| O-09 | Nowa treść maila po zgodzie (klient chciał ją zmienić po poznaniu możliwości). | otwarte | — (LK-2.06 startuje z obecnym tekstem) | |
+| O-09 | Nowa treść maila po zgodzie (klient chciał ją zmienić po poznaniu możliwości). | rozstrzygnięte 2026-11-23 | — | treść od klienta wstawiona do `emails/marketing-consent-email.tsx` (nagłówek, przyciski i stopka bez zmian) |
