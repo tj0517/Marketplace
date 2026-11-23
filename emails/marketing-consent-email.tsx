@@ -25,8 +25,12 @@ export const MarketingConsentEmail = ({
             <Container style={{ backgroundColor: '#ffffff', margin: '0 auto', padding: '20px', maxWidth: '600px' }}>
                 <Heading style={{ color: '#333', fontSize: '24px' }}>Twoje podbicie za 1 zł czeka</Heading>
                 <Text style={{ color: '#555', fontSize: '16px' }}>
-                    Dziękujemy za zapis na wiadomości od Lekcjo.pl! W podziękowaniu możesz jednorazowo
-                    podbić swoje ogłoszenie na górę listy za <strong>1 zł</strong>.
+                    Dziękujemy za dołączenie do newslettera Lekcjo.pl! Mamy dla Ciebie prezent na start - możesz
+                    jednorazowo podbić swoje ogłoszenie za symboliczną <strong>1 zł</strong> zamiast standardowych 10 zł.
+                </Text>
+                <Text style={{ color: '#555', fontSize: '16px' }}>
+                    Dzięki podbiciu Twoje ogłoszenie będzie wyświetlać się jako pierwsze na stronie głównej, w wynikach
+                    wyszukiwania dla Twojego miasta, przedmiotów i poziomów nauczania, a także na liście korepetycji online.
                 </Text>
 
                 {bumpLink && panelLink ? (
